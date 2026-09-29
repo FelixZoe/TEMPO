@@ -89,7 +89,7 @@ enum QingxuDailyReminder {
     components.minute = normalized % 60
 
     let content = UNMutableNotificationContent()
-    content.title = "序舱"
+    content.title = "TEMPO"
     content.body = "看一眼今天的安排，轻松开始。"
     content.sound = .default
 

@@ -108,7 +108,7 @@ gh secret set IOS_SIGNED_ARCHIVE_PASSWORD --env ios-signing --repo FelixZoe/qing
 在 macOS 上解压 IPA 后，可确认扩展是否存在：
 
 ```bash
-unzip -q Qingxu-*.ipa -d qingxu-ipa-check
+unzip -q TEMPO-*.ipa -d tempo-ipa-check
 test -d qingxu-ipa-check/Payload/Qingxu.app/PlugIns/QingxuWidgets.appex
 codesign --verify --deep --strict --verbose=2 qingxu-ipa-check/Payload/Qingxu.app
 codesign -d --entitlements :- qingxu-ipa-check/Payload/Qingxu.app

@@ -1,4 +1,4 @@
-#define MyAppName "序舱"
+#define MyAppName "TEMPO"
 #ifndef MyAppVersion
   #define MyAppVersion "0.3.0"
 #endif
@@ -46,7 +46,7 @@ VersionInfoProductName={#MyAppName}
 VersionInfoProductVersion={#MyAppVersion}
 VersionInfoProductTextVersion={#MyAppVersion}
 VersionInfoTextVersion={#MyAppVersion}
-VersionInfoOriginalFileName=Qingxu-{#MyAppVersion}-Windows-Setup.exe
+VersionInfoOriginalFileName=TEMPO-{#MyAppVersion}-Windows-Setup.exe
 
 DefaultDirName={localappdata}\Programs\Qingxu
 DefaultGroupName={#MyAppName}
@@ -64,7 +64,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0.17763
 
 OutputDir=..\..\artifacts
-OutputBaseFilename=Qingxu-{#MyAppVersion}-Windows-Setup
+OutputBaseFilename=TEMPO-{#MyAppVersion}-Windows-Setup
 SetupIconFile={#AppIcon}
 Compression=lzma2/max
 SolidCompression=yes

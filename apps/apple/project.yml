@@ -29,7 +29,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: one.darker.qingxu
         PRODUCT_NAME: Qingxu
-        INFOPLIST_KEY_CFBundleDisplayName: 序舱
+        INFOPLIST_KEY_CFBundleDisplayName: TEMPO
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         CODE_SIGN_ENTITLEMENTS: Configuration/QingxuiOS.entitlements
         CODE_SIGN_STYLE: Manual
@@ -40,7 +40,7 @@ targets:
     info:
       path: Generated/QingxuiOS-Info.plist
       properties:
-        CFBundleDisplayName: 序舱
+        CFBundleDisplayName: TEMPO
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         UILaunchScreen:
@@ -75,7 +75,7 @@ targets:
     info:
       path: Configuration/QingxuWidgets-Info.plist
       properties:
-        CFBundleDisplayName: 序舱小组件
+        CFBundleDisplayName: TEMPO小组件
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         NSExtension:
@@ -102,7 +102,7 @@ targets:
     info:
       path: Generated/QingxumacOS-Info.plist
       properties:
-        CFBundleDisplayName: 序舱
+        CFBundleDisplayName: TEMPO
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         LSApplicationCategoryType: public.app-category.productivity
@@ -124,7 +124,7 @@ targets:
     info:
       path: Generated/QingxumacOSWidgets-Info.plist
       properties:
-        CFBundleDisplayName: 序舱桌面小组件
+        CFBundleDisplayName: TEMPO桌面小组件
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         NSExtension:

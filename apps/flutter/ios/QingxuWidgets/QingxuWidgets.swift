@@ -33,7 +33,7 @@ enum QingxuWidgetDestination: String, AppEnum {
   case today
   case pomodoro
 
-  static let typeDisplayRepresentation: TypeDisplayRepresentation = "序舱页面"
+  static let typeDisplayRepresentation: TypeDisplayRepresentation = "TEMPO页面"
   static let caseDisplayRepresentations: [Self: DisplayRepresentation] = [
     .today: "今天",
     .pomodoro: "番茄钟",
@@ -41,7 +41,7 @@ enum QingxuWidgetDestination: String, AppEnum {
 }
 
 struct OpenQingxuWidgetIntent: AppIntent {
-  static let title: LocalizedStringResource = "打开序舱"
+  static let title: LocalizedStringResource = "打开TEMPO"
   static let openAppWhenRun = true
 
   @Parameter(title: "页面") var destination: QingxuWidgetDestination
@@ -106,7 +106,7 @@ private struct QingxuProvider: TimelineProvider {
       dailyGoal: 4,
       focusHeatmap: Array(repeating: 0, count: 126),
       weather: WidgetWeather(cityName: "上海", temperature: "23", text: "晴", humidity: "52"),
-      quote: WidgetQuote(text: "把今天真正重要的事做好。", source: "序舱"),
+      quote: WidgetQuote(text: "把今天真正重要的事做好。", source: "TEMPO"),
       snapshotUpdatedAt: .now
     )
   }

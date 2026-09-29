@@ -44,7 +44,7 @@ class Sidebar extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '序舱',
+                          'TEMPO',
                           style: TextStyle(
                             color: palette.ink,
                             fontSize: 17,

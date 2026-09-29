@@ -1,10 +1,12 @@
 <p align="center">
-  <img src="apps/flutter/assets/branding/qingxu-icon-master-black.png" width="112" alt="序舱应用图标">
+  <img src="apps/flutter/assets/branding/qingxu-icon-master-black.png" width="112" alt="TEMPO 应用图标">
 </p>
 
-<h1 align="center">序舱 Xucang</h1>
+<h1 align="center">TEMPO</h1>
 
-<p align="center">本地优先、简体中文、支持自托管同步的个人任务与专注应用。</p>
+<p align="center"><strong>Time. Everything. Moments. Productivity. Organized.</strong></p>
+
+<p align="center">时间、信息、当下与效率，一切井然有序。一个本地优先、支持自托管同步的个人工作台。</p>
 
 <p align="center">
   <a href="https://todo.darker.one">开发与部署文档</a> ·
@@ -14,9 +16,11 @@
   <a href="docs/DESIGN.md">设计规范</a>
 </p>
 
-## 为什么是序舱
+## 为什么是 TEMPO
 
-序舱把任务、专注计时、RSS 阅读与 AI 辅助放在同一个克制的工作流里。数据先保存到设备，本地操作不依赖网络；需要跨设备时，可以把轻量同步服务部署到自己的服务器，不需要注册第三方账号。
+**TEMPO — Time. Everything. Moments. Productivity. Organized.**
+
+它表达的是：**时间、信息、当下与效率，一切井然有序。** 任务、日历、RSS、专注和多端同步被放进同一条清晰的个人工作流。数据先保存到设备，本地操作不依赖网络；需要跨设备时，可以把轻量同步服务部署到自己的服务器，不需要注册第三方账号。
 
 ## 主要功能
 
@@ -35,10 +39,10 @@
 
 | 平台 | 实现 | Release 文件 | 说明 |
 | --- | --- | --- | --- |
-| iOS | SwiftUI | `Qingxu-<版本>-iOS-unsigned.ipa` | 需使用自己的 Apple 身份重新签名；包内包含 Widget/Live Activity 扩展 |
-| macOS | SwiftUI | `Qingxu-<版本>-macOS-Portable.zip`、`.dmg` | 当前未公证，首次启动可能出现 Gatekeeper 提示 |
-| Android | Flutter | `Qingxu-<版本>-Android.apk` | 交给 Android 系统确认安装或覆盖更新 |
-| Windows | Flutter | `Qingxu-<版本>-Windows-Portable.zip`、`Windows-Setup.exe` | 提供便携版和安装版；未签名时可能出现 SmartScreen 提示 |
+| iOS | SwiftUI | `TEMPO-<版本>-iOS-unsigned.ipa` | 需使用自己的 Apple 身份重新签名；包内包含 Widget/Live Activity 扩展 |
+| macOS | SwiftUI | `TEMPO-<版本>-macOS-Portable.zip`、`.dmg` | 当前未公证，首次启动可能出现 Gatekeeper 提示 |
+| Android | Flutter（独立工程） | `TEMPO-<版本>-Android.apk` | 交给 Android 系统确认安装或覆盖更新 |
+| Windows | Flutter | `TEMPO-<版本>-Windows-Portable.zip`、`Windows-Setup.exe` | 提供便携版和安装版；未签名时可能出现 SmartScreen 提示 |
 
 下载后可使用同一 Release 中的 `SHA256SUMS.txt` 校验文件完整性。安装包、校验和与构建来源证明均由 GitHub Actions 自动生成。
 
@@ -109,7 +113,8 @@ echo "$TOKEN"
 
 ```text
 apps/apple/          SwiftUI iOS / macOS 客户端与 XcodeGen 工程定义
-apps/flutter/        Flutter Android / Windows 客户端
+apps/android/        基于 Flowtime 重构的独立 Flutter Android 客户端
+apps/flutter/        Flutter Windows 客户端
 services/sync/       Go 同步与可选 AI 代理服务
 scripts/ios/         iOS 扩展与签名辅助脚本
 scripts/windows/     Windows 安装包配置
@@ -121,14 +126,24 @@ docs/                产品、架构、协议、部署与签名文档
 
 ## 开发
 
-### Android / Windows
+### Android
+
+```bash
+cd apps/android
+flutter pub get
+flutter analyze
+flutter test
+flutter run -d android
+```
+
+### Windows
 
 ```bash
 cd apps/flutter
 flutter pub get
 flutter analyze
 flutter test
-flutter run -d windows   # 或使用已连接的 Android 设备
+flutter run -d windows
 ```
 
 ### iOS / macOS
@@ -171,4 +186,4 @@ go vet ./...
 
 ## 许可
 
-序舱以 [GNU GPL v3](LICENSE) 发布。实际使用的第三方组件仍分别遵循各自许可，详见 [第三方软件声明](THIRD_PARTY_NOTICES.md)。
+TEMPO 以 [GNU GPL v3](LICENSE) 发布。Android 客户端基于 MIT 许可的 Flowtime 重构，原始许可随源码保存在 `apps/android/FLOWTIME_LICENSE`；其他第三方组件仍分别遵循各自许可，详见 [第三方软件声明](THIRD_PARTY_NOTICES.md)。

@@ -1,0 +1,118 @@
+# ─────────────────────────────────────────────────────────────
+# Flutter/Dart
+# ─────────────────────────────────────────────────────────────
+/build/
+/.dart_tool/
+.packages
+.pub-cache/
+.pub/
+pubspec.lock
+
+# ─────────────────────────────────────────────────────────────
+# IDE
+# ─────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.iml
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+
+# ─────────────────────────────────────────────────────────────
+# OS Files
+# ─────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# ─────────────────────────────────────────────────────────────
+# Logs
+# ─────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ─────────────────────────────────────────────────────────────
+# Android signing (NEVER commit these — use GitHub Secrets / CI instead)
+# ─────────────────────────────────────────────────────────────
+android/app/*.jks
+android/app/*.keystore
+android/app/key.properties
+android/app/key-server.properties
+android/app/google-services.json
+android/key.properties
+android/key-server.properties
+
+# ─────────────────────────────────────────────────────────────
+# Server Deployment Secrets
+# ─────────────────────────────────────────────────────────────
+server_deploy/.env
+server_deploy/.env.local
+server_deploy/.env.*.local
+server_deploy/nginx.conf
+server_deploy/docker-compose.override.yml
+server_deploy/logs/
+server_deploy/data/
+server_deploy/uploads/
+server_deploy/backups/
+server_deploy/releases/
+server_deploy/patches/
+
+# ─────────────────────────────────────────────────────────────
+# Sensitive Information
+# ─────────────────────────────────────────────────────────────
+*.pem
+*.key
+*.crt
+*.csr
+*.p12
+*.pfx
+private_key*
+secret*
+credentials*
+token*
+password*
+config.local.env
+.secrets/
+
+# ─────────────────────────────────────────────────────────────
+# Temporary files
+# ─────────────────────────────────────────────────────────────
+*.tmp
+*.temp
+*.bak
+*.backup
+*.orig
+*.rej
+.cache/
+.tmp/
+tmp/
+temp/
+
+# ─────────────────────────────────────────────────────────────
+# Build Outputs
+# ─────────────────────────────────────────────────────────────
+flowtime_v*.apk
+*.aab
+*.ipa
+*.app
+dist/
+out/
+
+# ─────────────────────────────────────────────────────────────
+# Documentation
+# ─────────────────────────────────────────────────────────────
+doc/
+docs/_build/
+site/
+
+# ─────────────────────────────────────────────────────────────
+# Other
+# ─────────────────────────────────────────────────────────────
+# Application artwork under assets/ and Android res/ is source code and must
+# remain tracked. Keep generated screenshots out by placing them under build/
+# or another ignored output directory instead of ignoring all image files.
+.env.production.local
+.env.development.local
+.env.test.local

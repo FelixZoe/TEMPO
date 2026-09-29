@@ -1,6 +1,6 @@
-# 序舱系统架构
+# TEMPO系统架构
 
-序舱采用“两套客户端实现、一份同步协议、一个轻量服务端”的结构。Apple 平台使用 SwiftUI，Android 与 Windows 使用 Flutter；所有客户端共享 Go 服务端的 JSON 协议。
+TEMPO 采用“三套客户端工程、一份同步协议、一个轻量服务端”的结构。Apple 平台使用 SwiftUI；Android 使用独立的 Flowtime 衍生 Flutter 工程；Windows 保留独立 Flutter 工程；所有客户端共享 Go 服务端的 JSON 协议。
 
 返回：[文档首页](/) · [产品范围](/PRODUCT) · [设计规范](/DESIGN) · [同步协议](/SYNC_PROTOCOL)
 
@@ -37,7 +37,7 @@ flowchart LR
 | --- | --- | --- | --- | --- |
 | iOS | `apps/apple` | SwiftUI、WidgetKit、ActivityKit | `AppStore` | Keychain |
 | macOS | `apps/apple` | SwiftUI | `AppStore` | Keychain |
-| Android | `apps/flutter` | Flutter | `TaskController` | `flutter_secure_storage` |
+| Android | `apps/android` | Flutter | `AppProvider` | Hive / SharedPreferences |
 | Windows | `apps/flutter` | Flutter、托盘与窗口插件 | `TaskController` | `flutter_secure_storage` |
 
 任务数据使用平台应用数据目录中的 JSON 文件。主题、模块顺序等设备偏好留在本机；任务、番茄钟和 RSS 阅读状态进入同步文档。

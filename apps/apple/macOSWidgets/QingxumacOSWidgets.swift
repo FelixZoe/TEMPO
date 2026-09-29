@@ -61,7 +61,7 @@ private struct QingxuWidgetProvider: TimelineProvider {
       completed: 2,
       heatmap: [:],
       weather: MacWidgetWeather(cityName: "上海", temperature: "23", text: "晴", humidity: "52"),
-      quote: MacWidgetQuote(text: "把今天真正重要的事做好。", source: "序舱"),
+      quote: MacWidgetQuote(text: "把今天真正重要的事做好。", source: "TEMPO"),
       snapshotUpdatedAt: .now
     )
   }
@@ -190,7 +190,7 @@ private struct MacAmbientWidgetView: View {
             .font(.system(size: 34, weight: .medium, design: .rounded))
           VStack(alignment: .leading, spacing: 1) {
             Text(entry.weather?.text ?? "天气待刷新").font(.caption.weight(.semibold))
-            Text(entry.weather?.cityName ?? "打开序舱刷新")
+            Text(entry.weather?.cityName ?? "打开TEMPO刷新")
               .font(.caption2)
               .foregroundStyle(.secondary)
           }
@@ -201,7 +201,7 @@ private struct MacAmbientWidgetView: View {
         Text(entry.quote?.text ?? "把今天真正重要的事做好。")
           .font(.subheadline.weight(.medium))
           .lineLimit(2)
-        Text(entry.quote.map { "— \($0.source)" } ?? "— 序舱")
+        Text(entry.quote.map { "— \($0.source)" } ?? "— TEMPO")
           .font(.caption2)
           .foregroundStyle(.secondary)
           .lineLimit(1)

@@ -1,6 +1,6 @@
-# 序舱同步服务
+# TEMPO同步服务
 
-`services/sync` 是序舱的单用户自托管后台，负责合并任务、番茄钟和 RSS 阅读状态，并可选代理 RSS 摘要、翻译和任务规划请求。
+`services/sync` 是TEMPO的单用户自托管后台，负责合并任务、番茄钟和 RSS 阅读状态，并可选代理 RSS 摘要、翻译和任务规划请求。
 
 返回：[项目首页](../../README.md) · [部署说明](../../docs/DEPLOYMENT.md) · [同步协议](../../docs/SYNC_PROTOCOL.md)
 

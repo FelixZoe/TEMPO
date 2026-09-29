@@ -1,4 +1,4 @@
-# Xucang configuration
+# TEMPO configuration
 
 This guide covers client-side setup after installation. Use the [deployment guide](/en/DEPLOYMENT) to run the sync service first.
 

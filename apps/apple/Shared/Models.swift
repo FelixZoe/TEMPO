@@ -295,7 +295,7 @@ enum AIConnectionMode: String, Codable, CaseIterable, Identifiable {
 
   var title: String {
     switch self {
-    case .selfHosted: "序舱自托管"
+    case .selfHosted: "TEMPO自托管"
     case .openAI: "OpenAI"
     case .deepSeek: "DeepSeek"
     case .compatible: "自定义服务"

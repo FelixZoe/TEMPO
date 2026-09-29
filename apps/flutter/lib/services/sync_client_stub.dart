@@ -8,7 +8,7 @@ class SyncClient implements SyncClientBase, SyncChangeClient {
   bool get isSupported => false;
 
   @override
-  String get defaultDeviceName => '序舱设备';
+  String get defaultDeviceName => 'TEMPO设备';
 
   @override
   Future<void> testConnection(SyncSettings settings) {

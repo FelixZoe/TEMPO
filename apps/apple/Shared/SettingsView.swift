@@ -270,7 +270,7 @@ private struct AppUpdateSettingsView: View {
         VStack(alignment: .leading, spacing: 16) {
           HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 5) {
-              Text("序舱").font(.title2.weight(.semibold))
+              Text("TEMPO").font(.title2.weight(.semibold))
               Text("v\(updateChecker.currentVersion) · 构建 \(updateChecker.currentBuild)")
                 .font(.subheadline).foregroundStyle(QingxuPalette.quiet)
             }
@@ -633,7 +633,7 @@ private struct NotificationAndFeedbackSettingsView: View {
         )
         if dailyReminderEnabled, !enabled {
           dailyReminderEnabled = false
-          reminderMessage = "通知权限未开启，请先在系统设置中允许序舱发送通知。"
+          reminderMessage = "通知权限未开启，请先在系统设置中允许TEMPO发送通知。"
         } else {
           reminderMessage = dailyReminderEnabled ? "每日提醒已保存。" : "每日提醒已关闭。"
         }

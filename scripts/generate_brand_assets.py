@@ -69,7 +69,7 @@ def generate(repo: Path, font_path: Path) -> None:
     for size in (16, 32, 64, 128, 256, 512, 1024):
         save_resized(dark_master.convert("RGB"), macos / f"app_icon_{size}.png", size)
 
-    android = repo / "apps/flutter/android/app/src/main/res"
+    android = repo / "apps/android/android/app/src/main/res"
     for density, size in {
         "mdpi": 48,
         "hdpi": 72,

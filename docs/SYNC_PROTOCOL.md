@@ -1,4 +1,4 @@
-# 序舱同步协议 v1
+# TEMPO同步协议 v1
 
 本文描述当前服务端已经实现并由自动化测试覆盖的 HTTP/JSON 协议。示例基址为 `https://todo.darker.one`；自托管时替换为自己的 HTTPS 域名。
 

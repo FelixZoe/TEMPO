@@ -70,7 +70,7 @@ final class AppUpdateChecker: ObservableObject {
       )
       request.timeoutInterval = 15
       request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
-      request.setValue("Qingxu-iOS/\(currentVersion)", forHTTPHeaderField: "User-Agent")
+      request.setValue("TEMPO-iOS/\(currentVersion)", forHTTPHeaderField: "User-Agent")
 
       let (data, response) = try await URLSession.shared.data(for: request)
       guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {

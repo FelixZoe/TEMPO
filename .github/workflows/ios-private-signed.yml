@@ -201,7 +201,7 @@ jobs:
           package_dir="$RUNNER_TEMP/qingxu-private-package"
           mkdir -p "$package_dir/Payload"
           ditto "$app_path" "$package_dir/Payload/Qingxu.app"
-          (cd "$package_dir" && /usr/bin/zip -qry "$RUNNER_TEMP/Qingxu-${APP_VERSION}-iOS-signed.ipa" Payload)
+          (cd "$package_dir" && /usr/bin/zip -qry "$RUNNER_TEMP/TEMPO-${APP_VERSION}-iOS-signed.ipa" Payload)
 
       - name: Encrypt signed IPA for private artifact storage
         id: encrypt
@@ -222,15 +222,15 @@ jobs:
             -mhe=on \
             -mx=9 \
             -p"$ARCHIVE_PASSWORD" \
-            "$output_dir/Qingxu-${APP_VERSION}-iOS-signed-private.7z" \
-            "$RUNNER_TEMP/Qingxu-${APP_VERSION}-iOS-signed.ipa" >/dev/null
-          rm -f "$RUNNER_TEMP/Qingxu-${APP_VERSION}-iOS-signed.ipa"
-          echo "artifact_path=$output_dir/Qingxu-${APP_VERSION}-iOS-signed-private.7z" >> "$GITHUB_OUTPUT"
+            "$output_dir/TEMPO-${APP_VERSION}-iOS-signed-private.7z" \
+            "$RUNNER_TEMP/TEMPO-${APP_VERSION}-iOS-signed.ipa" >/dev/null
+          rm -f "$RUNNER_TEMP/TEMPO-${APP_VERSION}-iOS-signed.ipa"
+          echo "artifact_path=$output_dir/TEMPO-${APP_VERSION}-iOS-signed-private.7z" >> "$GITHUB_OUTPUT"
 
       - name: Upload encrypted private build
         uses: actions/upload-artifact@v7
         with:
-          name: qingxu-ios-signed-encrypted
+          name: tempo-ios-signed-encrypted
           path: ${{ steps.encrypt.outputs.artifact_path }}
           retention-days: 1
           if-no-files-found: error

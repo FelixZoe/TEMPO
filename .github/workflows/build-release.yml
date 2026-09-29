@@ -260,7 +260,7 @@ jobs:
             Write-Host "No trusted signing certificate configured; publishing an unsigned beta build."
           }
 
-          $portable = "..\..\Qingxu-$($env:APP_VERSION)-Windows-Portable.zip"
+          $portable = "..\..\TEMPO-$($env:APP_VERSION)-Windows-Portable.zip"
           Compress-Archive -Path "$release\*" -DestinationPath $portable
       - name: Build installer EXE
         shell: pwsh
@@ -285,7 +285,7 @@ jobs:
             Sort-Object FullName -Descending |
             Select-Object -First 1
           if (-not $signTool) { throw "signtool.exe was not found" }
-          $installer = "artifacts\Qingxu-$($env:APP_VERSION)-Windows-Setup.exe"
+          $installer = "artifacts\TEMPO-$($env:APP_VERSION)-Windows-Setup.exe"
           & $signTool.FullName sign /fd SHA256 /f $certificate `
             /p $env:WINDOWS_SIGNING_PASSWORD /tr http://timestamp.digicert.com `
             /td SHA256 $installer
@@ -295,11 +295,11 @@ jobs:
           Remove-Item -LiteralPath $certificate -Force
       - uses: actions/upload-artifact@v7
         with:
-          name: qingxu-${{ needs.version.outputs.version }}-windows
+          name: tempo-${{ needs.version.outputs.version }}-windows
           retention-days: 7
           path: |
-            Qingxu-${{ needs.version.outputs.version }}-Windows-Portable.zip
-            artifacts/Qingxu-${{ needs.version.outputs.version }}-Windows-Setup.exe
+            TEMPO-${{ needs.version.outputs.version }}-Windows-Portable.zip
+            artifacts/TEMPO-${{ needs.version.outputs.version }}-Windows-Setup.exe
 
   apple-ios:
     needs: version
@@ -353,19 +353,19 @@ jobs:
           test "$(/usr/libexec/PlistBuddy -c 'Print :NSSupportsLiveActivities' "$APP_PATH/PlugIns/QingxuWidgets.appex/Info.plist")" = "true"
           mkdir -p build/ipa/Payload
           cp -R "$APP_PATH" build/ipa/Payload/Qingxu.app
-          cd build/ipa && zip -r "../../Qingxu-${APP_VERSION}-iOS-unsigned.ipa" Payload
+          cd build/ipa && zip -r "../../TEMPO-${APP_VERSION}-iOS-unsigned.ipa" Payload
       - uses: actions/upload-artifact@v7
         with:
-          name: qingxu-${{ needs.version.outputs.version }}-ios
+          name: tempo-${{ needs.version.outputs.version }}-ios
           retention-days: 7
-          path: apps/apple/Qingxu-${{ needs.version.outputs.version }}-iOS-unsigned.ipa
+          path: apps/apple/TEMPO-${{ needs.version.outputs.version }}-iOS-unsigned.ipa
 
   flutter-android:
     needs: version
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: apps/flutter
+        working-directory: apps/android
     env:
       APP_VERSION: ${{ needs.version.outputs.version }}
       BUILD_NUMBER: ${{ needs.version.outputs.build_number }}
@@ -377,6 +377,8 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
+      - run: flutter analyze --no-fatal-infos --no-fatal-warnings
+      - run: flutter test
       - name: Detect and configure stable Android release signing
         id: android-signing
         env:
@@ -406,15 +408,20 @@ jobs:
           echo "configured=true" >> "$GITHUB_OUTPUT"
       - name: Build Android APK
         if: needs.version.outputs.should_release != 'true' || steps.android-signing.outputs.configured == 'true'
-        run: flutter build apk --release --build-name "$APP_VERSION" --build-number "$BUILD_NUMBER"
+        run: >-
+          flutter build apk --release
+          --build-name "$APP_VERSION"
+          --build-number "$BUILD_NUMBER"
+          --dart-define "APP_VERSION=$APP_VERSION"
+          --dart-define "APP_BUILD=$BUILD_NUMBER"
       - name: Package Android APK
         if: needs.version.outputs.should_release != 'true' || steps.android-signing.outputs.configured == 'true'
-        run: cp build/app/outputs/flutter-apk/app-release.apk "Qingxu-${APP_VERSION}-Android.apk"
+        run: cp build/app/outputs/flutter-apk/app-release.apk "TEMPO-${APP_VERSION}-Android.apk"
       - name: Generate Android incremental update assets
         if: needs.version.outputs.should_release == 'true' && steps.android-signing.outputs.configured == 'true'
         run: |
           set -euo pipefail
-          full="Qingxu-${APP_VERSION}-Android.apk"
+          full="TEMPO-${APP_VERSION}-Android.apk"
           full_sha="$(sha256sum "$full" | cut -d' ' -f1)"
           previous_tag="$(gh release list --repo "$GITHUB_REPOSITORY" --limit 1 --json tagName --jq '.[0].tagName // empty')"
           previous_version="${previous_tag#v}"
@@ -423,11 +430,11 @@ jobs:
             mkdir -p previous
             if gh release download "$previous_tag" \
               --repo "$GITHUB_REPOSITORY" \
-              --pattern "Qingxu-*-Android.apk" \
+              --pattern "TEMPO-*-Android.apk" \
               --dir previous; then
-              old_apk="$(find previous -maxdepth 1 -name 'Qingxu-*-Android.apk' -print -quit)"
+              old_apk="$(find previous -maxdepth 1 -name 'TEMPO-*-Android.apk' -print -quit)"
               if [[ -n "$old_apk" ]]; then
-                patch_name="Qingxu-${previous_version}-to-${APP_VERSION}-Android.bpatch"
+                patch_name="TEMPO-${previous_version}-to-${APP_VERSION}-Android.bpatch"
                 dart run tool/create_binary_patch.dart "$old_apk" "$full" "$patch_name"
               fi
             fi
@@ -440,7 +447,7 @@ jobs:
           version = os.environ["APP_VERSION"]
           repo = os.environ["GITHUB_REPOSITORY"]
           base = f"https://github.com/{repo}/releases/download/v{version}"
-          full_name = f"Qingxu-{version}-Android.apk"
+          full_name = f"TEMPO-{version}-Android.apk"
           payload = {
               "schema": 1,
               "latestVersion": version,
@@ -465,12 +472,12 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: needs.version.outputs.should_release != 'true' || steps.android-signing.outputs.configured == 'true'
         with:
-          name: qingxu-${{ needs.version.outputs.version }}-android
+          name: tempo-${{ needs.version.outputs.version }}-android
           retention-days: 7
           path: |
-            apps/flutter/Qingxu-${{ needs.version.outputs.version }}-Android.apk
-            apps/flutter/Qingxu-*-to-${{ needs.version.outputs.version }}-Android.bpatch
-            apps/flutter/qingxu-android-update.json
+            apps/android/TEMPO-${{ needs.version.outputs.version }}-Android.apk
+            apps/android/TEMPO-*-to-${{ needs.version.outputs.version }}-Android.bpatch
+            apps/android/qingxu-android-update.json
 
   apple-macos:
     needs: version
@@ -510,15 +517,15 @@ jobs:
           set -euo pipefail
           app_path="$(find build/DerivedData/Build/Products/Release -maxdepth 1 -name '*.app' -print -quit)"
           test -n "$app_path"
-          ditto -c -k --keepParent "$app_path" "Qingxu-${APP_VERSION}-macOS-Portable.zip"
-          hdiutil create -volname "清序" -srcfolder "$app_path" -ov -format UDZO "Qingxu-${APP_VERSION}-macOS.dmg"
+          ditto -c -k --keepParent "$app_path" "TEMPO-${APP_VERSION}-macOS-Portable.zip"
+          hdiutil create -volname "TEMPO" -srcfolder "$app_path" -ov -format UDZO "TEMPO-${APP_VERSION}-macOS.dmg"
       - uses: actions/upload-artifact@v7
         with:
-          name: qingxu-${{ needs.version.outputs.version }}-macos
+          name: tempo-${{ needs.version.outputs.version }}-macos
           retention-days: 7
           path: |
-            apps/apple/Qingxu-${{ needs.version.outputs.version }}-macOS-Portable.zip
-            apps/apple/Qingxu-${{ needs.version.outputs.version }}-macOS.dmg
+            apps/apple/TEMPO-${{ needs.version.outputs.version }}-macOS-Portable.zip
+            apps/apple/TEMPO-${{ needs.version.outputs.version }}-macOS.dmg
 
   github-release:
     if: >-
@@ -581,7 +588,7 @@ jobs:
               --repo "$GITHUB_REPOSITORY" \
               --target "$GITHUB_SHA" \
               --generate-notes \
-              --title "清序 $RELEASE_TAG"
+              --title "TEMPO $RELEASE_TAG"
           fi
   version-writeback:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -617,13 +624,14 @@ jobs:
           fi
 
           sed -i -E "s/^version:.*/version: ${APP_VERSION}+${BUILD_NUMBER}/" apps/flutter/pubspec.yaml
+          sed -i -E "s/^version:.*/version: ${APP_VERSION}+${BUILD_NUMBER}/" apps/android/pubspec.yaml
           sed -i -E "s/^([[:space:]]*)MARKETING_VERSION:.*/\1MARKETING_VERSION: \"${APP_VERSION}\"/" apps/apple/project.yml
           sed -i -E "s/^([[:space:]]*)CURRENT_PROJECT_VERSION:.*/\1CURRENT_PROJECT_VERSION: \"${BUILD_NUMBER}\"/" apps/apple/project.yml
           sed -i -E "s/^([[:space:]]*)#define MyAppVersion .*/\1#define MyAppVersion \"${APP_VERSION}\"/" scripts/windows/Qingxu.iss
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add apps/flutter/pubspec.yaml apps/apple/project.yml scripts/windows/Qingxu.iss
+          git add apps/flutter/pubspec.yaml apps/android/pubspec.yaml apps/apple/project.yml scripts/windows/Qingxu.iss
           if git diff --cached --quiet; then
             echo "Version metadata is already current."
           else
