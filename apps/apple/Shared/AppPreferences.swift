@@ -1,10 +1,6 @@
 import Foundation
 
 enum QingxuPreferenceKey {
-  static let pomodoroModule = "qingxu.modules.pomodoro"
-  static let rssModule = "qingxu.modules.rss"
-  static let inboxModule = "qingxu.modules.inbox"
-  static let remoteAccessModule = "qingxu.modules.remoteAccess"
   static let moduleOrder = "qingxu.modules.order"
   static let haptics = "qingxu.feedback.haptics"
   static let completionSound = "qingxu.feedback.completionSound"
@@ -37,40 +33,11 @@ enum QingxuModuleOrder {
 
 enum QingxuNavigationPolicy {
   static let maximumVisibleTabs = 5
-  static let fixedTabs: Set<AppTab> = [.today, .settings]
-  static let optionalTabs: [AppTab] = [.pomodoro, .rss, .remoteAccess, .inbox]
-  static let maximumEnabledOptionalTabs = maximumVisibleTabs - fixedTabs.count
 
-  static func normalizedEnabledTabs(
-    inbox: Bool,
-    pomodoro: Bool,
-    rss: Bool,
-    remoteAccess: Bool
-  ) -> Set<AppTab> {
-    let requested: [AppTab: Bool] = [
-      .inbox: inbox,
-      .pomodoro: pomodoro,
-      .rss: rss,
-      .remoteAccess: remoteAccess
-    ]
-    return Set(optionalTabs.filter { requested[$0] == true }.prefix(maximumEnabledOptionalTabs))
-      .union(fixedTabs)
-  }
-
-  static func visibleTabs(
-    order: [AppTab],
-    inbox: Bool,
-    pomodoro: Bool,
-    rss: Bool,
-    remoteAccess: Bool
-  ) -> [AppTab] {
-    let enabled = normalizedEnabledTabs(
-      inbox: inbox,
-      pomodoro: pomodoro,
-      rss: rss,
-      remoteAccess: remoteAccess
-    )
-    return order.filter(enabled.contains).prefix(maximumVisibleTabs).map { $0 }
+  static func visibleTabs(order: [AppTab]) -> [AppTab] {
+    QingxuModuleOrder.decode(order.map(\.rawValue).joined(separator: ","))
+      .prefix(maximumVisibleTabs)
+      .map { $0 }
   }
 }
 
@@ -122,7 +89,7 @@ enum QingxuDailyReminder {
     components.minute = normalized % 60
 
     let content = UNMutableNotificationContent()
-    content.title = "清序"
+    content.title = "序舱"
     content.body = "看一眼今天的安排，轻松开始。"
     content.sound = .default
 

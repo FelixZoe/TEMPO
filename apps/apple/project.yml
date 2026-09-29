@@ -5,24 +5,11 @@ options:
     iOS: "17.0"
     macOS: "15.0"
   createIntermediateGroups: true
-packages:
-  Citadel:
-    url: https://github.com/orlandos-nl/Citadel.git
-    revision: ae8562f895de06ccb86fdb1cbb65fd99c8976e12
-  SwiftTerm:
-    url: https://github.com/migueldeicaza/SwiftTerm.git
-    revision: 7691f85b222a67a66b58499e1b2647443cf0dda7
-  SwiftNIO:
-    url: https://github.com/apple/swift-nio.git
-    from: 2.81.0
-  SwiftNIOSSH:
-    url: https://github.com/Wellz26/swift-nio-ssh.git
-    from: 0.3.4
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "0.2.4"
-    CURRENT_PROJECT_VERSION: "120"
+    MARKETING_VERSION: "0.3.0"
+    CURRENT_PROJECT_VERSION: "121"
     CLANG_ENABLE_MODULES: YES
     ENABLE_USER_SCRIPT_SANDBOXING: YES
 targets:
@@ -38,19 +25,11 @@ targets:
     dependencies:
       - target: QingxuWidgets
         embed: true
-      - package: Citadel
-        product: Citadel
-      - package: SwiftTerm
-        product: SwiftTerm
-      - package: SwiftNIO
-        product: NIOCore
-      - package: SwiftNIOSSH
-        product: NIOSSH
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: one.darker.qingxu
         PRODUCT_NAME: Qingxu
-        INFOPLIST_KEY_CFBundleDisplayName: 清序
+        INFOPLIST_KEY_CFBundleDisplayName: 序舱
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         CODE_SIGN_ENTITLEMENTS: Configuration/QingxuiOS.entitlements
         CODE_SIGN_STYLE: Manual
@@ -61,7 +40,7 @@ targets:
     info:
       path: Generated/QingxuiOS-Info.plist
       properties:
-        CFBundleDisplayName: 清序
+        CFBundleDisplayName: 序舱
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         UILaunchScreen:
@@ -83,7 +62,6 @@ targets:
     sources:
       - path: ../flutter/ios/QingxuWidgets/QingxuWidgets.swift
       - path: ../flutter/ios/Shared/QingxuPomodoroAttributes.swift
-      - path: Shared/QingxuRemoteSessionAttributes.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: one.darker.qingxu.widgets
@@ -97,7 +75,7 @@ targets:
     info:
       path: Configuration/QingxuWidgets-Info.plist
       properties:
-        CFBundleDisplayName: 清序小组件
+        CFBundleDisplayName: 序舱小组件
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         NSExtension:
@@ -114,14 +92,6 @@ targets:
     dependencies:
       - target: QingxumacOSWidgets
         embed: true
-      - package: Citadel
-        product: Citadel
-      - package: SwiftTerm
-        product: SwiftTerm
-      - package: SwiftNIO
-        product: NIOCore
-      - package: SwiftNIOSSH
-        product: NIOSSH
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: one.darker.qingxu
@@ -132,7 +102,7 @@ targets:
     info:
       path: Generated/QingxumacOS-Info.plist
       properties:
-        CFBundleDisplayName: 清序
+        CFBundleDisplayName: 序舱
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         LSApplicationCategoryType: public.app-category.productivity
@@ -144,7 +114,6 @@ targets:
     platform: macOS
     sources:
       - path: macOSWidgets
-      - path: Shared/QingxuRemoteSessionAttributes.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: one.darker.qingxu.macos.widgets
@@ -155,7 +124,7 @@ targets:
     info:
       path: Generated/QingxumacOSWidgets-Info.plist
       properties:
-        CFBundleDisplayName: 清序桌面小组件
+        CFBundleDisplayName: 序舱桌面小组件
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         NSExtension:

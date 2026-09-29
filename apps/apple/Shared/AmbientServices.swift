@@ -161,7 +161,7 @@ struct QingxuQuoteClient {
         return QingxuQuoteSnapshot(text: text, source: value.from, updatedAt: .now)
       }
     }
-    return QingxuQuoteSnapshot(text: "向着光亮那方", source: "清序", updatedAt: .now)
+    return QingxuQuoteSnapshot(text: "向着光亮那方", source: "序舱", updatedAt: .now)
   }
 }
 

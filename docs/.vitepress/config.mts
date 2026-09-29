@@ -26,6 +26,7 @@ export default defineConfig({
         ...sharedTheme,
         siteTitle: '清序文档',
         nav: [
+          { text: '配置', link: '/CONFIGURATION' },
           { text: '部署', link: '/DEPLOYMENT' },
           { text: '架构', link: '/ARCHITECTURE' },
           { text: '安全', link: '/SECURITY_PERFORMANCE' },
@@ -43,6 +44,7 @@ export default defineConfig({
           {
             text: '部署与维护',
             items: [
+              { text: '完整配置指南', link: '/CONFIGURATION' },
               { text: '自托管同步', link: '/DEPLOYMENT' },
               { text: 'iOS 私有签名', link: '/IOS_PRIVATE_SIGNING' }
             ]
@@ -75,6 +77,7 @@ export default defineConfig({
         ...sharedTheme,
         siteTitle: 'Qingxu Docs',
         nav: [
+          { text: 'Configure', link: '/en/CONFIGURATION' },
           { text: 'Deploy', link: '/en/DEPLOYMENT' },
           { text: 'Download', link: downloads }
         ],
@@ -83,6 +86,7 @@ export default defineConfig({
             text: 'Get started',
             items: [
               { text: 'Overview', link: '/en/' },
+              { text: 'Configuration', link: '/en/CONFIGURATION' },
               { text: 'Self-hosted sync', link: '/en/DEPLOYMENT' }
             ]
           }
@@ -105,6 +109,7 @@ export default defineConfig({
         ...sharedTheme,
         siteTitle: '清序文件',
         nav: [
+          { text: '設定', link: '/zh-TW/CONFIGURATION' },
           { text: '部署', link: '/zh-TW/DEPLOYMENT' },
           { text: '下載', link: downloads }
         ],
@@ -113,6 +118,7 @@ export default defineConfig({
             text: '開始',
             items: [
               { text: '文件首頁', link: '/zh-TW/' },
+              { text: '完整設定指南', link: '/zh-TW/CONFIGURATION' },
               { text: '自託管同步', link: '/zh-TW/DEPLOYMENT' }
             ]
           }

@@ -6,7 +6,6 @@ struct QingxuiOSApp: App {
   @StateObject private var store = AppStore()
   @StateObject private var rssStore = RSSStore()
   @StateObject private var updateChecker = AppUpdateChecker()
-  @AppStorage("qingxu.appearance") private var appearance = AppearanceMode.system.rawValue
 
   init() {
     if #unavailable(iOS 26.0) {
@@ -26,7 +25,6 @@ struct QingxuiOSApp: App {
         .environmentObject(store)
         .environmentObject(rssStore)
         .environmentObject(updateChecker)
-        .preferredColorScheme(AppearanceMode(rawValue: appearance)?.colorScheme)
     }
     .backgroundTask(.appRefresh(RSSBackgroundRefresh.identifier)) {
       await rssStore.refresh()
@@ -44,10 +42,6 @@ private struct iOSRootView: View {
   @State private var selection = AppTab.today
   @State private var showingLaunchExperience = true
   @State private var availableUpdate: QingxuRelease?
-  @AppStorage(QingxuPreferenceKey.inboxModule) private var inboxEnabled = false
-  @AppStorage(QingxuPreferenceKey.pomodoroModule) private var pomodoroEnabled = true
-  @AppStorage(QingxuPreferenceKey.rssModule) private var rssEnabled = true
-  @AppStorage(QingxuPreferenceKey.remoteAccessModule) private var remoteAccessEnabled = true
   @AppStorage(QingxuPreferenceKey.moduleOrder) private var moduleOrder = QingxuModuleOrder.defaultValue
 
   var body: some View {
@@ -76,18 +70,6 @@ private struct iOSRootView: View {
       guard !showingLaunchExperience else { return }
       UISelectionFeedbackGenerator().selectionChanged()
     }
-    .onChange(of: pomodoroEnabled) { enabled in
-      if !enabled, selection == .pomodoro { selection = .today }
-    }
-    .onChange(of: inboxEnabled) { enabled in
-      if !enabled, selection == .inbox { selection = .today }
-    }
-    .onChange(of: rssEnabled) { enabled in
-      if !enabled, selection == .rss { selection = inboxEnabled ? .inbox : .today }
-    }
-    .onChange(of: remoteAccessEnabled) { enabled in
-      if !enabled, selection == .remoteAccess { selection = .today }
-    }
     .onChange(of: scenePhase) { phase in
       if phase == .active {
         consumePendingWidgetDestination()
@@ -103,12 +85,11 @@ private struct iOSRootView: View {
     .onOpenURL { url in
       switch url.host {
       case "today": selection = .today
-      case "inbox": selection = inboxEnabled ? .inbox : .today
-      case "pomodoro": selection = pomodoroEnabled ? .pomodoro : (inboxEnabled ? .inbox : .today)
-      case "rss": selection = rssEnabled ? .rss : (inboxEnabled ? .inbox : .today)
-      case "server", "terminal": selection = remoteAccessEnabled ? .remoteAccess : .today
+      case "inbox": selection = .inbox
+      case "pomodoro": selection = .pomodoro
+      case "rss": selection = .rss
       case "settings": selection = .settings
-      default: selection = inboxEnabled ? .inbox : .today
+      default: selection = .today
       }
     }
     .alert(item: $availableUpdate) { release in
@@ -122,34 +103,13 @@ private struct iOSRootView: View {
       )
     }
     .onAppear {
-      normalizeVisibleModules()
-      if !inboxEnabled, selection == .inbox { selection = .today }
       consumePendingWidgetDestination()
       RSSBackgroundRefresh.schedule()
     }
   }
 
   private var visibleTabs: [AppTab] {
-    QingxuNavigationPolicy.visibleTabs(
-      order: QingxuModuleOrder.decode(moduleOrder),
-      inbox: inboxEnabled,
-      pomodoro: pomodoroEnabled,
-      rss: rssEnabled,
-      remoteAccess: remoteAccessEnabled
-    )
-  }
-
-  private func normalizeVisibleModules() {
-    let enabled = QingxuNavigationPolicy.normalizedEnabledTabs(
-      inbox: inboxEnabled,
-      pomodoro: pomodoroEnabled,
-      rss: rssEnabled,
-      remoteAccess: remoteAccessEnabled
-    )
-    inboxEnabled = enabled.contains(.inbox)
-    pomodoroEnabled = enabled.contains(.pomodoro)
-    rssEnabled = enabled.contains(.rss)
-    remoteAccessEnabled = enabled.contains(.remoteAccess)
+    QingxuNavigationPolicy.visibleTabs(order: QingxuModuleOrder.decode(moduleOrder))
   }
 
   @ViewBuilder
@@ -159,7 +119,6 @@ private struct iOSRootView: View {
     case .today: TaskListScreen(scope: .today)
     case .pomodoro: PomodoroScreen()
     case .rss: RSSScreen(store: rssStore)
-    case .remoteAccess: RemoteAccessScreen()
     case .settings: SettingsScreen()
     }
   }
@@ -169,7 +128,7 @@ private struct iOSRootView: View {
     guard let rawValue = defaults?.string(forKey: "pendingWidgetDestination") else { return }
     defaults?.removeObject(forKey: "pendingWidgetDestination")
     switch rawValue {
-    case "pomodoro": selection = pomodoroEnabled ? .pomodoro : .today
+    case "pomodoro": selection = .pomodoro
     default: selection = .today
     }
   }

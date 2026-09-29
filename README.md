@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="apps/flutter/assets/branding/qingxu-icon-master-black.png" width="112" alt="清序应用图标">
+  <img src="apps/flutter/assets/branding/qingxu-icon-master-black.png" width="112" alt="序舱应用图标">
 </p>
 
-<h1 align="center">清序 Qingxu</h1>
+<h1 align="center">序舱 Xucang</h1>
 
 <p align="center">本地优先、简体中文、支持自托管同步的个人任务与专注应用。</p>
 
@@ -14,9 +14,9 @@
   <a href="docs/DESIGN.md">设计规范</a>
 </p>
 
-## 为什么是清序
+## 为什么是序舱
 
-清序把任务、专注计时、RSS 阅读与个人服务器工具放在同一个克制的工作流里。数据先保存到设备，本地操作不依赖网络；需要跨设备时，可以把轻量同步服务部署到自己的服务器，不需要注册第三方账号。
+序舱把任务、专注计时、RSS 阅读与 AI 辅助放在同一个克制的工作流里。数据先保存到设备，本地操作不依赖网络；需要跨设备时，可以把轻量同步服务部署到自己的服务器，不需要注册第三方账号。
 
 ## 主要功能
 
@@ -27,7 +27,6 @@
 - **Apple 系统能力**：iOS 锁屏实时活动、灵动岛、主屏幕小组件和锁屏小组件；macOS 使用原生 SwiftUI。
 - **原生 RSS 阅读**：来源分类、未读、收藏、搜索、OPML、离线缓存、阅读进度、正文阅读、翻译和 AI 摘要。
 - **AI 助手**：RSS 摘要、原文翻译和轻量任务规划；可使用自托管代理或直接配置 OpenAI、DeepSeek 等兼容接口。
-- **个人服务器**：可选的独立服务器入口，共用一份连接配置查看状态、使用 SSH 终端和浏览 SFTP 文件；支持密码与 OpenSSH Ed25519/RSA 私钥，凭据只保存在系统钥匙串。
 - **离线优先**：编辑先原子写入本机，服务器暂时不可用不会阻塞使用。
 
 ## 平台与下载
@@ -145,8 +144,6 @@ open QingxuApple.xcodeproj
 
 选择 `QingxuiOS` 或 `QingxumacOS` scheme。真机运行需要在本地配置自己的签名身份和描述文件。
 
-服务器终端使用 [SwiftTerm](https://github.com/migueldeicaza/SwiftTerm) 渲染，SSH、TTY 与 SFTP 使用 [Citadel](https://github.com/orlandos-nl/Citadel)。首次连接会记录服务器主机密钥指纹，以后指纹变化将拒绝连接。清序没有复制 VVTerm 的完整应用壳、会员、商店、语音或社区模块；它只借鉴了“同一服务器配置下连通状态、终端和文件”的产品组织方式。
-
 ### 同步服务
 
 ```bash
@@ -174,4 +171,4 @@ go vet ./...
 
 ## 许可
 
-清序以 [GNU GPL v3](LICENSE) 发布。实际使用的第三方组件仍分别遵循各自许可，详见 [第三方软件声明](THIRD_PARTY_NOTICES.md)。
+序舱以 [GNU GPL v3](LICENSE) 发布。实际使用的第三方组件仍分别遵循各自许可，详见 [第三方软件声明](THIRD_PARTY_NOTICES.md)。

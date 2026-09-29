@@ -1,6 +1,6 @@
-# 清序系统架构
+# 序舱系统架构
 
-清序采用“两套客户端实现、一份同步协议、一个轻量服务端”的结构。Apple 平台使用 SwiftUI，Android 与 Windows 使用 Flutter；所有客户端共享 Go 服务端的 JSON 协议。
+序舱采用“两套客户端实现、一份同步协议、一个轻量服务端”的结构。Apple 平台使用 SwiftUI，Android 与 Windows 使用 Flutter；所有客户端共享 Go 服务端的 JSON 协议。
 
 返回：[文档首页](/) · [产品范围](/PRODUCT) · [设计规范](/DESIGN) · [同步协议](/SYNC_PROTOCOL)
 
@@ -46,8 +46,8 @@ flowchart LR
 
 iOS 主应用与 `QingxuWidgets` 扩展通过 `group.one.darker.qingxu` App Group 共享最小快照：
 
-- WidgetKit 读取今日任务、专注状态和私人服务器的非敏感连接快照。
-- ActivityKit 显示番茄钟与终端会话的锁屏实时活动和灵动岛；终端会话仅显示服务器名称、状态与持续时间。
+- WidgetKit 读取今日任务与专注状态快照。
+- ActivityKit 显示番茄钟的锁屏实时活动和灵动岛。
 - 运行中的倒计时保存绝对结束时间，不依赖应用在后台每秒执行。
 - 扩展不直接访问同步网络；状态由主应用写入共享容器。
 

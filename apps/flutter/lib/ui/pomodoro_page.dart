@@ -169,7 +169,7 @@ class _PomodoroPageState extends State<PomodoroPage> {
                                     Text(
                                       isRunning
                                           ? '离开应用也不会中断，当前进度会继续同步。'
-                                          : '选择时长后开始，清序会记住这台设备的偏好。',
+                                          : '选择时长后开始，序舱会记住这台设备的偏好。',
                                       style: TextStyle(
                                         color: palette.muted,
                                         fontSize: 12.5,

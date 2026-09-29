@@ -12,8 +12,8 @@ RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/qingxu-
     && chmod 0700 /out/data
 
 FROM scratch
-LABEL org.opencontainers.image.title="Qingxu Sync" \
-      org.opencontainers.image.description="Single-user self-hosted sync service for Qingxu" \
+LABEL org.opencontainers.image.title="Xucang Sync" \
+      org.opencontainers.image.description="Single-user self-hosted sync service for Xucang" \
       org.opencontainers.image.source="https://github.com/FelixZoe/qingxu" \
       io.qingxu.component="sync"
 COPY --from=build --chown=65532:65532 /out/data /data

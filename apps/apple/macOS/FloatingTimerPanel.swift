@@ -160,7 +160,7 @@ private struct MacFloatingTimerPanel: View {
           .frame(width: 24, height: 24)
       }
       .buttonStyle(.plain)
-      .help("打开清序")
+      .help("打开序舱")
     }
   }
 

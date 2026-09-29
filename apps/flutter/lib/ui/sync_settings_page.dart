@@ -195,7 +195,7 @@ class _SyncSettingsPageState extends State<SyncSettingsPage> {
   Widget _buildAppearance(BuildContext context) => _settingsPage(
     context,
     title: '外观',
-    subtitle: '选择清序在这台设备上的显示方式',
+    subtitle: '选择序舱在这台设备上的显示方式',
     showBack: true,
     children: [
       const _SectionLabel(title: '主题'),
@@ -219,7 +219,7 @@ class _SyncSettingsPageState extends State<SyncSettingsPage> {
   Widget _buildSync(BuildContext context) => _settingsPage(
     context,
     title: '自托管同步',
-    subtitle: '连接你自己的清序同步服务器',
+    subtitle: '连接你自己的序舱同步服务器',
     showBack: true,
     trailing: FilledButton(
       onPressed: _saving || !widget.controller.syncSupported ? null : _save,

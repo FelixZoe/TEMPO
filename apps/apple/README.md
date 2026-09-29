@@ -1,6 +1,6 @@
-# 清序 Apple 原生客户端
+# 序舱 Apple 原生客户端
 
-`apps/apple` 包含清序的 SwiftUI iOS 与 macOS 客户端。两端复用任务、番茄钟、RSS、本地存储和同步实现，不包含 Flutter 引擎。
+`apps/apple` 包含序舱的 SwiftUI iOS 与 macOS 客户端。两端复用任务、番茄钟、RSS、本地存储和同步实现，不包含 Flutter 引擎。
 
 返回：[项目首页](../../README.md) · [设计规范](../../docs/DESIGN.md) · [系统架构](../../docs/ARCHITECTURE.md) · [iOS 签名](../../docs/IOS_PRIVATE_SIGNING.md)
 
@@ -79,26 +79,16 @@ App Group：group.one.darker.qingxu
 
 `QingxuiOS` 依赖并嵌入 `QingxuWidgets`。真机签名时必须为两个 target 选择同一 Team，并让两份描述文件都授权 App Group。详细检查与私密云端构建见 [iOS 签名文档](../../docs/IOS_PRIVATE_SIGNING.md)。
 
-## 个人服务器入口
-
-“服务器”是可选功能模块，共用同一个连接配置提供三块原生界面：状态、终端与文件。状态通过 SSH 执行只读系统命令；终端使用 SwiftTerm；文件列表与文本预览使用 Citadel SFTP。
-
-- 连接密码只写入 Apple Keychain，不进入普通配置、同步文档或 Git 仓库。
-- 首次连接采用 TOFU（Trust On First Use）记录 SHA-256 主机指纹，后续指纹变化会拒绝连接。
-- 服务器配置不会默认写入项目中的任何域名、IP、用户名或密钥。
-- 当前先支持密码认证；私钥认证需要以 Keychain/安全文件导入方式实现，不能把私钥放入源码或普通 `UserDefaults`。
-- iOS 与 macOS 小组件只读取服务器名称、在线状态和会话开始时间；iOS 进入终端后启动锁屏实时活动与灵动岛，离开服务器页面即结束，不展示命令、输出、用户名或凭据。
-
-工程通过 Swift Package Manager 固定依赖版本。最低系统版本为 iOS 17 与 macOS 15，GitHub Actions 使用最新稳定版 Xcode 构建。
+工程通过 Swift Package Manager 固定依赖版本。最低系统版本以 `project.yml` 为准（当前 iOS 16.2、macOS 13.0），GitHub Actions 使用固定的稳定 Xcode 环境构建。
 
 ## 数据位置
 
 - iOS：沿用 `Documents/Qingxu` 数据目录，兼容早期客户端数据。
 - macOS：`Application Support/Qingxu`。
 - 同步密钥与客户端直连 AI Key：Apple Keychain。
-- Widget/Live Activity 快照：App Group 共享容器；阶段标识确保专注与休息切换时不复用旧倒计时，服务器组件只保存非敏感连接状态。
+- Widget/Live Activity 快照：App Group 共享容器；阶段标识确保专注与休息切换时不复用旧倒计时。
 
-主题、模块开关等设备偏好不参与同步。任务、番茄钟和 RSS 阅读状态使用与 Flutter 客户端相同的协议。
+导航顺序等设备偏好不参与同步。任务、番茄钟和 RSS 阅读状态使用与 Flutter 客户端相同的协议。
 
 ## 发布
 

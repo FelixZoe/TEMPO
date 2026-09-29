@@ -1,8 +1,8 @@
-# 清序同步服务部署
+# 序舱同步服务部署
 
-本文用于在自己的 Linux 服务器上部署清序同步与可选 AI 代理。客户端安装包从 [GitHub Releases](https://github.com/FelixZoe/qingxu/releases/latest) 获取；`todo.darker.one` 是开发与部署文档站，不是同步后台所必需。
+本文用于在自己的 Linux 服务器上部署序舱同步与可选 AI 代理。客户端安装包从 [GitHub Releases](https://github.com/FelixZoe/qingxu/releases/latest) 获取；`todo.darker.one` 是开发与部署文档站，不是同步后台所必需。
 
-返回：[文档首页](/) · [系统架构](/ARCHITECTURE) · [同步协议](/SYNC_PROTOCOL)
+返回：[文档首页](/) · [完整配置指南](/CONFIGURATION) · [系统架构](/ARCHITECTURE) · [同步协议](/SYNC_PROTOCOL)
 
 ## 部署结果
 
@@ -147,6 +147,8 @@ curl -i https://你的域名/v1/ping
 
 若要使用服务器 AI，在“设置 → AI 助手”中选择“自托管服务器”，应用会复用当前同步地址和同步密钥；无需把模型 API Key 填到客户端。
 
+天气、每日一句、RSS 与 AI 直连的字段说明见[完整配置指南](/CONFIGURATION)。
+
 ## 同步行为
 
 - 本地修改先落盘，再异步上传。
@@ -170,7 +172,7 @@ docker compose ps
 curl -fsS http://127.0.0.1:8080/health
 ```
 
-清理清序镜像产生的旧悬空层：
+清理序舱镜像产生的旧悬空层：
 
 ```bash
 docker image prune --filter label=org.opencontainers.image.title=qingxu-sync

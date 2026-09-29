@@ -46,7 +46,7 @@ class TaskController extends ChangeNotifier {
 
   static const projects = <ProjectItem>[
     ProjectItem('personal', '个人', 0xFF78A4D6),
-    ProjectItem('qingxu', '清序第一版', 0xFFD79468),
+    ProjectItem('qingxu', '序舱第一版', 0xFFD79468),
   ];
 
   String activeView = 'today';

@@ -1,74 +1,30 @@
 import SwiftUI
 
-enum AppearanceMode: String, CaseIterable, Identifiable {
-  case system
-  case light
-  case dark
-
-  var id: String { rawValue }
-
-  var title: String {
-    switch self {
-    case .system: "跟随系统"
-    case .light: "明亮"
-    case .dark: "深色"
-    }
-  }
-
-  var colorScheme: ColorScheme? {
-    switch self {
-    case .system: nil
-    case .light: .light
-    case .dark: .dark
-    }
-  }
-}
-
 enum QingxuPalette {
-  /// 参考 FlowTime 的系统层级，收敛为一套低饱和冷白、深墨和单一蓝色强调。
-  static let background = Color.adaptive(
-    lightHex: 0xFAFAFA,
-    darkHex: 0x121214
-  )
-  static let secondaryBackground = Color.adaptive(
-    lightHex: 0xF2F2F7,
-    darkHex: 0x18181B
-  )
-  static let surface = Color.adaptive(
-    lightHex: 0xFFFFFF,
-    darkHex: 0x1E1E22
-  )
-  static let elevatedSurface = Color.adaptive(
-    lightHex: 0xF7F7F9,
-    darkHex: 0x2A2A2E
-  )
-  static let accent = Color.adaptive(
-    lightHex: 0x3478F6,
-    darkHex: 0x6D9EFF
-  )
-  static let onAccent = Color.adaptive(
-    lightHex: 0xFFFFFF,
-    darkHex: 0x0B1324
-  )
+  #if os(iOS)
+  static let background = Color(uiColor: .systemBackground)
+  static let secondaryBackground = Color(uiColor: .secondarySystemBackground)
+  static let surface = Color(uiColor: .secondarySystemBackground)
+  static let elevatedSurface = Color(uiColor: .tertiarySystemBackground)
+  static let ink = Color(uiColor: .label)
+  static let quiet = Color(uiColor: .secondaryLabel)
+  static let faint = Color(uiColor: .tertiaryLabel)
+  static let separator = Color(uiColor: .separator)
+  #else
+  static let background = Color(nsColor: .windowBackgroundColor)
+  static let secondaryBackground = Color(nsColor: .underPageBackgroundColor)
+  static let surface = Color(nsColor: .controlBackgroundColor)
+  static let elevatedSurface = Color(nsColor: .unemphasizedSelectedContentBackgroundColor)
+  static let ink = Color(nsColor: .labelColor)
+  static let quiet = Color(nsColor: .secondaryLabelColor)
+  static let faint = Color(nsColor: .tertiaryLabelColor)
+  static let separator = Color(nsColor: .separatorColor)
+  #endif
+  static let accent = Color.accentColor
+  static let onAccent = Color.white
   static let selected = Color.adaptive(
     lightHex: 0xE9EFFD,
     darkHex: 0x26324B
-  )
-  static let ink = Color.adaptive(
-    lightHex: 0x1C1C1E,
-    darkHex: 0xF0F0F5
-  )
-  static let quiet = Color.adaptive(
-    lightHex: 0x73737A,
-    darkHex: 0x98989D
-  )
-  static let faint = Color.adaptive(
-    lightHex: 0xA8A8AE,
-    darkHex: 0x6C6C72
-  )
-  static let separator = Color.adaptive(
-    lightHex: 0xE5E5EA,
-    darkHex: 0x3A3A3E
   )
   static let success = Color.adaptive(
     lightHex: 0x2E7D64,
@@ -101,12 +57,12 @@ enum QingxuPalette {
 }
 
 enum QingxuType {
-  static let screenTitle = Font.system(size: 34, weight: .bold)
-  static let sectionTitle = Font.system(size: 20, weight: .semibold)
-  static let rowTitle = Font.system(size: 17, weight: .semibold)
-  static let rowTitleCompleted = Font.system(size: 17, weight: .regular)
-  static let body = Font.system(size: 16, weight: .regular)
-  static let metadata = Font.system(size: 13, weight: .regular)
+  static let screenTitle = Font.largeTitle.weight(.bold)
+  static let sectionTitle = Font.title3.weight(.semibold)
+  static let rowTitle = Font.body.weight(.semibold)
+  static let rowTitleCompleted = Font.body
+  static let body = Font.body
+  static let metadata = Font.caption
 }
 
 extension Color {

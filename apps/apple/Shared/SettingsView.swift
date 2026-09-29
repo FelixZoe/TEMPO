@@ -137,35 +137,28 @@ struct SettingsScreen: View {
   #if os(iOS)
   @EnvironmentObject private var updateChecker: AppUpdateChecker
   #endif
-  @AppStorage("qingxu.appearance") private var appearance = AppearanceMode.system.rawValue
-
   var body: some View {
     NavigationStack {
-      ScrollView {
-        LazyVStack(spacing: 22) {
-          SettingsGroup(title: "效率与界面") {
+      List {
+        Section("工作台") {
             NavigationLink { FeatureModulesSettingsView().qingxuSettingsDestination() } label: {
               SettingsDestinationRow(
-                symbol: "square.grid.2x2.fill",
-                title: "功能模块",
-                detail: "管理底部导航",
+                symbol: "rectangle.3.group",
+                title: "导航顺序",
+                detail: "调整五个固定入口",
                 tint: QingxuPalette.warning
               )
             }
-            SettingsDivider()
-            AppearanceInlineRow(appearance: $appearance)
             #if os(iOS)
-            SettingsDivider()
             NavigationLink { NotificationAndFeedbackSettingsView().qingxuSettingsDestination() } label: {
               SettingsDestinationRow(
-                symbol: "bell.badge.fill",
+                symbol: "bell.badge",
                 title: "声音、提醒与触感",
                 detail: "每日提醒与完成反馈",
                 tint: QingxuPalette.danger
               )
             }
             #endif
-            SettingsDivider()
             NavigationLink { CalendarPreferencesView().qingxuSettingsDestination() } label: {
               SettingsDestinationRow(
                 symbol: "calendar",
@@ -174,27 +167,25 @@ struct SettingsScreen: View {
                 tint: QingxuPalette.success
               )
             }
-          }
+        }
 
-          SettingsGroup(title: "数据与系统") {
+        Section("服务") {
             NavigationLink { SyncSettingsView().environmentObject(store).qingxuSettingsDestination() } label: {
               SettingsDestinationRow(
-                symbol: "arrow.clockwise",
+                symbol: "arrow.triangle.2.circlepath",
                 title: "自托管同步",
                 detail: store.syncSettings.isConfigured ? store.syncPhase.title : "未配置",
                 tint: QingxuPalette.success
               )
             }
-            SettingsDivider()
             NavigationLink { AmbientSettingsView().qingxuSettingsDestination() } label: {
               SettingsDestinationRow(
-                symbol: "cloud.sun.fill",
+                symbol: "cloud.sun",
                 title: "天气与每日一句",
                 detail: ambientDetail,
                 tint: QingxuPalette.accent
               )
             }
-            SettingsDivider()
             NavigationLink { AISettingsView().environmentObject(store).qingxuSettingsDestination() } label: {
               SettingsDestinationRow(
                 symbol: "sparkles",
@@ -204,19 +195,18 @@ struct SettingsScreen: View {
               )
             }
             #if os(iOS)
-            SettingsDivider()
             NavigationLink { AppUpdateSettingsView().environmentObject(updateChecker).qingxuSettingsDestination() } label: {
               SettingsDestinationRow(
-                symbol: "arrow.down.circle.fill",
+                symbol: "arrow.down.circle",
                 title: "软件更新",
                 detail: updateDetail,
                 tint: QingxuPalette.warning
               )
             }
             #endif
-          }
+        }
 
-          SettingsGroup(title: "关于") {
+        Section("关于") {
             Link(destination: URL(string: "https://github.com/FelixZoe/qingxu")!) {
               SettingsDestinationRow(
                 symbol: "chevron.left.forwardslash.chevron.right",
@@ -225,14 +215,15 @@ struct SettingsScreen: View {
                 tint: QingxuPalette.ink
               )
             }
-          }
         }
-        .padding(.horizontal, 18)
-        .padding(.top, 8)
-        .padding(.bottom, 120)
       }
       .qingxuScreen()
       .navigationTitle("设置")
+      #if os(iOS)
+      .listStyle(.insetGrouped)
+      #else
+      .listStyle(.inset)
+      #endif
       #if os(iOS)
       .task { await updateChecker.check() }
       #endif
@@ -279,7 +270,7 @@ private struct AppUpdateSettingsView: View {
         VStack(alignment: .leading, spacing: 16) {
           HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 5) {
-              Text("清序").font(.title2.weight(.semibold))
+              Text("序舱").font(.title2.weight(.semibold))
               Text("v\(updateChecker.currentVersion) · 构建 \(updateChecker.currentBuild)")
                 .font(.subheadline).foregroundStyle(QingxuPalette.quiet)
             }
@@ -424,9 +415,6 @@ private struct SettingsDestinationRow: View {
       }
 
       Spacer(minLength: 8)
-      Image(systemName: "chevron.right")
-        .font(.caption.weight(.semibold))
-        .foregroundStyle(QingxuPalette.faint)
     }
     .padding(.horizontal, 16)
     .frame(minHeight: 68)
@@ -446,47 +434,6 @@ private struct SettingsValueRow: View {
     }
     .padding(.horizontal, 18)
     .frame(minHeight: 54)
-  }
-}
-
-private struct AppearanceInlineRow: View {
-  @Binding var appearance: String
-
-  var body: some View {
-    HStack(spacing: 14) {
-      SettingsRowGlyph(symbol: "circle.lefthalf.filled")
-      Text("外观")
-        .font(.body.weight(.medium))
-        .foregroundStyle(QingxuPalette.ink)
-      Spacer(minLength: 12)
-      Menu {
-        ForEach(AppearanceMode.allCases) { mode in
-          Button {
-            appearance = mode.rawValue
-          } label: {
-            if appearance == mode.rawValue {
-              Label(mode.title, systemImage: "checkmark")
-            } else {
-              Text(mode.title)
-            }
-          }
-        }
-      } label: {
-        HStack(spacing: 5) {
-          Text(selectedAppearanceTitle)
-          Image(systemName: "chevron.up.chevron.down")
-            .font(.caption2.weight(.semibold))
-        }
-        .font(.subheadline.weight(.medium))
-        .foregroundStyle(QingxuPalette.quiet)
-      }
-    }
-    .padding(.horizontal, 16)
-    .frame(minHeight: 68)
-  }
-
-  private var selectedAppearanceTitle: String {
-    AppearanceMode(rawValue: appearance)?.title ?? AppearanceMode.system.title
   }
 }
 
@@ -526,13 +473,8 @@ private struct SettingsRowGlyph: View {
 }
 
 private struct FeatureModulesSettingsView: View {
-  @AppStorage(QingxuPreferenceKey.inboxModule) private var inboxEnabled = false
-  @AppStorage(QingxuPreferenceKey.pomodoroModule) private var pomodoroEnabled = true
-  @AppStorage(QingxuPreferenceKey.rssModule) private var rssEnabled = true
-  @AppStorage(QingxuPreferenceKey.remoteAccessModule) private var remoteAccessEnabled = true
   @AppStorage(QingxuPreferenceKey.moduleOrder) private var moduleOrder = QingxuModuleOrder.defaultValue
   @State private var orderedTabs = AppTab.allCases
-  @State private var pendingEnable: AppTab?
   #if os(iOS)
   @State private var editMode = EditMode.active
   #endif
@@ -547,14 +489,6 @@ private struct FeatureModulesSettingsView: View {
               Text(tab.title).font(.body.weight(.medium))
               Text(moduleDetail(tab)).font(.caption).foregroundStyle(QingxuPalette.quiet)
             }
-            Spacer()
-            if isOptional(tab) {
-              Toggle("", isOn: moduleBinding(for: tab)).labelsHidden().tint(QingxuPalette.accent)
-            } else {
-              Text("固定")
-                .font(.caption.weight(.medium))
-                .foregroundStyle(QingxuPalette.quiet)
-            }
           }
           .padding(.vertical, 5)
         }
@@ -562,40 +496,17 @@ private struct FeatureModulesSettingsView: View {
       } header: {
         Text("按住右侧拖动调整底部导航顺序")
       } footer: {
-        Text("底部导航始终只有 5 个独立入口。今天与设置固定保留；达到上限后启用其他模块，需要替换一个当前入口。")
+        Text("收集箱、今天、番茄钟、RSS 与设置始终作为五个独立入口显示，不会合并到“更多”页面。")
       }
     }
     .qingxuScreen()
-    .navigationTitle("功能模块")
-    .onAppear {
-      reloadOrder()
-      normalizeEnabledModules()
-    }
+    .navigationTitle("导航顺序")
+    .onAppear(perform: reloadOrder)
     .onDisappear(perform: persistOrder)
     #if os(iOS)
     .navigationBarTitleDisplayMode(.inline)
     .environment(\.editMode, $editMode)
     #endif
-    .confirmationDialog(
-      "替换一个导航入口",
-      isPresented: Binding(
-        get: { pendingEnable != nil },
-        set: { if !$0 { pendingEnable = nil } }
-      ),
-      titleVisibility: .visible
-    ) {
-      ForEach(enabledOptionalTabs) { current in
-        Button("用\(pendingEnable?.title ?? "新模块")替换\(current.title)") {
-          guard let pendingEnable else { return }
-          setEnabled(false, for: current)
-          setEnabled(true, for: pendingEnable)
-          self.pendingEnable = nil
-        }
-      }
-      Button("取消", role: .cancel) { pendingEnable = nil }
-    } message: {
-      Text("不会合并页面，也不会生成系统的“更多”页。")
-    }
   }
 
   private func move(from source: IndexSet, to destination: Int) {
@@ -613,68 +524,12 @@ private struct FeatureModulesSettingsView: View {
     }
   }
 
-  private var enabledOptionalTabs: [AppTab] {
-    QingxuNavigationPolicy.optionalTabs.filter(isEnabled)
-  }
-
-  private func isOptional(_ tab: AppTab) -> Bool {
-    !QingxuNavigationPolicy.fixedTabs.contains(tab)
-  }
-
-  private func moduleBinding(for tab: AppTab) -> Binding<Bool> {
-    Binding(
-      get: { isEnabled(tab) },
-      set: { requested in
-        if !requested {
-          setEnabled(false, for: tab)
-        } else if enabledOptionalTabs.count < QingxuNavigationPolicy.maximumEnabledOptionalTabs {
-          setEnabled(true, for: tab)
-        } else {
-          pendingEnable = tab
-        }
-      }
-    )
-  }
-
-  private func isEnabled(_ tab: AppTab) -> Bool {
-    switch tab {
-    case .inbox: inboxEnabled
-    case .pomodoro: pomodoroEnabled
-    case .rss: rssEnabled
-    case .remoteAccess: remoteAccessEnabled
-    case .today, .settings: true
-    }
-  }
-
-  private func setEnabled(_ enabled: Bool, for tab: AppTab) {
-    switch tab {
-    case .inbox: inboxEnabled = enabled
-    case .pomodoro: pomodoroEnabled = enabled
-    case .rss: rssEnabled = enabled
-    case .remoteAccess: remoteAccessEnabled = enabled
-    case .today, .settings: break
-    }
-  }
-
-  private func normalizeEnabledModules() {
-    let normalized = QingxuNavigationPolicy.normalizedEnabledTabs(
-      inbox: inboxEnabled,
-      pomodoro: pomodoroEnabled,
-      rss: rssEnabled,
-      remoteAccess: remoteAccessEnabled
-    )
-    for tab in QingxuNavigationPolicy.optionalTabs {
-      setEnabled(normalized.contains(tab), for: tab)
-    }
-  }
-
   private func moduleDetail(_ tab: AppTab) -> String {
     switch tab {
     case .inbox: "快速收集暂未安排的任务"
     case .today: "日历与当天任务"
     case .pomodoro: "专注计时与统计"
     case .rss: "按来源阅读订阅内容"
-    case .remoteAccess: "查看状态、使用终端和管理文件"
     case .settings: "账户、同步和偏好"
     }
   }
@@ -778,7 +633,7 @@ private struct NotificationAndFeedbackSettingsView: View {
         )
         if dailyReminderEnabled, !enabled {
           dailyReminderEnabled = false
-          reminderMessage = "通知权限未开启，请先在系统设置中允许清序发送通知。"
+          reminderMessage = "通知权限未开启，请先在系统设置中允许序舱发送通知。"
         } else {
           reminderMessage = dailyReminderEnabled ? "每日提醒已保存。" : "每日提醒已关闭。"
         }
@@ -844,7 +699,7 @@ struct SyncSettingsView: View {
       VStack(spacing: 22) {
         VStack(alignment: .leading, spacing: 8) {
           HStack {
-            Label(store.syncSettings.isConfigured ? "已连接个人服务器" : "连接个人服务器", systemImage: "server.rack")
+            Label(store.syncSettings.isConfigured ? "自托管同步已连接" : "配置自托管同步", systemImage: "arrow.triangle.2.circlepath")
               .font(.headline)
             Spacer()
             Circle()
@@ -1059,7 +914,7 @@ private struct AmbientSettingsView: View {
     do {
       try SecureWeatherAPIKey.write(apiKey)
       try QingxuAmbientPreferencesStore.save(preferences)
-      message = "设置已保存，今日首页会自动刷新。"
+      message = "设置已保存，收集箱顶部会自动刷新。"
     } catch {
       message = "保存失败：\(error.localizedDescription)"
     }

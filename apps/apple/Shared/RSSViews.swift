@@ -500,7 +500,7 @@ private struct RSSWelcome: View {
         .foregroundStyle(QingxuPalette.accent)
       Text("建立自己的阅读流")
         .font(.title3.weight(.semibold))
-      Text("添加 RSS、Atom 地址或网站首页，清序会自动寻找订阅源。")
+      Text("添加 RSS、Atom 地址或网站首页，序舱会自动寻找订阅源。")
         .font(.subheadline)
         .foregroundStyle(QingxuPalette.quiet)
         .multilineTextAlignment(.center)

@@ -154,7 +154,7 @@ final class IOSSystemFeaturesBridge {
       } else {
         do {
           _ = try Activity.request(
-            attributes: QingxuPomodoroAttributes(title: "清序专注"),
+            attributes: QingxuPomodoroAttributes(title: "序舱专注"),
             content: content,
             pushType: nil
           )

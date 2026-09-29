@@ -1,6 +1,8 @@
 # Self-hosted sync
 
-This guide deploys Qingxu's personal sync service on a Linux server. `todo.darker.one` hosts documentation only and is not required by the clients.
+After the service is healthy, use the [client configuration guide](/en/CONFIGURATION) for sync, AI, weather and RSS settings.
+
+This guide deploys Xucang's personal sync service on a Linux server. `todo.darker.one` hosts documentation only and is not required by the clients.
 
 ## Requirements
 

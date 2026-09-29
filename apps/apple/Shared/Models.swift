@@ -295,7 +295,7 @@ enum AIConnectionMode: String, Codable, CaseIterable, Identifiable {
 
   var title: String {
     switch self {
-    case .selfHosted: "清序自托管"
+    case .selfHosted: "序舱自托管"
     case .openAI: "OpenAI"
     case .deepSeek: "DeepSeek"
     case .compatible: "自定义服务"
@@ -382,7 +382,6 @@ enum AppTab: String, CaseIterable, Identifiable, Hashable {
   case today
   case pomodoro
   case rss
-  case remoteAccess
   case settings
 
   var id: String { rawValue }
@@ -393,7 +392,6 @@ enum AppTab: String, CaseIterable, Identifiable, Hashable {
     case .today: "今天"
     case .pomodoro: "番茄钟"
     case .rss: "RSS"
-    case .remoteAccess: "服务器"
     case .settings: "设置"
     }
   }
@@ -404,7 +402,6 @@ enum AppTab: String, CaseIterable, Identifiable, Hashable {
     case .today: "calendar"
     case .pomodoro: "timer"
     case .rss: "dot.radiowaves.left.and.right"
-    case .remoteAccess: "terminal"
     case .settings: "gearshape"
     }
   }

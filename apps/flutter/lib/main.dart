@@ -95,7 +95,7 @@ class _QingxuAppState extends State<QingxuApp> {
       TargetPlatform.fuchsia,
     }.contains(defaultTargetPlatform);
     return MaterialApp(
-      title: '清序',
+      title: '序舱',
       debugShowCheckedModeBanner: false,
       locale: const Locale('zh', 'CN'),
       supportedLocales: const [Locale('zh', 'CN')],

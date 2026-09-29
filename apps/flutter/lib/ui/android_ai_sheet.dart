@@ -267,7 +267,7 @@ class _AISettingsSheetState extends State<_AISettingsSheet> {
             children: [
               Text('AI 服务', style: TextStyle(color: palette.ink, fontSize: 24, fontWeight: FontWeight.w800)),
               const SizedBox(height: 7),
-              Text('选择服务，填写自己的密钥，然后测试。模型和提示词由清序内置。', style: TextStyle(color: palette.muted, height: 1.45)),
+              Text('选择服务，填写自己的密钥，然后测试。模型和提示词由序舱内置。', style: TextStyle(color: palette.muted, height: 1.45)),
               const SizedBox(height: 20),
               DropdownButtonFormField<PersonalAIProvider>(
                 initialValue: _provider,
