@@ -139,90 +139,91 @@ struct SettingsScreen: View {
   #endif
   var body: some View {
     NavigationStack {
-      List {
-        Section("工作台") {
+      ScrollView {
+        LazyVStack(spacing: 24) {
+          SettingsHomeGroup(title: "工作台") {
             NavigationLink { FeatureModulesSettingsView().qingxuSettingsDestination() } label: {
-              SettingsDestinationRow(
+              SettingsHomeRow(
                 symbol: "rectangle.3.group",
                 title: "导航顺序",
-                detail: "调整五个固定入口",
-                tint: QingxuPalette.warning
+                value: "五个入口"
               )
             }
+            SettingsDivider()
             #if os(iOS)
             NavigationLink { NotificationAndFeedbackSettingsView().qingxuSettingsDestination() } label: {
-              SettingsDestinationRow(
+              SettingsHomeRow(
                 symbol: "bell.badge",
                 title: "声音、提醒与触感",
-                detail: "每日提醒与完成反馈",
-                tint: QingxuPalette.danger
+                value: ""
               )
             }
+            SettingsDivider()
             #endif
             NavigationLink { CalendarPreferencesView().qingxuSettingsDestination() } label: {
-              SettingsDestinationRow(
+              SettingsHomeRow(
                 symbol: "calendar",
                 title: "日期与日历",
-                detail: "周起始日与显示内容",
-                tint: QingxuPalette.success
+                value: ""
               )
             }
-        }
+          }
 
-        Section("服务") {
+          SettingsHomeGroup(title: "服务") {
             NavigationLink { SyncSettingsView().environmentObject(store).qingxuSettingsDestination() } label: {
-              SettingsDestinationRow(
+              SettingsHomeRow(
                 symbol: "arrow.triangle.2.circlepath",
                 title: "自托管同步",
-                detail: store.syncSettings.isConfigured ? store.syncPhase.title : "未配置",
-                tint: QingxuPalette.success
+                value: store.syncSettings.isConfigured ? store.syncPhase.title : "未配置"
               )
             }
+            SettingsDivider()
             NavigationLink { AmbientSettingsView().qingxuSettingsDestination() } label: {
-              SettingsDestinationRow(
+              SettingsHomeRow(
                 symbol: "cloud.sun",
                 title: "天气与每日一句",
-                detail: ambientDetail,
-                tint: QingxuPalette.accent
+                value: ambientDetail
               )
             }
+            SettingsDivider()
             NavigationLink { AISettingsView().environmentObject(store).qingxuSettingsDestination() } label: {
-              SettingsDestinationRow(
+              SettingsHomeRow(
                 symbol: "sparkles",
                 title: "AI 助手",
-                detail: aiDetail,
-                tint: QingxuPalette.ink
+                value: aiDetail
               )
             }
             #if os(iOS)
+            SettingsDivider()
             NavigationLink { AppUpdateSettingsView().environmentObject(updateChecker).qingxuSettingsDestination() } label: {
-              SettingsDestinationRow(
+              SettingsHomeRow(
                 symbol: "arrow.down.circle",
                 title: "软件更新",
-                detail: updateDetail,
-                tint: QingxuPalette.warning
+                value: updateDetail
               )
             }
             #endif
-        }
+          }
 
-        Section("关于") {
+          SettingsHomeGroup(title: "关于") {
             Link(destination: URL(string: "https://github.com/FelixZoe/TEMPO")!) {
-              SettingsDestinationRow(
+              SettingsHomeRow(
                 symbol: "chevron.left.forwardslash.chevron.right",
                 title: "项目与下载",
-                detail: "GitHub",
-                tint: QingxuPalette.ink
+                value: "GitHub",
+                accessorySymbol: "arrow.up.right"
               )
             }
+          }
         }
+        .padding(.horizontal, 18)
+        .padding(.top, 14)
+        .padding(.bottom, 108)
       }
       .qingxuScreen()
       .navigationTitle("设置")
       #if os(iOS)
-      .listStyle(.insetGrouped)
-      #else
-      .listStyle(.inset)
+      .navigationBarTitleDisplayMode(.inline)
       #endif
       #if os(iOS)
       .task { await updateChecker.check() }
@@ -256,6 +257,74 @@ struct SettingsScreen: View {
     let preferences = QingxuAmbientPreferencesStore.load()
     if preferences.weatherConfigured { return preferences.cityName.isEmpty ? "已配置" : preferences.cityName }
     return preferences.quoteEnabled ? "每日一句已开启" : "未配置"
+  }
+}
+
+private struct SettingsHomeGroup<Content: View>: View {
+  let title: String
+  let content: Content
+
+  init(title: String, @ViewBuilder content: () -> Content) {
+    self.title = title
+    self.content = content()
+  }
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 10) {
+      Text(title)
+        .font(.caption.weight(.semibold))
+        .foregroundStyle(QingxuPalette.quiet)
+        .padding(.leading, 10)
+
+      VStack(spacing: 0) { content }
+        .background(QingxuPalette.surface, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .overlay {
+          RoundedRectangle(cornerRadius: 24, style: .continuous)
+            .stroke(QingxuPalette.separator.opacity(0.34), lineWidth: 0.6)
+        }
+    }
+  }
+}
+
+private struct SettingsHomeRow: View {
+  let symbol: String
+  let title: String
+  let value: String
+  var accessorySymbol = "chevron.right"
+
+  var body: some View {
+    HStack(spacing: 14) {
+      Image(systemName: symbol)
+        .font(.system(size: 17, weight: .medium))
+        .foregroundStyle(QingxuPalette.ink)
+        .frame(width: 36, height: 36)
+        .background(QingxuPalette.elevatedSurface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .overlay {
+          RoundedRectangle(cornerRadius: 10, style: .continuous)
+            .stroke(QingxuPalette.separator.opacity(0.4), lineWidth: 0.5)
+        }
+
+      Text(title)
+        .font(.body.weight(.medium))
+        .foregroundStyle(QingxuPalette.ink)
+        .lineLimit(1)
+
+      Spacer(minLength: 10)
+
+      if !value.isEmpty {
+        Text(value)
+          .font(.subheadline)
+          .foregroundStyle(QingxuPalette.quiet)
+          .lineLimit(1)
+      }
+
+      Image(systemName: accessorySymbol)
+        .font(.caption.weight(.semibold))
+        .foregroundStyle(QingxuPalette.faint)
+    }
+    .padding(.horizontal, 16)
+    .frame(minHeight: 66)
+    .contentShape(Rectangle())
   }
 }
 

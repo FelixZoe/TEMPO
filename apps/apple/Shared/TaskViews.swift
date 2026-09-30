@@ -206,14 +206,13 @@ struct TaskListScreen: View {
   private var standardTaskList: some View {
     List {
       if scope == .inbox,
-         ambientStore.quote != nil || ambientStore.weather != nil || ambientStore.isLoading {
-        InboxAmbientHeader(
+         ambientStore.weather != nil || ambientStore.isLoading {
+        InboxWeatherLine(
           weather: ambientStore.weather,
-          quote: ambientStore.quote,
           isLoading: ambientStore.isLoading,
           refresh: { Task { await ambientStore.load(force: true) } }
         )
-        .listRowInsets(.init(top: 8, leading: 20, bottom: 12, trailing: 20))
+        .listRowInsets(.init(top: 4, leading: 22, bottom: 10, trailing: 22))
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
       }
@@ -223,7 +222,22 @@ struct TaskListScreen: View {
       if tasks.isEmpty {
         defaultEmptyState
           .frame(maxWidth: .infinity)
-          .padding(.top, 120)
+          .padding(.top, scope == .inbox ? 76 : 120)
+          .listRowBackground(Color.clear)
+          .listRowSeparator(.hidden)
+      }
+
+      if scope == .inbox, let quote = ambientStore.quote {
+        InboxQuoteLine(
+          quote: quote,
+          refresh: { Task { await ambientStore.load(force: true) } }
+        )
+          .listRowInsets(.init(
+            top: tasks.isEmpty ? 52 : 30,
+            leading: 30,
+            bottom: 16,
+            trailing: 30
+          ))
           .listRowBackground(Color.clear)
           .listRowSeparator(.hidden)
       }
@@ -691,71 +705,41 @@ private struct TaskRow: View {
   }
 }
 
-private struct InboxAmbientHeader: View {
+private struct InboxWeatherLine: View {
   let weather: QingxuWeatherSnapshot?
-  let quote: QingxuQuoteSnapshot?
   let isLoading: Bool
   let refresh: () -> Void
 
   var body: some View {
     Button(action: refresh) {
-      VStack(alignment: .leading, spacing: 12) {
+      HStack(spacing: 10) {
         if let weather {
-          HStack(alignment: .firstTextBaseline, spacing: 10) {
-            Image(systemName: weatherSymbol(weather.icon, text: weather.text))
-              .font(.system(size: 18, weight: .medium))
-            Text("\(weather.cityName) · \(weather.text)")
-              .font(.subheadline.weight(.semibold))
-            Spacer(minLength: 12)
-            Text("\(weather.temperature)°")
-              .font(.system(size: 25, weight: .medium, design: .rounded).monospacedDigit())
-          }
-          .foregroundStyle(QingxuPalette.ink)
-        }
-
-        if let quote {
-          VStack(alignment: .leading, spacing: 4) {
-            Text(quote.text)
-              .font(.subheadline)
-              .foregroundStyle(QingxuPalette.ink.opacity(0.86))
-              .lineLimit(2)
-              .fixedSize(horizontal: false, vertical: true)
-            Text("— \(quote.source)")
-              .font(.caption2)
-              .foregroundStyle(QingxuPalette.quiet)
-              .contentTransition(.opacity)
-          }
+          Image(systemName: weatherSymbol(weather.icon, text: weather.text))
+            .font(.system(size: 17, weight: .medium))
+          Text("\(weather.temperature)°")
+            .font(.system(.title3, design: .rounded, weight: .semibold).monospacedDigit())
+          Text("\(weather.cityName) · \(weather.text)")
+            .font(.subheadline)
+            .foregroundStyle(QingxuPalette.quiet)
+            .lineLimit(1)
+          Spacer(minLength: 8)
+          Image(systemName: "arrow.clockwise")
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(QingxuPalette.faint)
         } else if isLoading {
-          HStack(spacing: 9) {
-            ProgressView().controlSize(.small)
-            Text("正在准备天气与今日一言")
-              .font(.subheadline)
-              .foregroundStyle(QingxuPalette.quiet)
-          }
-        }
-
-        if weather != nil || quote != nil {
-          HStack(spacing: 5) {
-            Circle()
-              .fill(QingxuPalette.accent)
-              .frame(width: 5, height: 5)
-            Text("轻点刷新")
-              .font(.caption2)
-              .foregroundStyle(QingxuPalette.quiet)
-          }
+          ProgressView().controlSize(.small)
+          Text("正在获取天气")
+            .font(.subheadline)
+            .foregroundStyle(QingxuPalette.quiet)
+          Spacer(minLength: 8)
         }
       }
-      .padding(.horizontal, 16)
-      .padding(.vertical, 15)
-      .frame(maxWidth: .infinity, minHeight: 74, alignment: .leading)
-      .background(QingxuPalette.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-      .overlay {
-        RoundedRectangle(cornerRadius: 22, style: .continuous)
-          .stroke(QingxuPalette.separator.opacity(0.72), lineWidth: 0.6)
-      }
+      .foregroundStyle(QingxuPalette.ink)
+      .frame(maxWidth: .infinity, minHeight: 36, alignment: .leading)
+      .contentShape(Rectangle())
     }
     .buttonStyle(.plain)
-    .accessibilityLabel("刷新天气和每日一句")
+    .accessibilityLabel("刷新天气")
   }
 
   private func weatherSymbol(_ icon: String, text: String) -> String {
@@ -767,6 +751,34 @@ private struct InboxAmbientHeader: View {
     if text.contains("云") { return "cloud.sun.fill" }
     if ["150", "151", "152", "153"].contains(icon) { return "moon.stars.fill" }
     return "sun.max.fill"
+  }
+}
+
+private struct InboxQuoteLine: View {
+  let quote: QingxuQuoteSnapshot
+  let refresh: () -> Void
+
+  var body: some View {
+    Button(action: refresh) {
+      VStack(alignment: .leading, spacing: 8) {
+        Text("今日一句")
+          .font(.caption.weight(.semibold))
+          .foregroundStyle(QingxuPalette.faint)
+        Text(quote.text)
+          .font(.system(.body, design: .serif, weight: .regular))
+          .foregroundStyle(QingxuPalette.ink.opacity(0.82))
+          .lineSpacing(4)
+          .fixedSize(horizontal: false, vertical: true)
+        Text(quote.source)
+          .font(.caption)
+          .foregroundStyle(QingxuPalette.quiet)
+      }
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .contentShape(Rectangle())
+    }
+    .buttonStyle(.plain)
+    .accessibilityElement(children: .combine)
+    .accessibilityHint("轻点刷新每日一句")
   }
 }
 

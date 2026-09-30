@@ -51,7 +51,9 @@ private struct iOSRootView: View {
       TabView(selection: $selection) {
         ForEach(visibleTabs) { tab in
           tabContent(tab)
-            .tabItem { Label(tab.title, systemImage: tab.symbol) }
+            .tabItem {
+              TempoTabLabel(tab: tab, isSelected: selection == tab)
+            }
             .tag(tab)
         }
       }
@@ -68,7 +70,9 @@ private struct iOSRootView: View {
     }
     .onChange(of: selection) { _ in
       guard !showingLaunchExperience else { return }
-      UISelectionFeedbackGenerator().selectionChanged()
+      let feedback = UIImpactFeedbackGenerator(style: .soft)
+      feedback.prepare()
+      feedback.impactOccurred(intensity: 0.78)
     }
     .onChange(of: scenePhase) { phase in
       if phase == .active {
@@ -145,5 +149,26 @@ private struct iOSRootView: View {
     let notes = release.body.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !notes.isEmpty else { return "新版本已经发布，可前往 GitHub 下载 IPA。" }
     return String(notes.prefix(240))
+  }
+}
+
+private struct TempoTabLabel: View {
+  let tab: AppTab
+  let isSelected: Bool
+
+  var body: some View {
+    Label {
+      Text(tab.title)
+        .fontWeight(isSelected ? .semibold : .regular)
+    } icon: {
+      Image(systemName: tab.symbol)
+        .symbolVariant(isSelected ? .fill : .none)
+        .fontWeight(isSelected ? .semibold : .regular)
+        .scaleEffect(isSelected ? 1.14 : 1)
+        .offset(y: isSelected ? -1 : 0)
+        .symbolEffect(.bounce, value: isSelected)
+    }
+    .contentTransition(.symbolEffect(.replace))
+    .animation(.snappy(duration: 0.28, extraBounce: 0.08), value: isSelected)
   }
 }
