@@ -1,6 +1,6 @@
 import { defineConfig } from 'vitepress'
 
-const repository = 'https://github.com/FelixZoe/qingxu'
+const repository = 'https://github.com/FelixZoe/TEMPO'
 const downloads = `${repository}/releases/latest`
 
 const sharedTheme = {

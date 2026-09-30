@@ -38,7 +38,9 @@ jobs:
           if-no-files-found: error
 
   deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: >-
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -75,3 +77,19 @@ jobs:
           ssh "${ssh_opts[@]}" "$target" "mkdir -p '$release'"
           tar -C site -czf - . | ssh "${ssh_opts[@]}" "$target" "tar -xzf - -C '$release'"
           ssh "${ssh_opts[@]}" "$target" "cd '$deploy_root' && ln -sfn 'releases/$release_name' current-next && mv -Tf current-next current"
+          local_sha="$(sha256sum site/index.html | awk '{print $1}')"
+          remote_sha="$(ssh "${ssh_opts[@]}" "$target" "sha256sum '$deploy_root/current/index.html' | awk '{print \$1}'")"
+          test "$local_sha" = "$remote_sha"
+      - name: Verify public documentation
+        run: |
+          set -euo pipefail
+          for attempt in {1..6}; do
+            if curl --fail --silent --show-error \
+              --header 'Cache-Control: no-cache' \
+              "https://todo.darker.one/?revision=${GITHUB_SHA}" | grep -q '<title>TEMPO'; then
+              exit 0
+            fi
+            sleep 5
+          done
+          echo 'The public site did not expose the deployed TEMPO build.' >&2
+          exit 1
