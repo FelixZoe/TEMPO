@@ -149,7 +149,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'TEMPO',
+                                  'Tempo',
                                   style: TextStyle(
                                     fontSize: 19,
                                     fontWeight: FontWeight.w700,
@@ -766,7 +766,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 _SettingRow(
                   icon: Icons.info_outline_rounded,
                   title: '版本',
-                  subtitle: 'TEMPO',
+                  subtitle: 'Tempo',
                   colors: colors,
                   trailing: Text(
                     'v${ServerConfig.appVersion}',
@@ -1765,7 +1765,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     ? 'Android'
                     : Platform.operatingSystem;
                 final subject = Uri.encodeComponent(
-                  '[TEMPO$selectedType] v${ServerConfig.appVersion}',
+                  '[Tempo$selectedType] v${ServerConfig.appVersion}',
                 );
                 final body = Uri.encodeComponent(
                   '$content\n\n---\n设备: $deviceInfo\n版本: v${ServerConfig.appVersion} (Build ${ServerConfig.appBuild})\n类型: $selectedType',
@@ -2651,7 +2651,7 @@ class _PrivacyPolicyPage extends StatelessWidget {
           cacheExtent: 1200,
           children: [
             Text(
-              'TEMPO 隐私政策',
+              'Tempo 隐私政策',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
@@ -2773,7 +2773,7 @@ class _PrivacyPolicyPage extends StatelessWidget {
             const SizedBox(height: 28),
 
             _pText(
-              '欢迎使用TEMPO（以下简称"本应用"）。我们深知个人信息对您的重要性，并会尽全力保护您的隐私安全。请您在使用本应用前仔细阅读本隐私政策。',
+              '欢迎使用Tempo（以下简称"本应用"）。我们深知个人信息对您的重要性，并会尽全力保护您的隐私安全。请您在使用本应用前仔细阅读本隐私政策。',
               colors,
             ),
             const SizedBox(height: 28),
@@ -3189,7 +3189,7 @@ class _PrivacyPolicyPage extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          'TEMPO',
+          'Tempo',
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w600,
@@ -3227,7 +3227,7 @@ class _PrivacyPolicyPage extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          'TEMPO 独立开发者',
+          'Tempo 独立开发者',
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w600,
@@ -3367,7 +3367,7 @@ class _HelpFeedbackPage extends StatelessWidget {
                     colors,
                     () async {
                       final uri = Uri.parse(
-                        'mailto:zhuj3188@gmail.com?subject=${Uri.encodeComponent('[TEMPO反馈] ')}',
+                        'mailto:zhuj3188@gmail.com?subject=${Uri.encodeComponent('[Tempo反馈] ')}',
                       );
                       try {
                         await launchUrl(uri);
@@ -3425,7 +3425,7 @@ class _HelpFeedbackPage extends StatelessWidget {
             _tipCard(
               Icons.trending_up_rounded,
               '习惯养成',
-              '每天固定时间打卡，连续 21 天即可初步养成习惯。TEMPO会自动统计连续天数，帮你保持动力。',
+              '每天固定时间打卡，连续 21 天即可初步养成习惯。Tempo会自动统计连续天数，帮你保持动力。',
               MiuiColors.green,
               colors,
             ),
@@ -3456,11 +3456,11 @@ class _HelpFeedbackPage extends StatelessWidget {
             ),
             _faqItem(
               '番茄钟计时被系统杀后台怎么办？',
-              '请在系统设置中将TEMPO加入电池优化白名单，并开启"允许后台运行"。具体步骤：\n\n'
-                  '  OPPO/realme：设置 → 电池 → 更多电池设置 → 优化电池使用 → 找到TEMPO → 不优化\n'
-                  '  华为/荣耀：设置 → 电池 → 启动管理 → 找到TEMPO → 设为手动管理，开启全部开关\n'
-                  '  小米/红米：设置 → 应用设置 → 应用管理 → 找到TEMPO → 省电策略 → 无限制\n'
-                  '  vivo：设置 → 电池 → 后台高耗电 → 允许TEMPO后台高耗电',
+              '请在系统设置中将Tempo加入电池优化白名单，并开启"允许后台运行"。具体步骤：\n\n'
+                  '  OPPO/realme：设置 → 电池 → 更多电池设置 → 优化电池使用 → 找到Tempo → 不优化\n'
+                  '  华为/荣耀：设置 → 电池 → 启动管理 → 找到Tempo → 设为手动管理，开启全部开关\n'
+                  '  小米/红米：设置 → 应用设置 → 应用管理 → 找到Tempo → 省电策略 → 无限制\n'
+                  '  vivo：设置 → 电池 → 后台高耗电 → 允许Tempo后台高耗电',
               colors,
             ),
             _faqItem(
@@ -3471,7 +3471,7 @@ class _HelpFeedbackPage extends StatelessWidget {
             _faqItem(
               '应用更新失败怎么办？',
               '请按以下步骤排查：\n\n'
-                  '1. 确保设备已允许"安装未知来源应用"权限（设置 → 安全 → 安装未知应用 → 允许TEMPO）\n'
+                  '1. 确保设备已允许"安装未知来源应用"权限（设置 → 安全 → 安装未知应用 → 允许Tempo）\n'
                   '2. 检查存储空间是否充足（至少需要 200MB 可用空间）\n'
                   '3. 增量更新失败时，请连接Wi-Fi后重试，系统会自动重新下载增量包\n'
                   '4. 如仍失败，到 设置 → 服务器 → 检查更新 手动重试\n'
@@ -3491,7 +3491,7 @@ class _HelpFeedbackPage extends StatelessWidget {
             ),
             _faqItem(
               '支持哪些设备和系统版本？',
-              'TEMPO支持 Android 7.0（API 24）及以上系统。推荐使用 Android 10+ 以获得最佳体验。暂不支持 iOS。',
+              'Tempo支持 Android 7.0（API 24）及以上系统。推荐使用 Android 10+ 以获得最佳体验。暂不支持 iOS。',
               colors,
             ),
             _faqItem(
@@ -3544,7 +3544,7 @@ class _HelpFeedbackPage extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'TEMPO',
+                              'Tempo',
                               style: TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.w700,
@@ -3649,7 +3649,7 @@ class _HelpFeedbackPage extends StatelessWidget {
                   _contactRow(
                     Icons.language_outlined,
                     '开发者',
-                    'TEMPO 独立开发',
+                    'Tempo 独立开发',
                     MiuiColors.teal,
                     colors,
                     null,

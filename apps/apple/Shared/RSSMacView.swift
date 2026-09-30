@@ -46,7 +46,7 @@ struct RSSScreen: View {
           ContentUnavailableView(
             "还没有订阅",
             systemImage: "dot.radiowaves.left.and.right",
-            description: Text("请先在移动端添加订阅，TEMPO 会通过自托管服务同步到这里。")
+            description: Text("请先在移动端添加订阅，Tempo 会通过自托管服务同步到这里。")
           )
         } else if visibleArticles.isEmpty {
           ContentUnavailableView.search(text: query)

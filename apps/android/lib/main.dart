@@ -78,7 +78,7 @@ class ProductivityProApp extends StatelessWidget {
       child: Consumer<AppProvider>(
         builder: (context, provider, _) {
           return MaterialApp(
-            title: 'TEMPO',
+            title: 'Tempo',
             debugShowCheckedModeBanner: false,
             themeMode: provider.resolvedThemeMode,
             theme: _applyUiStyle(MiuiTheme.lightTheme, provider),
@@ -260,7 +260,7 @@ class _PrivacyConsentScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               Text(
-                '欢迎使用TEMPO',
+                '欢迎使用Tempo',
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w800,
@@ -460,7 +460,7 @@ class _MiniPrivacyPage extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         children: [
           Text(
-            'TEMPO 隐私政策',
+            'Tempo 隐私政策',
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
@@ -469,7 +469,7 @@ class _MiniPrivacyPage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            '欢迎使用TEMPO（以下简称"本应用"）。我们深知个人信息对您的重要性，并会尽全力保护您的隐私安全。\n\n'
+            '欢迎使用Tempo（以下简称"本应用"）。我们深知个人信息对您的重要性，并会尽全力保护您的隐私安全。\n\n'
             '1. 数据存储\n本应用的所有用户数据默认存储在您的设备本地，不会自动上传至云端。云同步功能需要您主动登录并手动开启。\n\n'
             '2. 信息收集\n本应用不收集任何个人敏感信息，不包含第三方广告 SDK。仅在您主动提交反馈时，可能附带设备型号和应用版本信息。\n\n'
             '3. 网络权限\n本应用需要网络权限用于：账户登录与注册、云端数据同步、应用版本更新检查、云工具功能（去水印、网盘直链等）。\n\n'

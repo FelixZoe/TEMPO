@@ -34,7 +34,7 @@ class _AIAssistantPageState extends State<AIAssistantPage> {
       setState(() => _showApiKeyInput = true);
     } else {
       _addSystemMessage(
-        'AI 助手已连接你的TEMPO数据。试试：\n\n'
+        'AI 助手已连接你的Tempo数据。试试：\n\n'
         '📋 "今天还剩什么没做" — 分析日程\n'
         '💪 "鼓励" — 基于真实数据打气\n'
         '📊 "帮我复盘今天" — 效率分析\n'

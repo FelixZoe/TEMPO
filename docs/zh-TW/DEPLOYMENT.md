@@ -2,7 +2,7 @@
 
 服務健康後，請依照[完整設定指南](/zh-TW/CONFIGURATION)完成同步、AI、天氣與 RSS 設定。
 
-本指南用於在 Linux 伺服器部署TEMPO的個人同步服務。`todo.darker.one` 只是文件網站，用戶端不依賴它。
+本指南用於在 Linux 伺服器部署Tempo的個人同步服務。`todo.darker.one` 只是文件網站，用戶端不依賴它。
 
 ## 準備
 

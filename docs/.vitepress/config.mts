@@ -20,11 +20,11 @@ export default defineConfig({
     root: {
       label: '简体中文',
       lang: 'zh-CN',
-      title: 'TEMPO 文档',
-      description: 'TEMPO 跨端开发、自托管同步与部署文档',
+      title: 'Tempo 文档',
+      description: 'Tempo 跨端开发、自托管同步与部署文档',
       themeConfig: {
         ...sharedTheme,
-        siteTitle: 'TEMPO 文档',
+        siteTitle: 'Tempo 文档',
         nav: [
           { text: '配置', link: '/CONFIGURATION' },
           { text: '部署', link: '/DEPLOYMENT' },
@@ -64,18 +64,18 @@ export default defineConfig({
         docFooter: { prev: '上一篇', next: '下一篇' },
         footer: {
           message: '个人、本地优先、自托管同步',
-          copyright: 'TEMPO'
+          copyright: 'Tempo'
         }
       }
     },
     en: {
       label: 'English',
       lang: 'en-US',
-      title: 'TEMPO Documentation',
-      description: 'Cross-platform clients and self-hosted sync for TEMPO',
+      title: 'Tempo Documentation',
+      description: 'Cross-platform clients and self-hosted sync for Tempo',
       themeConfig: {
         ...sharedTheme,
-        siteTitle: 'TEMPO Docs',
+        siteTitle: 'Tempo Docs',
         nav: [
           { text: 'Configure', link: '/en/CONFIGURATION' },
           { text: 'Deploy', link: '/en/DEPLOYMENT' },
@@ -96,18 +96,18 @@ export default defineConfig({
         docFooter: { prev: 'Previous', next: 'Next' },
         footer: {
           message: 'Personal, local-first, self-hosted sync',
-          copyright: 'TEMPO'
+          copyright: 'Tempo'
         }
       }
     },
     'zh-TW': {
       label: '繁體中文',
       lang: 'zh-TW',
-      title: 'TEMPO 文件',
-      description: 'TEMPO 跨平台用戶端與自託管同步部署文件',
+      title: 'Tempo 文件',
+      description: 'Tempo 跨平台用戶端與自託管同步部署文件',
       themeConfig: {
         ...sharedTheme,
-        siteTitle: 'TEMPO 文件',
+        siteTitle: 'Tempo 文件',
         nav: [
           { text: '設定', link: '/zh-TW/CONFIGURATION' },
           { text: '部署', link: '/zh-TW/DEPLOYMENT' },
@@ -128,7 +128,7 @@ export default defineConfig({
         docFooter: { prev: '上一篇', next: '下一篇' },
         footer: {
           message: '個人、本機優先、自託管同步',
-          copyright: 'TEMPO'
+          copyright: 'Tempo'
         }
       }
     }

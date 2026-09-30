@@ -1,6 +1,6 @@
-# TEMPO同步服务部署
+# Tempo同步服务部署
 
-本文用于在自己的 Linux 服务器上部署 TEMPO 同步与可选 AI 代理。客户端安装包从 [GitHub Releases](https://github.com/FelixZoe/TEMPO/releases/latest) 获取；`todo.darker.one` 是开发与部署文档站，不是同步后台所必需。
+本文用于在自己的 Linux 服务器上部署 Tempo 同步与可选 AI 代理。客户端安装包从 [GitHub Releases](https://github.com/FelixZoe/TEMPO/releases/latest) 获取；`todo.darker.one` 是开发与部署文档站，不是同步后台所必需。
 
 返回：[文档首页](/) · [完整配置指南](/CONFIGURATION) · [系统架构](/ARCHITECTURE) · [同步协议](/SYNC_PROTOCOL)
 
@@ -172,7 +172,7 @@ docker compose ps
 curl -fsS http://127.0.0.1:8080/health
 ```
 
-清理TEMPO镜像产生的旧悬空层：
+清理Tempo镜像产生的旧悬空层：
 
 ```bash
 docker image prune --filter label=org.opencontainers.image.title=tempo-sync

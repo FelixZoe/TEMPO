@@ -92,14 +92,14 @@ class _WindowsWidgetShellState extends State<WindowsWidgetShell>
     ].join(separator);
     try {
       await tray.trayManager.setIcon(iconPath);
-      await tray.trayManager.setToolTip('TEMPO · 今日待办与番茄钟');
+      await tray.trayManager.setToolTip('Tempo · 今日待办与番茄钟');
       await tray.trayManager.setContextMenu(
         tray.Menu(
           items: [
             tray.MenuItem(key: 'toggle_window', label: '显示 / 隐藏悬浮窗'),
             tray.MenuItem(key: 'settings', label: '设置'),
             tray.MenuItem.separator(),
-            tray.MenuItem(key: 'exit', label: '退出TEMPO'),
+            tray.MenuItem(key: 'exit', label: '退出Tempo'),
           ],
         ),
       );

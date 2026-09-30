@@ -392,7 +392,7 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
                   Icon(Icons.bolt_rounded, size: 52, color: MiuiColors.blue),
                   const SizedBox(height: 12),
                   Text(
-                    'TEMPO',
+                    'Tempo',
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w800,

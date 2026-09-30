@@ -1,4 +1,4 @@
-#define MyAppName "TEMPO"
+#define MyAppName "Tempo"
 #ifndef MyAppVersion
   #define MyAppVersion "0.3.0"
 #endif

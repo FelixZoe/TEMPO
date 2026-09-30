@@ -613,7 +613,7 @@ class CloudToolsService {
           success: true,
           hostname: (data['hostname'] as String?)?.isNotEmpty == true
               ? data['hostname']
-              : 'TEMPO Server',
+              : 'Tempo Server',
           os:
               (data['os_name'] as String?)?.isNotEmpty == true &&
                   data['os_name'] != 'unknown'

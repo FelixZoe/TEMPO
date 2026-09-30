@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="apps/flutter/assets/branding/tempo-icon-master-black.png" width="112" alt="TEMPO 应用图标">
+  <img src="apps/flutter/assets/branding/tempo-icon-master-black.png" width="112" alt="Tempo 应用图标">
 </p>
 
-<h1 align="center">TEMPO</h1>
+<h1 align="center">Tempo</h1>
 
 <p align="center"><strong>Time. Everything. Moments. Productivity. Organized.</strong></p>
 
@@ -16,9 +16,11 @@
   <a href="docs/DESIGN.md">设计规范</a>
 </p>
 
-## 为什么是 TEMPO
+## 为什么是 Tempo
 
-**TEMPO — Time. Everything. Moments. Productivity. Organized.**
+**Tempo**，读作 `/ˈtem.poʊ/`。它来自音乐中的“速度与节奏”，也保留完整释义：
+
+**Time. Everything. Moments. Productivity. Organized.**
 
 它表达的是：**时间、信息、当下与效率，一切井然有序。** 任务、日历、RSS、专注和多端同步被放进同一条清晰的个人工作流。数据先保存到设备，本地操作不依赖网络；需要跨设备时，可以把轻量同步服务部署到自己的服务器，不需要注册第三方账号。
 
@@ -186,4 +188,4 @@ go vet ./...
 
 ## 许可
 
-TEMPO 以 [GNU GPL v3](LICENSE) 发布。Android 客户端基于 MIT 许可的 Flowtime 重构，原始许可随源码保存在 `apps/android/FLOWTIME_LICENSE`；其他第三方组件仍分别遵循各自许可，详见 [第三方软件声明](THIRD_PARTY_NOTICES.md)。
+Tempo 以 [GNU GPL v3](LICENSE) 发布。Android 客户端基于 MIT 许可的 Flowtime 重构，原始许可随源码保存在 `apps/android/FLOWTIME_LICENSE`；其他第三方组件仍分别遵循各自许可，详见 [第三方软件声明](THIRD_PARTY_NOTICES.md)。

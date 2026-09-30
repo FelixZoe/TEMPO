@@ -15,7 +15,7 @@ class HitokotoService {
   DateTime? _lastFetch;
 
   String get content => _content ?? '向着光亮那方';
-  String get from => _from ?? 'TEMPO';
+  String get from => _from ?? 'Tempo';
   String get type => _type ?? '';
 
   /// Type mapping for hitokoto categories

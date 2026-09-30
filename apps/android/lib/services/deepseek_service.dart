@@ -100,7 +100,7 @@ class DeepSeekService {
   /// AI task decomposition: break one sentence into sub-tasks
   Future<List<String>> decomposeTask(String taskDescription) async {
     const systemPrompt =
-        '''You are a productivity assistant for a Chinese task management app called "TEMPO".
+        '''You are a productivity assistant for a Chinese task management app called "Tempo".
 Your job is to decompose a user's task description into actionable sub-tasks.
 
 Rules:
@@ -143,7 +143,7 @@ Rules:
     required int streak,
   }) async {
     const systemPrompt =
-        '''You are a warm, encouraging productivity buddy for the "TEMPO" app.
+        '''You are a warm, encouraging productivity buddy for the "Tempo" app.
 Generate a short motivational message (1-2 sentences) in Chinese based on the user's daily stats.
 
 Rules:
@@ -169,7 +169,7 @@ Rules:
     required String taskName,
     required int todayTotal,
   }) async {
-    const systemPrompt = '''You are a focus coach for the "TEMPO" app.
+    const systemPrompt = '''You are a focus coach for the "Tempo" app.
 After a pomodoro session, give brief feedback in Chinese.
 
 Rules:
@@ -202,7 +202,7 @@ Rules:
 
     final buffer = StringBuffer();
     buffer.writeln(
-      'You are a smart productivity assistant built into the "TEMPO" app.',
+      'You are a smart productivity assistant built into the "Tempo" app.',
     );
     buffer.writeln(
       'You have full access to the user\'s real-time app data below.',

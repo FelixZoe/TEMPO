@@ -686,7 +686,7 @@ class UpdateChecker {
 
     await _notifications.show(
       _readyNotifyId,
-      'TEMPO v$version 已就绪',
+      'Tempo v$version 已就绪',
       '点击安装更新',
       const NotificationDetails(android: details),
       payload: 'install_$version',
@@ -718,7 +718,7 @@ class UpdateChecker {
 
     await _notifications.show(
       _updateNotifyId,
-      'TEMPO v${info.latestVersion} 可用${info.forceUpdate ? ' (重要)' : ''}',
+      'Tempo v${info.latestVersion} 可用${info.forceUpdate ? ' (重要)' : ''}',
       subtitle,
       const NotificationDetails(android: androidDetails),
       payload: 'update_${info.latestVersion}',

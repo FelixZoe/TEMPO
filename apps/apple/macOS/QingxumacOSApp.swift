@@ -38,7 +38,7 @@ private struct MacRootView: View {
       List(sidebarTabs, selection: $selection) { tab in
         Label(tab.title, systemImage: tab.symbol).tag(tab)
       }
-      .navigationTitle("TEMPO")
+      .navigationTitle("Tempo")
       .listStyle(.sidebar)
       .frame(minWidth: 190)
     } detail: {

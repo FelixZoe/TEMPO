@@ -1,13 +1,13 @@
-# TEMPO Android
+# Tempo Android
 
-TEMPO Android is an independent Flutter client derived from
+Tempo Android is an independent Flutter client derived from
 [FelixZoe/flowtime](https://github.com/FelixZoe/flowtime). The Android client
-keeps Flowtime's mature layout and interaction foundation while using TEMPO's
+keeps Flowtime's mature layout and interaction foundation while using Tempo's
 brand, release pipeline, and stable application identity.
 
 ## Identity
 
-- Visible name: `TEMPO`
+- Visible name: `Tempo`
 - Meaning: `Time. Everything. Moments. Productivity. Organized.`
 - Chinese expression: `时间、信息、当下与效率，一切井然有序。`
 - Android application ID: `one.darker.qingxu`

@@ -447,7 +447,7 @@ private struct FocusStatisticsSheet: View {
   }
 
   private var shareSummary: String {
-    "TEMPO专注统计：今天完成 \(todayRecords.count) 次，专注 \(durationText(todaySeconds))；累计专注 \(durationText(totalSeconds))。"
+    "Tempo专注统计：今天完成 \(todayRecords.count) 次，专注 \(durationText(todaySeconds))；累计专注 \(durationText(totalSeconds))。"
   }
 
   private func durationText(_ seconds: Int) -> String {

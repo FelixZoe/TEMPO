@@ -1,6 +1,6 @@
-# TEMPO documentation
+# Tempo documentation
 
-TEMPO is a personal, local-first task and focus app for iPhone, Android, Mac, and Windows. Your data stays on each device by default; connect your own server when you want real-time sync.
+Tempo is a personal, local-first task and focus app for iPhone, Android, Mac, and Windows. Your data stays on each device by default; connect your own server when you want real-time sync.
 
 ## Get started
 
@@ -18,4 +18,4 @@ TEMPO is a personal, local-first task and focus app for iPhone, Android, Mac, an
 4. Start the service and place it behind HTTPS.
 5. Enter the same server URL and token on every device.
 
-TEMPO is designed for one person. Do not share the same endpoint and token with unrelated users.
+Tempo is designed for one person. Do not share the same endpoint and token with unrelated users.

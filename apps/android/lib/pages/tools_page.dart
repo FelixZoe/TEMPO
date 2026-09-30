@@ -6785,7 +6785,7 @@ class _SpeedtestPageState extends State<_SpeedtestPage> {
           .timeout(const Duration(seconds: 5));
       if (mounted) {
         setState(() {
-          _serverName = response.statusCode == 200 ? 'TEMPO Server' : null;
+          _serverName = response.statusCode == 200 ? 'Tempo Server' : null;
           if (response.statusCode != 200) _error = '测速服务不可用';
         });
       }
@@ -7390,7 +7390,7 @@ class _SpeedtestPageState extends State<_SpeedtestPage> {
 
               const SizedBox(height: 16),
               Text(
-                '测试到 TEMPO 服务器的网络速度\n实际网速可能更高',
+                '测试到 Tempo 服务器的网络速度\n实际网速可能更高',
                 style: TextStyle(fontSize: 12, color: colors.textTertiary),
                 textAlign: TextAlign.center,
               ),

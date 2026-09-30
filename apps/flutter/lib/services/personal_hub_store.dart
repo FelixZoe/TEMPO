@@ -84,7 +84,7 @@ class DailyQuote {
 
   factory DailyQuote.fromJson(Map<String, Object?> json) => DailyQuote(
     json['content'] as String? ?? '把复杂留给系统，把注意力留给今天。',
-    json['source'] as String? ?? 'TEMPO',
+    json['source'] as String? ?? 'Tempo',
   );
 }
 
@@ -259,7 +259,7 @@ class PersonalHubStore extends ChangeNotifier {
 
   DailyQuote quote = const DailyQuote(
     '把复杂留给系统，把注意力留给今天。',
-    'TEMPO',
+    'Tempo',
   );
   WeatherSnapshot? weather;
   PersonalAISettings aiSettings = const PersonalAISettings();
@@ -420,7 +420,7 @@ class PersonalHubStore extends ChangeNotifier {
               {
                 'role': 'system',
                 'content':
-                    '你是TEMPO的个人效率助手。回答简短、具体、可执行，不制造冗余事项。需要安排任务时，优先使用用户已有任务。',
+                    '你是Tempo的个人效率助手。回答简短、具体、可执行，不制造冗余事项。需要安排任务时，优先使用用户已有任务。',
               },
               {
                 'role': 'user',

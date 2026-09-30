@@ -2,7 +2,7 @@
 
 After the service is healthy, use the [client configuration guide](/en/CONFIGURATION) for sync, AI, weather and RSS settings.
 
-This guide deploys TEMPO's personal sync service on a Linux server. `todo.darker.one` hosts documentation only and is not required by the clients.
+This guide deploys Tempo's personal sync service on a Linux server. `todo.darker.one` hosts documentation only and is not required by the clients.
 
 ## Requirements
 

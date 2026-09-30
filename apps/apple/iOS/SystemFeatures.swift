@@ -111,7 +111,7 @@ enum SystemFeatures {
     }
 
     guard ActivityAuthorizationInfo().areActivitiesEnabled else {
-      let message = "系统未允许实时活动，请在“设置 > TEMPO > 实时活动”中开启"
+      let message = "系统未允许实时活动，请在“设置 > Tempo > 实时活动”中开启"
       setLiveActivityStatus(message)
       logger.notice("Live Activities are disabled by the system")
       return message
@@ -119,7 +119,7 @@ enum SystemFeatures {
 
     do {
       let activity = try Activity.request(
-        attributes: QingxuPomodoroAttributes(title: "TEMPO专注"),
+        attributes: QingxuPomodoroAttributes(title: "Tempo专注"),
         content: content(pomodoro),
         pushType: nil
       )

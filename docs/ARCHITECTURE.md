@@ -1,6 +1,6 @@
-# TEMPO系统架构
+# Tempo系统架构
 
-TEMPO 采用“三套客户端工程、一份同步协议、一个轻量服务端”的结构。Apple 平台使用 SwiftUI；Android 使用独立的 Flowtime 衍生 Flutter 工程；Windows 保留独立 Flutter 工程；所有客户端共享 Go 服务端的 JSON 协议。
+Tempo 采用“三套客户端工程、一份同步协议、一个轻量服务端”的结构。Apple 平台使用 SwiftUI；Android 使用独立的 Flowtime 衍生 Flutter 工程；Windows 保留独立 Flutter 工程；所有客户端共享 Go 服务端的 JSON 协议。
 
 返回：[文档首页](/) · [产品范围](/PRODUCT) · [设计规范](/DESIGN) · [同步协议](/SYNC_PROTOCOL)
 

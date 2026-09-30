@@ -178,7 +178,7 @@ class SplashScreenState extends State<SplashScreen>
                   child: Opacity(
                     opacity: _titleOpacity.value,
                     child: Text(
-                      'TEMPO',
+                      'Tempo',
                       style: TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.w800,

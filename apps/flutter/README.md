@@ -1,6 +1,6 @@
-# TEMPO Flutter 客户端
+# Tempo Flutter 客户端
 
-`apps/flutter` 是 TEMPO 的 Windows 客户端。Android 已完全迁移到独立的 [`apps/android`](../android/) Flowtime 衍生工程；正式 iOS 和 macOS 客户端位于 [`apps/apple`](../apple/README.md)，不使用 Flutter 引擎。
+`apps/flutter` 是 Tempo 的 Windows 客户端。Android 已完全迁移到独立的 [`apps/android`](../android/) Flowtime 衍生工程；正式 iOS 和 macOS 客户端位于 [`apps/apple`](../apple/README.md)，不使用 Flutter 引擎。
 
 返回：[项目首页](../../README.md) · [设计规范](../../docs/DESIGN.md) · [系统架构](../../docs/ARCHITECTURE.md) · [同步协议](../../docs/SYNC_PROTOCOL.md)
 
