@@ -1,3 +1,3 @@
-module github.com/FelixZoe/qingxu/services/sync
+module github.com/FelixZoe/TEMPO/services/sync
 
 go 1.23

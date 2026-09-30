@@ -31,8 +31,8 @@ class Sidebar extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                     child: Image.asset(
                       dark
-                          ? 'assets/branding/qingxu-icon-master-white.png'
-                          : 'assets/branding/qingxu-icon-master-black.png',
+                          ? 'assets/branding/tempo-icon-master-white.png'
+                          : 'assets/branding/tempo-icon-master-black.png',
                       width: 30,
                       height: 30,
                       filterQuality: FilterQuality.high,

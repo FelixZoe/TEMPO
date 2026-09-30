@@ -1,6 +1,6 @@
 # TEMPO同步服务部署
 
-本文用于在自己的 Linux 服务器上部署TEMPO同步与可选 AI 代理。客户端安装包从 [GitHub Releases](https://github.com/FelixZoe/qingxu/releases/latest) 获取；`todo.darker.one` 是开发与部署文档站，不是同步后台所必需。
+本文用于在自己的 Linux 服务器上部署 TEMPO 同步与可选 AI 代理。客户端安装包从 [GitHub Releases](https://github.com/FelixZoe/TEMPO/releases/latest) 获取；`todo.darker.one` 是开发与部署文档站，不是同步后台所必需。
 
 返回：[文档首页](/) · [完整配置指南](/CONFIGURATION) · [系统架构](/ARCHITECTURE) · [同步协议](/SYNC_PROTOCOL)
 
@@ -31,8 +31,8 @@ openssl version
 ## 一键启动
 
 ```bash
-git clone https://github.com/FelixZoe/qingxu.git
-cd qingxu
+git clone https://github.com/FelixZoe/TEMPO.git
+cd TEMPO
 cp .env.example .env
 
 TOKEN=$(openssl rand -hex 32)
@@ -164,7 +164,7 @@ curl -i https://你的域名/v1/ping
 ## 更新
 
 ```bash
-cd qingxu
+cd TEMPO
 git pull --ff-only
 docker compose pull
 docker compose up -d
@@ -175,7 +175,7 @@ curl -fsS http://127.0.0.1:8080/health
 清理TEMPO镜像产生的旧悬空层：
 
 ```bash
-docker image prune --filter label=org.opencontainers.image.title=qingxu-sync
+docker image prune --filter label=org.opencontainers.image.title=tempo-sync
 ```
 
 不要在共享服务器上执行无范围限制的 `docker system prune -a --volumes`。
@@ -187,9 +187,9 @@ docker image prune --filter label=org.opencontainers.image.title=qingxu-sync
 ### 一致性备份
 
 ```bash
-cd qingxu
+cd TEMPO
 docker compose stop sync
-tar -C data -czf "qingxu-sync-$(date +%F-%H%M%S).tar.gz" store.json
+tar -C data -czf "tempo-sync-$(date +%F-%H%M%S).tar.gz" store.json
 docker compose start sync
 curl -fsS http://127.0.0.1:8080/health
 ```
@@ -197,9 +197,9 @@ curl -fsS http://127.0.0.1:8080/health
 ### 恢复
 
 ```bash
-cd qingxu
+cd TEMPO
 docker compose stop sync
-tar -C data -xzf /安全路径/qingxu-sync-日期.tar.gz
+tar -C data -xzf /安全路径/tempo-sync-日期.tar.gz
 sudo chown -R 65532:65532 data
 sudo chmod 700 data
 sudo chmod 600 data/store.json

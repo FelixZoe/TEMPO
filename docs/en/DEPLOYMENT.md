@@ -13,8 +13,8 @@ This guide deploys TEMPO's personal sync service on a Linux server. `todo.darker
 ## Start the service
 
 ```bash
-git clone https://github.com/FelixZoe/qingxu.git
-cd qingxu
+git clone https://github.com/FelixZoe/TEMPO.git
+cd TEMPO
 cp .env.example .env
 
 TOKEN=$(openssl rand -hex 32)
@@ -91,7 +91,7 @@ Enter the base URL only; do not append `/v1/sync`. Save, then run the connection
 ## Update
 
 ```bash
-cd qingxu
+cd TEMPO
 git pull --ff-only
 docker compose pull
 docker compose up -d
@@ -104,7 +104,7 @@ The default data file is `data/store.json`.
 
 ```bash
 docker compose stop sync
-tar -C data -czf "qingxu-sync-$(date +%F-%H%M%S).tar.gz" store.json
+tar -C data -czf "tempo-sync-$(date +%F-%H%M%S).tar.gz" store.json
 docker compose start sync
 ```
 

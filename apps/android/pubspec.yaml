@@ -25,6 +25,7 @@ dependencies:
   open_filex: ^4.7.0
   url_launcher: ^6.3.1
   mobile_scanner: ^6.0.0
+  binary_patch: ^1.0.0
 
 dev_dependencies:
   flutter_test:

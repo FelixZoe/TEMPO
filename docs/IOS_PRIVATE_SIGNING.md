@@ -16,9 +16,9 @@
 
 ## 为什么应用能打开，灵动岛却没有
 
-灵动岛和锁屏实时活动由 `QingxuWidgets.appex` 提供，而不是主应用中的普通页面。以下任一情况都会让系统扩展失效：
+灵动岛和锁屏实时活动由 `TEMPOWidgets.appex` 提供，而不是主应用中的普通页面。以下任一情况都会让系统扩展失效：
 
-- 签名工具只签了 `Qingxu.app`，没有递归签名 `PlugIns/QingxuWidgets.appex`。
+- 签名工具只签了 `TEMPO.app`，没有递归签名 `PlugIns/TEMPOWidgets.appex`。
 - 重签时删除了扩展目录。
 - 主应用或扩展 Bundle ID 被随机修改。
 - 两者使用不同 Team，或 App Group 权限没有同时保留。
@@ -66,27 +66,27 @@ PowerShell 写入二进制 Secrets：
 
 ```powershell
 [Convert]::ToBase64String([IO.File]::ReadAllBytes('主应用.mobileprovision')) |
-  gh secret set IOS_MAIN_PROFILE_BASE64 --env ios-signing --repo FelixZoe/qingxu
+  gh secret set IOS_MAIN_PROFILE_BASE64 --env ios-signing --repo FelixZoe/TEMPO
 
 [Convert]::ToBase64String([IO.File]::ReadAllBytes('扩展.mobileprovision')) |
-  gh secret set IOS_WIDGET_PROFILE_BASE64 --env ios-signing --repo FelixZoe/qingxu
+  gh secret set IOS_WIDGET_PROFILE_BASE64 --env ios-signing --repo FelixZoe/TEMPO
 
 [Convert]::ToBase64String([IO.File]::ReadAllBytes('证书.p12')) |
-  gh secret set IOS_CERTIFICATE_P12_BASE64 --env ios-signing --repo FelixZoe/qingxu
+  gh secret set IOS_CERTIFICATE_P12_BASE64 --env ios-signing --repo FelixZoe/TEMPO
 ```
 
 密码使用交互输入，避免出现在命令历史：
 
 ```powershell
-gh secret set IOS_CERTIFICATE_PASSWORD --env ios-signing --repo FelixZoe/qingxu
-gh secret set IOS_SIGNED_ARCHIVE_PASSWORD --env ios-signing --repo FelixZoe/qingxu
+gh secret set IOS_CERTIFICATE_PASSWORD --env ios-signing --repo FelixZoe/TEMPO
+gh secret set IOS_SIGNED_ARCHIVE_PASSWORD --env ios-signing --repo FelixZoe/TEMPO
 ```
 
 ### 运行与下载
 
 1. 打开仓库 `Actions → Private Signed iOS`。
 2. 点击 `Run workflow`；版本号留空时读取当前项目版本。
-3. 构建成功后下载 `qingxu-ios-signed-encrypted` Artifact。
+3. 构建成功后下载 `tempo-ios-signed-encrypted` Artifact。
 4. 使用 `IOS_SIGNED_ARCHIVE_PASSWORD` 解压 `.7z`。
 5. 安装解压得到的签名 IPA。
 
@@ -109,10 +109,10 @@ gh secret set IOS_SIGNED_ARCHIVE_PASSWORD --env ios-signing --repo FelixZoe/qing
 
 ```bash
 unzip -q TEMPO-*.ipa -d tempo-ipa-check
-test -d qingxu-ipa-check/Payload/Qingxu.app/PlugIns/QingxuWidgets.appex
-codesign --verify --deep --strict --verbose=2 qingxu-ipa-check/Payload/Qingxu.app
-codesign -d --entitlements :- qingxu-ipa-check/Payload/Qingxu.app
-codesign -d --entitlements :- qingxu-ipa-check/Payload/Qingxu.app/PlugIns/QingxuWidgets.appex
+test -d tempo-ipa-check/Payload/TEMPO.app/PlugIns/TEMPOWidgets.appex
+codesign --verify --deep --strict --verbose=2 tempo-ipa-check/Payload/TEMPO.app
+codesign -d --entitlements :- tempo-ipa-check/Payload/TEMPO.app
+codesign -d --entitlements :- tempo-ipa-check/Payload/TEMPO.app/PlugIns/TEMPOWidgets.appex
 ```
 
 主应用和扩展的 entitlements 中都应出现 `group.one.darker.qingxu`。

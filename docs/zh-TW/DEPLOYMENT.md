@@ -13,8 +13,8 @@
 ## 啟動服務
 
 ```bash
-git clone https://github.com/FelixZoe/qingxu.git
-cd qingxu
+git clone https://github.com/FelixZoe/TEMPO.git
+cd TEMPO
 cp .env.example .env
 
 TOKEN=$(openssl rand -hex 32)
@@ -91,7 +91,7 @@ curl -i https://你的網域/v1/ping
 ## 更新
 
 ```bash
-cd qingxu
+cd TEMPO
 git pull --ff-only
 docker compose pull
 docker compose up -d
@@ -104,7 +104,7 @@ curl -fsS http://127.0.0.1:8080/health
 
 ```bash
 docker compose stop sync
-tar -C data -czf "qingxu-sync-$(date +%F-%H%M%S).tar.gz" store.json
+tar -C data -czf "tempo-sync-$(date +%F-%H%M%S).tar.gz" store.json
 docker compose start sync
 ```
 

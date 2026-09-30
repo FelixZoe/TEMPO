@@ -8,7 +8,7 @@ TEMPO is a personal, local-first task and focus app for iPhone, Android, Mac, an
 | --- | --- |
 | Run your own sync server | [Self-hosted sync](/en/DEPLOYMENT) |
 | Configure clients and integrations | [Configuration](/en/CONFIGURATION) |
-| Download the latest build | [GitHub Releases](https://github.com/FelixZoe/qingxu/releases/latest) |
+| Download the latest build | [GitHub Releases](https://github.com/FelixZoe/TEMPO/releases/latest) |
 
 ## Fast path
 

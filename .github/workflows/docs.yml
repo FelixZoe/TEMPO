@@ -33,7 +33,7 @@ jobs:
         run: npm run build
       - uses: actions/upload-artifact@v6
         with:
-          name: qingxu-vitepress-docs
+          name: tempo-vitepress-docs
           path: docs/.vitepress/dist
           if-no-files-found: error
 
@@ -44,7 +44,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v7
         with:
-          name: qingxu-vitepress-docs
+          name: tempo-vitepress-docs
           path: site
       - name: Configure SSH
         env:
@@ -65,6 +65,7 @@ jobs:
           deploy_root="/opt/1panel/www/sites/todo.darker.one/docs-live"
           release="$deploy_root/releases/$release_name"
           target="$DEPLOY_USER@$DEPLOY_HOST"
-          ssh "$target" "mkdir -p '$release'"
-          tar -C site -czf - . | ssh "$target" "tar -xzf - -C '$release'"
-          ssh "$target" "cd '$deploy_root' && ln -sfn 'releases/$release_name' current-next && mv -Tf current-next current"
+          ssh_opts=(-i "$HOME/.ssh/id_ed25519" -o IdentitiesOnly=yes)
+          ssh "${ssh_opts[@]}" "$target" "mkdir -p '$release'"
+          tar -C site -czf - . | ssh "${ssh_opts[@]}" "$target" "tar -xzf - -C '$release'"
+          ssh "${ssh_opts[@]}" "$target" "cd '$deploy_root' && ln -sfn 'releases/$release_name' current-next && mv -Tf current-next current"

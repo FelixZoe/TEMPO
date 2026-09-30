@@ -34,7 +34,7 @@ class AndroidUpdateService {
 
   static const _channel = MethodChannel('one.darker.qingxu/android_update');
   static const _latestRelease =
-      'https://api.github.com/repos/FelixZoe/qingxu/releases/latest';
+      'https://api.github.com/repos/FelixZoe/TEMPO/releases/latest';
 
   final http.Client _client;
 
@@ -56,7 +56,7 @@ class AndroidUpdateService {
     }
     final assets = (release['assets'] as List).whereType<Map>().toList();
     final manifestAsset = assets.where(
-      (asset) => asset['name'] == 'qingxu-android-update.json',
+      (asset) => asset['name'] == 'tempo-android-update.json',
     ).firstOrNull;
     if (manifestAsset == null) return null;
     final manifestResponse = await _client.get(

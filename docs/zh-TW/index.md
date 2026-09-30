@@ -8,7 +8,7 @@ TEMPO是一款為個人設計、本機優先的任務與專注工具，支援 iP
 | --- | --- |
 | 部署自己的同步服務 | [自託管同步](/zh-TW/DEPLOYMENT) |
 | 設定用戶端與整合功能 | [完整設定指南](/zh-TW/CONFIGURATION) |
-| 下載最新版本 | [GitHub Releases](https://github.com/FelixZoe/qingxu/releases/latest) |
+| 下載最新版本 | [GitHub Releases](https://github.com/FelixZoe/TEMPO/releases/latest) |
 
 ## 最短部署路徑
 

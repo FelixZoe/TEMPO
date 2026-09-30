@@ -3,17 +3,17 @@
   #define MyAppVersion "0.3.0"
 #endif
 #define MyAppPublisher "FelixZoe"
-#define MyAppURL "https://github.com/FelixZoe/qingxu"
-#define MyAppSupportURL "https://github.com/FelixZoe/qingxu/issues"
-#define MyAppUpdatesURL "https://github.com/FelixZoe/qingxu/releases/latest"
-#define MyAppExeName "Qingxu.exe"
+#define MyAppURL "https://github.com/FelixZoe/TEMPO"
+#define MyAppSupportURL "https://github.com/FelixZoe/TEMPO/issues"
+#define MyAppUpdatesURL "https://github.com/FelixZoe/TEMPO/releases/latest"
+#define MyAppExeName "TEMPO.exe"
 #define MyAppCopyright "Copyright © 2026 FelixZoe"
 #define ReleaseDir SourcePath + "..\..\apps\flutter\build\windows\x64\runner\Release"
 #define AppIcon SourcePath + "..\..\apps\flutter\windows\runner\resources\app_icon.ico"
 
 ; Fail the release at compile time instead of publishing an incomplete package.
 #if !FileExists(ReleaseDir + "\" + MyAppExeName)
-  #error "Qingxu.exe is missing. Build the Flutter Windows release before compiling the installer."
+  #error "TEMPO.exe is missing. Build the Flutter Windows release before compiling the installer."
 #endif
 #if !FileExists(ReleaseDir + "\msvcp140.dll")
   #error "msvcp140.dll is missing from the Windows release bundle."
@@ -48,7 +48,7 @@ VersionInfoProductTextVersion={#MyAppVersion}
 VersionInfoTextVersion={#MyAppVersion}
 VersionInfoOriginalFileName=TEMPO-{#MyAppVersion}-Windows-Setup.exe
 
-DefaultDirName={localappdata}\Programs\Qingxu
+DefaultDirName={localappdata}\Programs\TEMPO
 DefaultGroupName={#MyAppName}
 DisableDirPage=auto
 DisableProgramGroupPage=yes
@@ -86,6 +86,10 @@ Uninstallable=yes
 UninstallDisplayName={#MyAppName}
 UninstallDisplayIcon={app}\{#MyAppExeName},0
 UninstallFilesDir={app}\uninstall
+
+[InstallDelete]
+; Remove the legacy executable after an in-place brand migration.
+Type: files; Name: "{app}\Qingxu.exe"
 
 [Languages]
 Name: "chinesesimplified"; MessagesFile: ".\ChineseSimplified.isl"

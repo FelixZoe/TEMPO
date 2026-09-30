@@ -27,7 +27,7 @@ AI_API_KEY=your-server-side-key
 AI_MODEL=gpt-5.6-terra
 ```
 
-Run `docker compose up -d`, then select the self-hosted provider in Qingxu. Direct OpenAI defaults to `gpt-5.6-terra`; Direct DeepSeek defaults to `deepseek-flash`. Existing custom model selections are not overwritten by an app upgrade. Direct API keys stay in platform secure storage and are not synced.
+Run `docker compose up -d`, then select the self-hosted provider in TEMPO. Direct OpenAI defaults to `gpt-5.6-terra`; Direct DeepSeek defaults to `deepseek-flash`. Existing custom model selections are not overwritten by an app upgrade. Direct API keys stay in platform secure storage and are not synced.
 
 ## Weather and daily quote
 

@@ -13,8 +13,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/FelixZoe/qingxu/services/sync/internal/httpapi"
-	"github.com/FelixZoe/qingxu/services/sync/internal/store"
+	"github.com/FelixZoe/TEMPO/services/sync/internal/httpapi"
+	"github.com/FelixZoe/TEMPO/services/sync/internal/store"
 )
 
 const defaultMaxBodyBytes int64 = 2 << 20
@@ -65,7 +65,7 @@ func run() error {
 
 	serverErrors := make(chan error, 1)
 	go func() {
-		log.Printf("qingxu sync listening on %s", config.address)
+		log.Printf("TEMPO sync listening on %s", config.address)
 		serverErrors <- server.ListenAndServe()
 	}()
 

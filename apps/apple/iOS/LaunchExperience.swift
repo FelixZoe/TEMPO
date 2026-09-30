@@ -32,10 +32,9 @@ struct QingxuLaunchExperience: View {
 
   private var brandMark: some View {
     ZStack(alignment: .bottomTrailing) {
-      Text("清")
+      Text("T")
         .font(.system(size: 92, weight: .black, design: .rounded))
         .foregroundStyle(.white)
-        .tracking(-5)
 
       Circle()
         .fill(QingxuPalette.accent)

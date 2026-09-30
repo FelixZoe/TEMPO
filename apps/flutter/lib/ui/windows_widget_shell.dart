@@ -88,7 +88,7 @@ class _WindowsWidgetShellState extends State<WindowsWidgetShell>
       'flutter_assets',
       'assets',
       'branding',
-      'qingxu-tray.ico',
+      'tempo-tray.ico',
     ].join(separator);
     try {
       await tray.trayManager.setIcon(iconPath);

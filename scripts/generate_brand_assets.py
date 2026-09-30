@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate Qingxu brand assets from one reproducible serif glyph master."""
+"""Generate TEMPO brand assets from one reproducible serif glyph master."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 CANVAS = 1024
-GLYPH = "清"
+GLYPH = "T"
 INK = "#171816"
 PAPER = "#F5F2EA"
 
@@ -18,7 +18,7 @@ PAPER = "#F5F2EA"
 def render_master(font_path: Path, background: str, foreground: str) -> Image.Image:
     image = Image.new("RGBA", (CANVAS, CANVAS), background)
     draw = ImageDraw.Draw(image)
-    font = ImageFont.truetype(str(font_path), 550)
+    font = ImageFont.truetype(str(font_path), 650)
     bounds = draw.textbbox((0, 0), GLYPH, font=font)
     glyph_width = bounds[2] - bounds[0]
     glyph_height = bounds[3] - bounds[1]
@@ -39,10 +39,12 @@ def generate(repo: Path, font_path: Path) -> None:
     dark_master = render_master(font_path, INK, PAPER)
     light_master = render_master(font_path, PAPER, INK)
     transparent_mark = render_master(font_path, "#00000000", "#000000")
+    adaptive_mark = render_master(font_path, "#00000000", PAPER)
 
     branding = repo / "apps/flutter/assets/branding"
-    dark_master.convert("RGB").save(branding / "qingxu-icon-master-black.png")
-    light_master.convert("RGB").save(branding / "qingxu-icon-master-white.png")
+    dark_master.convert("RGB").save(branding / "tempo-icon-master-black.png")
+    light_master.convert("RGB").save(branding / "tempo-icon-master-white.png")
+    dark_master.convert("RGB").save(repo / "apps/android/assets/icon/app_icon.png")
 
     ios = repo / "apps/flutter/ios/Runner/Assets.xcassets/AppIcon.appiconset"
     ios_sizes = {
@@ -70,18 +72,17 @@ def generate(repo: Path, font_path: Path) -> None:
         save_resized(dark_master.convert("RGB"), macos / f"app_icon_{size}.png", size)
 
     android = repo / "apps/android/android/app/src/main/res"
-    for density, size in {
-        "mdpi": 48,
-        "hdpi": 72,
-        "xhdpi": 96,
-        "xxhdpi": 144,
-        "xxxhdpi": 192,
+    for density, (legacy_size, adaptive_size) in {
+        "mdpi": (48, 108),
+        "hdpi": (72, 162),
+        "xhdpi": (96, 216),
+        "xxhdpi": (144, 324),
+        "xxxhdpi": (192, 432),
     }.items():
-        save_resized(
-            dark_master.convert("RGB"),
-            android / f"mipmap-{density}/ic_launcher.png",
-            size,
-        )
+        destination = android / f"mipmap-{density}"
+        save_resized(dark_master.convert("RGB"), destination / "ic_launcher.png", legacy_size)
+        save_resized(dark_master.convert("RGB"), destination / "ic_launcher_round.png", legacy_size)
+        save_resized(adaptive_mark, destination / "ic_launcher_foreground.png", adaptive_size)
 
     mark_set = (
         repo

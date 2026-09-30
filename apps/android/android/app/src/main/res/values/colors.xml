@@ -2,4 +2,5 @@
 <resources>
     <!-- Splash background matching MiuiColors.background (light) -->
     <color name="splash_background">#FFFAFAFA</color>
+    <color name="tempo_icon_background">#FF171816</color>
 </resources>

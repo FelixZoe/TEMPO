@@ -506,7 +506,7 @@ struct TaskListScreen: View {
   }
 
   private func openAppTab(_ host: String) {
-    guard let url = URL(string: "qingxu://\(host)") else { return }
+    guard let url = URL(string: "tempo://\(host)") else { return }
     openURL(url)
   }
   #endif

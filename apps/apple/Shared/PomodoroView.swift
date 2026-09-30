@@ -184,7 +184,7 @@ struct PomodoroScreen: View {
             if store.pomodoro.status == .idle {
               presentedSheet = .statistics
             } else {
-              openURL(URL(string: "qingxu://today")!)
+              openURL(URL(string: "tempo://today")!)
             }
           } label: {
             Image(systemName: store.pomodoro.status == .idle ? "clock.arrow.circlepath" : "chevron.down")

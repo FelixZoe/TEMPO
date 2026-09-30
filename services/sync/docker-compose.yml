@@ -2,7 +2,7 @@ services:
   sync:
     build:
       context: .
-    image: qingxu-sync:${QINGXU_IMAGE_TAG:-local}
+    image: tempo-sync:${TEMPO_IMAGE_TAG:-local}
     restart: unless-stopped
     environment:
       SYNC_TOKEN: ${SYNC_TOKEN:?请在 .env 中设置 SYNC_TOKEN}
@@ -25,7 +25,7 @@ services:
     pids_limit: 64
     mem_limit: 64m
     healthcheck:
-      test: ["CMD", "/qingxu-sync", "healthcheck"]
+      test: ["CMD", "/tempo-sync", "healthcheck"]
       interval: 30s
       timeout: 5s
       start_period: 5s

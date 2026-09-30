@@ -1,10 +1,10 @@
 # Project-level configuration.
 cmake_minimum_required(VERSION 3.14)
-project(qingxu LANGUAGES CXX)
+project(tempo LANGUAGES CXX)
 
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
-set(BINARY_NAME "Qingxu")
+set(BINARY_NAME "TEMPO")
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.
@@ -103,10 +103,10 @@ install(DIRECTORY "${PROJECT_BUILD_DIR}/${FLUTTER_ASSET_DIR_NAME}"
   DESTINATION "${INSTALL_BUNDLE_DATA_DIR}" COMPONENT Runtime)
 
 # tray_manager needs a standalone .ico path on Windows. Reuse the same
-# high-resolution icon embedded in Qingxu.exe and place it beside Flutter assets.
+# high-resolution icon embedded in TEMPO.exe and place it beside Flutter assets.
 install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/runner/resources/app_icon.ico"
   DESTINATION "${INSTALL_BUNDLE_DATA_DIR}/${FLUTTER_ASSET_DIR_NAME}/assets/branding"
-  RENAME "qingxu-tray.ico"
+  RENAME "tempo-tray.ico"
   COMPONENT Runtime)
 
 # Install the AOT library on non-Debug builds only.

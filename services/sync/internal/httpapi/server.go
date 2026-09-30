@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/FelixZoe/qingxu/services/sync/internal/store"
+	"github.com/FelixZoe/TEMPO/services/sync/internal/store"
 )
 
 const (
@@ -279,7 +279,7 @@ func (s *Server) requireAuthorization(response http.ResponseWriter, request *htt
 	if s.authorized(request.Header.Get("Authorization")) {
 		return true
 	}
-	response.Header().Set("WWW-Authenticate", `Bearer realm="qingxu-sync"`)
+	response.Header().Set("WWW-Authenticate", `Bearer realm="tempo-sync"`)
 	writeError(response, http.StatusUnauthorized, "unauthorized", "a valid bearer token is required")
 	return false
 }

@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: qingxu-${{ github.workflow }}-${{ github.ref }}
+  group: tempo-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -58,7 +58,7 @@ jobs:
                   version="$current"
                 else
                   IFS=. read -r major minor patch <<< "$latest"
-                  # Qingxu uses one digit per segment. Legacy versions such as
+                  # TEMPO uses one digit per segment. Legacy versions such as
                   # 0.1.61 migrate to the next minor release instead of becoming
                   # visually insignificant four- or five-digit patch streams.
                   if (( patch >= 10 )); then
@@ -106,7 +106,7 @@ jobs:
             echo "build_number=$GITHUB_RUN_NUMBER"
             echo "should_release=$should_release"
           } >> "$GITHUB_OUTPUT"
-          echo "Building Qingxu v$version ($GITHUB_RUN_NUMBER)"
+          echo "Building TEMPO v$version ($GITHUB_RUN_NUMBER)"
 
   flutter-checks:
     needs: version
@@ -140,7 +140,7 @@ jobs:
       - name: Vet sync service
         run: go vet ./...
       - name: Build sync container
-        run: docker build --tag qingxu-sync:test .
+        run: docker build --tag tempo-sync:test .
 
   docker-publish:
     if: needs.version.outputs.should_release == 'true'
@@ -161,10 +161,12 @@ jobs:
           context: services/sync
           push: true
           tags: |
+            ghcr.io/felixzoe/tempo-sync:${{ needs.version.outputs.version }}
+            ghcr.io/felixzoe/tempo-sync:latest
             ghcr.io/felixzoe/qingxu-sync:${{ needs.version.outputs.version }}
             ghcr.io/felixzoe/qingxu-sync:latest
           labels: |
-            org.opencontainers.image.title=qingxu-sync
+            org.opencontainers.image.title=tempo-sync
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.version=${{ needs.version.outputs.version }}
@@ -253,8 +255,8 @@ jobs:
             if (-not $signTool) { throw "signtool.exe was not found" }
             & $signTool.FullName sign /fd SHA256 /f $certificate `
               /p $env:WINDOWS_SIGNING_PASSWORD /tr http://timestamp.digicert.com `
-              /td SHA256 "$release\Qingxu.exe"
-            if ($LASTEXITCODE -ne 0) { throw "Signing Qingxu.exe failed" }
+              /td SHA256 "$release\TEMPO.exe"
+            if ($LASTEXITCODE -ne 0) { throw "Signing TEMPO.exe failed" }
             Remove-Item -LiteralPath $certificate -Force
           } else {
             Write-Host "No trusted signing certificate configured; publishing an unsigned beta build."
@@ -347,12 +349,12 @@ jobs:
       - name: Package unsigned IPA
         run: |
           set -euo pipefail
-          APP_PATH="build/DerivedData/Build/Products/Release-iphoneos/Qingxu.app"
-          test -d "$APP_PATH/PlugIns/QingxuWidgets.appex"
+          APP_PATH="build/DerivedData/Build/Products/Release-iphoneos/TEMPO.app"
+          test -d "$APP_PATH/PlugIns/TEMPOWidgets.appex"
           test "$(/usr/libexec/PlistBuddy -c 'Print :NSSupportsLiveActivities' "$APP_PATH/Info.plist")" = "true"
-          test "$(/usr/libexec/PlistBuddy -c 'Print :NSSupportsLiveActivities' "$APP_PATH/PlugIns/QingxuWidgets.appex/Info.plist")" = "true"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :NSSupportsLiveActivities' "$APP_PATH/PlugIns/TEMPOWidgets.appex/Info.plist")" = "true"
           mkdir -p build/ipa/Payload
-          cp -R "$APP_PATH" build/ipa/Payload/Qingxu.app
+          cp -R "$APP_PATH" build/ipa/Payload/TEMPO.app
           cd build/ipa && zip -r "../../TEMPO-${APP_VERSION}-iOS-unsigned.ipa" Payload
       - uses: actions/upload-artifact@v7
         with:
@@ -464,7 +466,7 @@ jobs:
                   "size": patch.stat().st_size,
                   "sha256": hashlib.sha256(patch.read_bytes()).hexdigest(),
               }
-          Path("qingxu-android-update.json").write_text(
+          Path("tempo-android-update.json").write_text(
               json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
               encoding="utf-8",
           )
@@ -477,7 +479,7 @@ jobs:
           path: |
             apps/android/TEMPO-${{ needs.version.outputs.version }}-Android.apk
             apps/android/TEMPO-*-to-${{ needs.version.outputs.version }}-Android.bpatch
-            apps/android/qingxu-android-update.json
+            apps/android/tempo-android-update.json
 
   apple-macos:
     needs: version
@@ -555,7 +557,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/download-artifact@v8
         with:
-          pattern: qingxu-${{ needs.version.outputs.version }}-*
+          pattern: tempo-${{ needs.version.outputs.version }}-*
           path: release-assets
           merge-multiple: true
       - name: Generate SHA-256 checksums

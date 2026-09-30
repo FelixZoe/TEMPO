@@ -298,7 +298,7 @@ class _StartupView extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(18),
               child: Image.asset(
-                'assets/branding/qingxu-icon-master-black.png',
+                'assets/branding/tempo-icon-master-black.png',
                 width: 68,
                 height: 68,
               ),

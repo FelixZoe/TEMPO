@@ -44,7 +44,7 @@ flowchart LR
 
 ### Apple 系统扩展
 
-iOS 主应用与 `QingxuWidgets` 扩展通过 `group.one.darker.qingxu` App Group 共享最小快照：
+iOS 主应用与 `TEMPOWidgets` 扩展通过 `group.one.darker.qingxu` App Group 共享最小快照：
 
 - WidgetKit 读取今日任务与专注状态快照。
 - ActivityKit 显示番茄钟的锁屏实时活动和灵动岛。

@@ -649,7 +649,7 @@ private struct RSSClient {
       "application/rss+xml, application/atom+xml, application/xml, text/xml, text/html;q=0.8",
       forHTTPHeaderField: "Accept"
     )
-    request.setValue("QingxuRSS/1.0", forHTTPHeaderField: "User-Agent")
+    request.setValue("TEMPORSS/1.0", forHTTPHeaderField: "User-Agent")
     let result = try await URLSession.shared.data(for: request)
     guard result.0.count <= 10 * 1024 * 1024 else { throw RSSFeatureError.invalidResponse }
     return result

@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "one.darker" "\0"
-            VALUE "FileDescription", "qingxu" "\0"
+            VALUE "FileDescription", "TEMPO" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "qingxu" "\0"
+            VALUE "InternalName", "TEMPO" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 one.darker. All rights reserved." "\0"
-            VALUE "OriginalFilename", "qingxu.exe" "\0"
-            VALUE "ProductName", "qingxu" "\0"
+            VALUE "OriginalFilename", "TEMPO.exe" "\0"
+            VALUE "ProductName", "TEMPO" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

@@ -28,7 +28,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: one.darker.qingxu
-        PRODUCT_NAME: Qingxu
+        PRODUCT_NAME: TEMPO
         INFOPLIST_KEY_CFBundleDisplayName: TEMPO
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         CODE_SIGN_ENTITLEMENTS: Configuration/QingxuiOS.entitlements
@@ -49,7 +49,7 @@ targets:
           UIApplicationSupportsMultipleScenes: false
         CFBundleURLTypes:
           - CFBundleURLName: one.darker.qingxu
-            CFBundleURLSchemes: [qingxu]
+            CFBundleURLSchemes: [tempo, qingxu]
         NSSupportsLiveActivities: true
         NSSupportsLiveActivitiesFrequentUpdates: true
         BGTaskSchedulerPermittedIdentifiers:
@@ -65,7 +65,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: one.darker.qingxu.widgets
-        PRODUCT_NAME: QingxuWidgets
+        PRODUCT_NAME: TEMPOWidgets
         CODE_SIGN_ENTITLEMENTS: Configuration/QingxuWidgets.entitlements
         CODE_SIGN_STYLE: Manual
         DEVELOPMENT_TEAM: "$(IOS_DEVELOPMENT_TEAM)"
@@ -95,7 +95,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: one.darker.qingxu
-        PRODUCT_NAME: Qingxu
+        PRODUCT_NAME: TEMPO
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         CODE_SIGN_ENTITLEMENTS: Configuration/QingxumacOS.entitlements
         ENABLE_HARDENED_RUNTIME: YES
@@ -108,7 +108,7 @@ targets:
         LSApplicationCategoryType: public.app-category.productivity
         CFBundleURLTypes:
           - CFBundleURLName: one.darker.qingxu
-            CFBundleURLSchemes: [qingxu]
+            CFBundleURLSchemes: [tempo, qingxu]
   QingxumacOSWidgets:
     type: app-extension
     platform: macOS
@@ -117,7 +117,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: one.darker.qingxu.macos.widgets
-        PRODUCT_NAME: QingxumacOSWidgets
+        PRODUCT_NAME: TEMPOWidgets
         CODE_SIGN_ENTITLEMENTS: Configuration/QingxumacOSWidgets.entitlements
         APPLICATION_EXTENSION_API_ONLY: YES
         SKIP_INSTALL: YES

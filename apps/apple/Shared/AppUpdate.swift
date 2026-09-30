@@ -66,7 +66,7 @@ final class AppUpdateChecker: ObservableObject {
     state = .checking
     do {
       var request = URLRequest(
-        url: URL(string: "https://api.github.com/repos/FelixZoe/qingxu/releases/latest")!
+        url: URL(string: "https://api.github.com/repos/FelixZoe/TEMPO/releases/latest")!
       )
       request.timeoutInterval = 15
       request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")

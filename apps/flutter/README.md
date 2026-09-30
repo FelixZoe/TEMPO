@@ -63,7 +63,7 @@ Windows：
 flutter build windows --release
 ```
 
-Release 工作流会在 Windows 产物中补齐 VC Runtime，生成便携 ZIP 和 Inno Setup 安装程序。不要只复制单个 `Qingxu.exe`，运行时 DLL、Flutter 数据目录和插件必须一起分发。
+Release 工作流会在 Windows 产物中补齐 VC Runtime，生成便携 ZIP 和 Inno Setup 安装程序。不要只复制单个 `TEMPO.exe`，运行时 DLL、Flutter 数据目录和插件必须一起分发。
 
 ## 数据与同步
 

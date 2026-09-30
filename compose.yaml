@@ -2,7 +2,7 @@ name: qingxu
 
 services:
   sync:
-    image: ghcr.io/felixzoe/qingxu-sync:latest
+    image: ghcr.io/felixzoe/tempo-sync:latest
     restart: unless-stopped
     environment:
       SYNC_TOKEN: ${SYNC_TOKEN:?请在 .env 中配置 64 位十六进制 SYNC_TOKEN}
@@ -22,7 +22,7 @@ services:
     pids_limit: 64
     mem_limit: 64m
     healthcheck:
-      test: ["CMD", "/qingxu-sync", "healthcheck"]
+      test: ["CMD", "/tempo-sync", "healthcheck"]
       interval: 30s
       timeout: 5s
       start_period: 5s

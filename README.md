@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="apps/flutter/assets/branding/qingxu-icon-master-black.png" width="112" alt="TEMPO 应用图标">
+  <img src="apps/flutter/assets/branding/tempo-icon-master-black.png" width="112" alt="TEMPO 应用图标">
 </p>
 
 <h1 align="center">TEMPO</h1>
@@ -10,8 +10,8 @@
 
 <p align="center">
   <a href="https://todo.darker.one">开发与部署文档</a> ·
-  <a href="https://github.com/FelixZoe/qingxu/releases/latest">下载最新版</a> ·
-  <a href="https://github.com/FelixZoe/qingxu/actions/workflows/build-release.yml">构建状态</a> ·
+  <a href="https://github.com/FelixZoe/TEMPO/releases/latest">下载最新版</a> ·
+  <a href="https://github.com/FelixZoe/TEMPO/actions/workflows/build-release.yml">构建状态</a> ·
   <a href="docs/DEPLOYMENT.md">部署同步服务</a> ·
   <a href="docs/DESIGN.md">设计规范</a>
 </p>
@@ -35,7 +35,7 @@
 
 ## 平台与下载
 
-所有公开安装包都位于 [GitHub Releases](https://github.com/FelixZoe/qingxu/releases/latest)。
+所有公开安装包都位于 [GitHub Releases](https://github.com/FelixZoe/TEMPO/releases/latest)。
 
 | 平台 | 实现 | Release 文件 | 说明 |
 | --- | --- | --- | --- |
@@ -48,7 +48,7 @@
 
 ### 关于 iOS 自签
 
-iOS 的灵动岛与小组件位于 `QingxuWidgets.appex`。签名工具必须同时保留并签名主应用和扩展，同时保持以下标识一致：
+iOS 的灵动岛与小组件位于 `TEMPOWidgets.appex`。签名工具必须同时保留并签名主应用和扩展，同时保持以下标识一致：
 
 ```text
 主应用：one.darker.qingxu
@@ -63,8 +63,8 @@ App Group：group.one.darker.qingxu
 前置条件：Linux 服务器、Docker Compose v2、一个已经启用 HTTPS 的域名。
 
 ```bash
-git clone https://github.com/FelixZoe/qingxu.git
-cd qingxu
+git clone https://github.com/FelixZoe/TEMPO.git
+cd TEMPO
 cp .env.example .env
 TOKEN=$(openssl rand -hex 32)
 sed -i "s/^SYNC_TOKEN=.*/SYNC_TOKEN=$TOKEN/" .env
@@ -169,7 +169,7 @@ go vet ./...
 
 ## 自动发布
 
-推送到 `main` 后会自动检查、构建四端客户端和同步服务，并在全部必要任务通过后发布新版本。构建过程与结果以 [GitHub Actions](https://github.com/FelixZoe/qingxu/actions) 为准，不在用户文档重复展示内部版本迁移和流水线实现。
+推送到 `main` 后会自动检查、构建四端客户端和同步服务，并在全部必要任务通过后发布新版本。构建过程与结果以 [GitHub Actions](https://github.com/FelixZoe/TEMPO/actions) 为准，不在用户文档重复展示内部版本迁移和流水线实现。
 
 ## 文档
 

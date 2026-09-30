@@ -19,7 +19,7 @@
 生产环境请从仓库根目录使用已发布镜像：
 
 ```bash
-cd qingxu
+cd TEMPO
 cp .env.example .env
 TOKEN=$(openssl rand -hex 32)
 sed -i "s/^SYNC_TOKEN=.*/SYNC_TOKEN=$TOKEN/" .env
@@ -94,7 +94,7 @@ go vet ./...
 go build ./cmd/sync-server
 ```
 
-提交到 `main` 后，GitHub Actions 会重复执行测试与 `vet`、构建容器，并发布 `ghcr.io/felixzoe/qingxu-sync`。
+提交到 `main` 后，GitHub Actions 会重复执行测试与 `vet`、构建容器，并发布 `ghcr.io/felixzoe/tempo-sync`；旧的 `qingxu-sync` 标签仅用于兼容既有部署。
 
 ## 存储边界
 

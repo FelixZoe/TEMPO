@@ -26,6 +26,6 @@
 
 ## 项目入口
 
-- [GitHub 仓库](https://github.com/FelixZoe/qingxu)
-- [下载最新版本](https://github.com/FelixZoe/qingxu/releases/latest)
-- [构建状态](https://github.com/FelixZoe/qingxu/actions)
+- [GitHub 仓库](https://github.com/FelixZoe/TEMPO)
+- [下载最新版本](https://github.com/FelixZoe/TEMPO/releases/latest)
+- [构建状态](https://github.com/FelixZoe/TEMPO/actions)

@@ -207,7 +207,7 @@ struct SettingsScreen: View {
         }
 
         Section("关于") {
-            Link(destination: URL(string: "https://github.com/FelixZoe/qingxu")!) {
+            Link(destination: URL(string: "https://github.com/FelixZoe/TEMPO")!) {
               SettingsDestinationRow(
                 symbol: "chevron.left.forwardslash.chevron.right",
                 title: "项目与下载",

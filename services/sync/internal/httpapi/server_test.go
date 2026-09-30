@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/FelixZoe/qingxu/services/sync/internal/store"
+	"github.com/FelixZoe/TEMPO/services/sync/internal/store"
 )
 
 const testToken = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"

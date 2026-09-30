@@ -21,6 +21,7 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
+				<string>tempo</string>
 				<string>qingxu</string>
 			</array>
 		</dict>

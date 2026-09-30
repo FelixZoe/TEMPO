@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: qingxu-private-ios-signing
+  group: tempo-private-ios-signing
   cancel-in-progress: false
 
 jobs:
@@ -164,7 +164,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          archive_path="$RUNNER_TEMP/Qingxu.xcarchive"
+          archive_path="$RUNNER_TEMP/TEMPO.xcarchive"
           xcodebuild \
             -project QingxuApple.xcodeproj \
             -scheme QingxuiOS \
@@ -181,8 +181,8 @@ jobs:
             CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
             archive
 
-          app_path="$archive_path/Products/Applications/Qingxu.app"
-          widget_path="$app_path/PlugIns/QingxuWidgets.appex"
+          app_path="$archive_path/Products/Applications/TEMPO.app"
+          widget_path="$app_path/PlugIns/TEMPOWidgets.appex"
           test -d "$app_path"
           test -d "$widget_path"
           test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app_path/Info.plist")" = "$MAIN_BUNDLE_ID"
@@ -200,7 +200,7 @@ jobs:
 
           package_dir="$RUNNER_TEMP/qingxu-private-package"
           mkdir -p "$package_dir/Payload"
-          ditto "$app_path" "$package_dir/Payload/Qingxu.app"
+          ditto "$app_path" "$package_dir/Payload/TEMPO.app"
           (cd "$package_dir" && /usr/bin/zip -qry "$RUNNER_TEMP/TEMPO-${APP_VERSION}-iOS-signed.ipa" Payload)
 
       - name: Encrypt signed IPA for private artifact storage
@@ -249,7 +249,7 @@ jobs:
             rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/$IOS_WIDGET_PROFILE_UUID.mobileprovision"
           fi
           rm -rf \
-            "$RUNNER_TEMP/Qingxu.xcarchive" \
+            "$RUNNER_TEMP/TEMPO.xcarchive" \
             "$RUNNER_TEMP/qingxu-private-package" \
             "$RUNNER_TEMP/qingxu-encrypted-output" \
             "$RUNNER_TEMP/qingxu-signing.p12" \
