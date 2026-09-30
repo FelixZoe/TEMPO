@@ -58,14 +58,20 @@ jobs:
       - name: Publish documentation atomically
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
         run: |
           set -euo pipefail
           release_name="docs-${GITHUB_SHA::12}"
           deploy_root="/opt/1panel/www/sites/todo.darker.one/docs-live"
           release="$deploy_root/releases/$release_name"
-          target="$DEPLOY_USER@$DEPLOY_HOST"
-          ssh_opts=(-i "$HOME/.ssh/id_ed25519" -o IdentitiesOnly=yes)
+          target="ubuntu@$DEPLOY_HOST"
+          ssh_opts=(
+            -i "$HOME/.ssh/id_ed25519"
+            -o IdentitiesOnly=yes
+            -o PreferredAuthentications=publickey
+            -o PasswordAuthentication=no
+            -o KbdInteractiveAuthentication=no
+            -o BatchMode=yes
+          )
           ssh "${ssh_opts[@]}" "$target" "mkdir -p '$release'"
           tar -C site -czf - . | ssh "${ssh_opts[@]}" "$target" "tar -xzf - -C '$release'"
           ssh "${ssh_opts[@]}" "$target" "cd '$deploy_root' && ln -sfn 'releases/$release_name' current-next && mv -Tf current-next current"
