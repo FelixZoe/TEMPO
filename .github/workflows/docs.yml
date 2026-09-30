@@ -75,6 +75,13 @@ jobs:
             -o PasswordAuthentication=no
             -o KbdInteractiveAuthentication=no
             -o BatchMode=yes
+            -o ConnectTimeout=30
+            -o ConnectionAttempts=5
+            -o ServerAliveInterval=10
+            -o ServerAliveCountMax=3
+            -o ControlMaster=auto
+            -o ControlPersist=60
+            -o ControlPath="$HOME/.ssh/tempo-docs-%C"
           )
           ssh "${ssh_opts[@]}" "$target" "mkdir -p '$release'"
           tar -C site -czf - . | ssh "${ssh_opts[@]}" "$target" "tar -xzf - -C '$release'"
