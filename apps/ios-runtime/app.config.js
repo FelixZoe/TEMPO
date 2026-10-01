@@ -24,6 +24,18 @@ module.exports = {
     scheme: 'tempo',
     userInterfaceStyle: 'automatic',
     newArchEnabled: true,
+    plugins: [
+      ['expo-build-properties', { ios: { usePrecompiledModules: true } }],
+      [
+        'expo-brownfield',
+        {
+          ios: {
+            targetName: 'TempoRuntime',
+            bundleIdentifier: 'one.darker.qingxu.runtime',
+          },
+        },
+      ],
+    ],
     ios: {
       bundleIdentifier: 'one.darker.qingxu',
       supportsTablet: true,

@@ -7,11 +7,15 @@
     "start": "expo start --dev-client",
     "typecheck": "tsc --noEmit",
     "export:ios": "expo export --platform ios --output-dir dist",
+    "prebuild:ios": "expo prebuild --platform ios --clean",
+    "build:brownfield:ios": "expo-brownfield build:ios --release --package TempoRuntimePackage",
     "update:preview": "eas update --branch preview",
     "update:production": "eas update --branch production"
   },
   "dependencies": {
     "expo": "~57.0.26",
+    "expo-brownfield": "~57.0.24",
+    "expo-build-properties": "~57.0.22",
     "expo-status-bar": "~57.0.1",
     "expo-updates": "~57.0.24",
     "react": "19.2.3",
