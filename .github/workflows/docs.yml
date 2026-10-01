@@ -95,10 +95,10 @@ jobs:
           for attempt in {1..6}; do
             if curl --fail --silent --show-error \
               --header 'Cache-Control: no-cache' \
-              "https://todo.darker.one/?revision=${GITHUB_SHA}" | grep -q '<title>TEMPO'; then
+              "https://todo.darker.one/?revision=${GITHUB_SHA}" | grep -q '<title>Tempo'; then
               exit 0
             fi
             sleep 5
           done
-          echo 'The public site did not expose the deployed TEMPO build.' >&2
+          echo 'The public site did not expose the deployed Tempo build.' >&2
           exit 1
