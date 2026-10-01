@@ -17,6 +17,18 @@ enum SyncPhase: Equatable {
   }
 }
 
+struct SyncDeveloperSnapshot: Equatable {
+  let phase: SyncPhase
+  let revision: UInt64
+  let dirtyTaskCount: Int
+  let pomodoroPending: Bool
+  let lastAutomaticSync: Date
+  let serverConfigured: Bool
+  let autoSyncEnabled: Bool
+
+  var pendingChangeCount: Int { dirtyTaskCount + (pomodoroPending ? 1 : 0) }
+}
+
 private struct SyncMetadata: Codable {
   var revision: UInt64
   var dirtyTaskIDs: Set<String>
@@ -119,6 +131,18 @@ final class AppStore: ObservableObject {
   }
 
   var estimatedNow: Date { Date().addingTimeInterval(serverOffset) }
+
+  var developerSyncSnapshot: SyncDeveloperSnapshot {
+    SyncDeveloperSnapshot(
+      phase: syncPhase,
+      revision: lastRevision,
+      dirtyTaskCount: dirtyTaskIDs.count,
+      pomodoroPending: pomodoroDirty,
+      lastAutomaticSync: lastAutomaticSync,
+      serverConfigured: syncSettings.isConfigured,
+      autoSyncEnabled: syncSettings.autoSync
+    )
+  }
 
   @discardableResult
   func addTask(title: String, notes: String = "", forToday: Bool = false) -> TaskItem? {

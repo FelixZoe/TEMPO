@@ -42,6 +42,8 @@ private struct iOSRootView: View {
   @State private var selection = AppTab.today
   @State private var showingLaunchExperience = true
   @State private var availableUpdate: QingxuRelease?
+  @State private var showingDeveloperTools = false
+  @State private var developerToolsDetent: PresentationDetent = .medium
   @AppStorage(QingxuPreferenceKey.moduleOrder) private var moduleOrder = QingxuModuleOrder.defaultValue
 
   var body: some View {
@@ -59,6 +61,13 @@ private struct iOSRootView: View {
       }
       .tint(QingxuPalette.accent)
       .disabled(showingLaunchExperience)
+      .background {
+        DeveloperToolsTabGestureBridge {
+          developerToolsDetent = .medium
+          showingDeveloperTools = true
+        }
+        .frame(width: 0, height: 0)
+      }
 
       if showingLaunchExperience {
         QingxuLaunchExperience {
@@ -106,6 +115,14 @@ private struct iOSRootView: View {
         secondaryButton: .cancel(Text("稍后"))
       )
     }
+    .sheet(isPresented: $showingDeveloperTools) {
+      DeveloperToolsView(selectedDetent: $developerToolsDetent)
+        .environmentObject(store)
+        .environmentObject(updateChecker)
+        .presentationDetents([.medium, .large], selection: $developerToolsDetent)
+        .presentationDragIndicator(.visible)
+        .presentationCornerRadius(30)
+    }
     .onAppear {
       consumePendingWidgetDestination()
       RSSBackgroundRefresh.schedule()
@@ -149,6 +166,132 @@ private struct iOSRootView: View {
     let notes = release.body.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !notes.isEmpty else { return "新版本已经发布，可前往 GitHub 下载 IPA。" }
     return String(notes.prefix(240))
+  }
+}
+
+private struct DeveloperToolsTabGestureBridge: UIViewControllerRepresentable {
+  let onReveal: () -> Void
+
+  func makeCoordinator() -> Coordinator { Coordinator(onReveal: onReveal) }
+
+  func makeUIViewController(context: Context) -> Controller {
+    let controller = Controller()
+    controller.onResolveTabBar = { [weak coordinator = context.coordinator] tabBar in
+      coordinator?.install(on: tabBar)
+    }
+    return controller
+  }
+
+  func updateUIViewController(_ controller: Controller, context: Context) {
+    context.coordinator.onReveal = onReveal
+    controller.resolveTabBarWhenReady()
+  }
+
+  final class Controller: UIViewController {
+    var onResolveTabBar: ((UITabBar) -> Void)?
+
+    override func loadView() {
+      view = UIView(frame: .zero)
+      view.isUserInteractionEnabled = false
+      view.backgroundColor = .clear
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+      super.viewDidAppear(animated)
+      resolveTabBarWhenReady()
+    }
+
+    func resolveTabBarWhenReady() {
+      DispatchQueue.main.async { [weak self] in
+        guard let self, let tabBar = tabBarController?.tabBar
+          ?? view.window?.rootViewController?.findDeveloperToolsTabBarController()?.tabBar
+        else { return }
+        onResolveTabBar?(tabBar)
+      }
+    }
+  }
+
+  final class Coordinator: NSObject, UIGestureRecognizerDelegate {
+    var onReveal: () -> Void
+    private weak var installedTabBar: UITabBar?
+    private weak var tapRecognizer: UITapGestureRecognizer?
+    private weak var longPressRecognizer: UILongPressGestureRecognizer?
+
+    init(onReveal: @escaping () -> Void) {
+      self.onReveal = onReveal
+    }
+
+    func install(on tabBar: UITabBar) {
+      guard installedTabBar !== tabBar else { return }
+      uninstall()
+
+      let tap = UITapGestureRecognizer(target: self, action: #selector(handleFourTaps(_:)))
+      tap.numberOfTapsRequired = 4
+      tap.cancelsTouchesInView = false
+      tap.delegate = self
+
+      let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+      longPress.minimumPressDuration = 0.65
+      longPress.cancelsTouchesInView = false
+      longPress.delegate = self
+
+      tabBar.addGestureRecognizer(tap)
+      tabBar.addGestureRecognizer(longPress)
+      installedTabBar = tabBar
+      tapRecognizer = tap
+      longPressRecognizer = longPress
+    }
+
+    private func uninstall() {
+      if let tapRecognizer { installedTabBar?.removeGestureRecognizer(tapRecognizer) }
+      if let longPressRecognizer { installedTabBar?.removeGestureRecognizer(longPressRecognizer) }
+    }
+
+    @objc private func handleFourTaps(_ recognizer: UITapGestureRecognizer) {
+      guard recognizer.state == .ended, isSettingsItem(at: recognizer.location(in: recognizer.view)) else { return }
+      reveal()
+    }
+
+    @objc private func handleLongPress(_ recognizer: UILongPressGestureRecognizer) {
+      guard recognizer.state == .began, isSettingsItem(at: recognizer.location(in: recognizer.view)) else { return }
+      reveal()
+    }
+
+    private func reveal() {
+      UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+      onReveal()
+    }
+
+    private func isSettingsItem(at point: CGPoint) -> Bool {
+      guard let tabBar = installedTabBar,
+            let items = tabBar.items,
+            !items.isEmpty,
+            tabBar.bounds.width > 0 else { return false }
+      let rawIndex = Int((point.x / tabBar.bounds.width) * CGFloat(items.count))
+      let visualIndex = min(items.count - 1, max(0, rawIndex))
+      let index = tabBar.effectiveUserInterfaceLayoutDirection == .rightToLeft
+        ? items.count - 1 - visualIndex
+        : visualIndex
+      return items[index].title == AppTab.settings.title
+    }
+
+    func gestureRecognizer(
+      _ gestureRecognizer: UIGestureRecognizer,
+      shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
+    ) -> Bool { true }
+  }
+}
+
+private extension UIViewController {
+  func findDeveloperToolsTabBarController() -> UITabBarController? {
+    if let tabController = self as? UITabBarController { return tabController }
+    for child in children {
+      if let tabController = child.findDeveloperToolsTabBarController() { return tabController }
+    }
+    if let presentedViewController {
+      return presentedViewController.findDeveloperToolsTabBarController()
+    }
+    return nil
   }
 }
 

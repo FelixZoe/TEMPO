@@ -145,8 +145,9 @@ struct SettingsScreen: View {
             NavigationLink { FeatureModulesSettingsView().qingxuSettingsDestination() } label: {
               SettingsHomeRow(
                 symbol: "rectangle.3.group",
-                title: "导航顺序",
-                value: "五个入口"
+                title: "导航与模块",
+                value: "拖动排序",
+                iconTint: .indigo
               )
             }
             SettingsDivider()
@@ -154,8 +155,9 @@ struct SettingsScreen: View {
             NavigationLink { NotificationAndFeedbackSettingsView().qingxuSettingsDestination() } label: {
               SettingsHomeRow(
                 symbol: "bell.badge",
-                title: "声音、提醒与触感",
-                value: ""
+                title: "声音与提醒",
+                value: "通知和触感",
+                iconTint: .red
               )
             }
             SettingsDivider()
@@ -163,8 +165,9 @@ struct SettingsScreen: View {
             NavigationLink { CalendarPreferencesView().qingxuSettingsDestination() } label: {
               SettingsHomeRow(
                 symbol: "calendar",
-                title: "日期与日历",
-                value: ""
+                title: "日历与日期",
+                value: "节假日和农历",
+                iconTint: .red
               )
             }
           }
@@ -174,7 +177,8 @@ struct SettingsScreen: View {
               SettingsHomeRow(
                 symbol: "arrow.triangle.2.circlepath",
                 title: "自托管同步",
-                value: store.syncSettings.isConfigured ? store.syncPhase.title : "未配置"
+                value: store.syncSettings.isConfigured ? store.syncPhase.title : "连接自己的服务器",
+                iconTint: .blue
               )
             }
             SettingsDivider()
@@ -182,7 +186,8 @@ struct SettingsScreen: View {
               SettingsHomeRow(
                 symbol: "cloud.sun",
                 title: "天气与每日一句",
-                value: ambientDetail
+                value: ambientDetail,
+                iconTint: .cyan
               )
             }
             SettingsDivider()
@@ -190,7 +195,8 @@ struct SettingsScreen: View {
               SettingsHomeRow(
                 symbol: "sparkles",
                 title: "AI 助手",
-                value: aiDetail
+                value: aiDetail,
+                iconTint: .purple
               )
             }
             #if os(iOS)
@@ -199,7 +205,8 @@ struct SettingsScreen: View {
               SettingsHomeRow(
                 symbol: "arrow.down.circle",
                 title: "软件更新",
-                value: updateDetail
+                value: updateDetail,
+                iconTint: .green
               )
             }
             #endif
@@ -209,9 +216,10 @@ struct SettingsScreen: View {
             Link(destination: URL(string: "https://github.com/FelixZoe/TEMPO")!) {
               SettingsHomeRow(
                 symbol: "chevron.left.forwardslash.chevron.right",
-                title: "项目与下载",
+                title: "项目、文档与下载",
                 value: "GitHub",
-                accessorySymbol: "arrow.up.right"
+                accessorySymbol: "arrow.up.right",
+                iconTint: .gray
               )
             }
           }
@@ -291,17 +299,18 @@ private struct SettingsHomeRow: View {
   let title: String
   let value: String
   var accessorySymbol = "chevron.right"
+  var iconTint = QingxuPalette.accent
 
   var body: some View {
     HStack(spacing: 14) {
       Image(systemName: symbol)
         .font(.system(size: 17, weight: .medium))
-        .foregroundStyle(QingxuPalette.ink)
+        .foregroundStyle(.white)
         .frame(width: 36, height: 36)
-        .background(QingxuPalette.elevatedSurface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .background(iconTint.gradient, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         .overlay {
           RoundedRectangle(cornerRadius: 10, style: .continuous)
-            .stroke(QingxuPalette.separator.opacity(0.4), lineWidth: 0.5)
+            .stroke(.white.opacity(0.16), lineWidth: 0.5)
         }
 
       Text(title)
