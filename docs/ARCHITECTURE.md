@@ -1,6 +1,6 @@
 # Tempo系统架构
 
-Tempo 采用“三套客户端工程、一份同步协议、一个轻量服务端”的结构。Apple 平台使用 SwiftUI；Android 使用独立的 Flowtime 衍生 Flutter 工程；Windows 保留独立 Flutter 工程；所有客户端共享 Go 服务端的 JSON 协议。
+Tempo 采用“三套客户端工程、一份同步协议、一个轻量服务端”的结构。iOS 使用 SwiftUI 原生壳与 React Native/TypeScript 内容层，macOS 保持 SwiftUI；Android 使用独立的 Flowtime 衍生 Flutter 工程；Windows 保留独立 Flutter 工程；所有客户端共享 Go 服务端的 JSON 协议。
 
 返回：[文档首页](/) · [产品范围](/PRODUCT) · [设计规范](/DESIGN) · [同步协议](/SYNC_PROTOCOL)
 
@@ -9,7 +9,7 @@ Tempo 采用“三套客户端工程、一份同步协议、一个轻量服务�
 ```mermaid
 flowchart LR
   subgraph Clients[客户端]
-    IOS[iOS / SwiftUI]
+    IOS[iOS / SwiftUI Shell + OTA Content]
     MAC[macOS / SwiftUI]
     AND[Android / Flutter]
     WIN[Windows / Flutter]
@@ -35,12 +35,14 @@ flowchart LR
 
 | 平台 | 目录 | UI 技术 | 本地状态管理 | 安全存储 |
 | --- | --- | --- | --- | --- |
-| iOS | `apps/apple` | SwiftUI、WidgetKit、ActivityKit | `AppStore` | Keychain |
+| iOS | `apps/apple` + `apps/ios-runtime` | SwiftUI、React Native、WidgetKit、ActivityKit | `AppStore` | Keychain |
 | macOS | `apps/apple` | SwiftUI | `AppStore` | Keychain |
 | Android | `apps/android` | Flutter | `AppProvider` | Hive / SharedPreferences |
 | Windows | `apps/flutter` | Flutter、托盘与窗口插件 | `TaskController` | `flutter_secure_storage` |
 
 任务数据使用平台应用数据目录中的 JSON 文件。主题、模块顺序等设备偏好留在本机；任务、番茄钟和 RSS 阅读状态进入同步文档。
+
+iOS 中只有页面内容、样式和静态资源允许通过 OTA 更新；系统导航、液态玻璃按钮、权限、小组件、灵动岛和数据层仍由 Swift 管理。完整边界见 [iOS 混合架构与 OTA](/architecture/ios-ota)。
 
 ### Apple 系统扩展
 
@@ -102,6 +104,7 @@ Docker 默认以非 root 用户运行，根文件系统只读，移除 Linux cap
 ```mermaid
 flowchart LR
   PUSH[推送 main] --> TEST[Flutter / Go 检查]
+  PUSH --> OTA[iOS OTA 内容验证]
   TEST --> IOS[iOS 构建]
   TEST --> MAC[macOS 构建]
   TEST --> AND[Android 构建]
@@ -114,6 +117,8 @@ flowchart LR
   DOCKER --> RELEASE
   RELEASE --> SUM[SHA-256 + 来源证明]
   SUM --> VERSION[版本号回写]
+  OTA --> PREVIEW[Preview 更新分支]
+  PREVIEW --> PRODUCTION[验证后发布 Production]
 ```
 
 公开工作流生成未签名 iOS IPA。包含个人证书的签名构建由独立的 `Private Signed iOS` 手动工作流完成，产物加密且不进入公开 Release。

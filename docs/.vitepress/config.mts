@@ -53,6 +53,7 @@ export default defineConfig({
             text: '开发',
             items: [
               { text: '系统架构', link: '/ARCHITECTURE' },
+              { text: 'iOS OTA 架构', link: '/architecture/ios-ota' },
               { text: '安全与性能审计', link: '/SECURITY_PERFORMANCE' },
               { text: '同步协议', link: '/SYNC_PROTOCOL' },
               { text: '跨端设计规范', link: '/DESIGN' }

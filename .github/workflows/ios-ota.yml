@@ -1,0 +1,63 @@
+name: iOS OTA Runtime
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/ios-runtime/**"
+      - ".github/workflows/ios-ota.yml"
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: EAS Update branch
+        required: true
+        default: preview
+        type: choice
+        options:
+          - preview
+          - production
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tempo-ios-ota-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-and-publish:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/ios-runtime
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/ios-runtime/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - name: Resolve native runtime version
+        shell: bash
+        run: |
+          version="$(sed -nE 's/^version:[[:space:]]*([0-9]+\.[0-9]+\.[0-9]+).*/\1/p' ../flutter/pubspec.yaml)"
+          test -n "$version"
+          echo "TEMPO_APP_VERSION=$version" >> "$GITHUB_ENV"
+      - run: npm run export:ios
+      - name: Publish EAS Update
+        if: env.EXPO_TOKEN != ''
+        shell: bash
+        run: |
+          branch="${{ github.event.inputs.branch }}"
+          if [[ -z "$branch" ]]; then branch="preview"; fi
+          npx --yes eas-cli@latest update \
+            --branch "$branch" \
+            --message "${GITHUB_SHA::12}" \
+            --non-interactive
+      - name: Explain unpublished validation
+        if: env.EXPO_TOKEN == ''
+        run: echo "OTA export validated. Add EXPO_TOKEN to publish updates."
