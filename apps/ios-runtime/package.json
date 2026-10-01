@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit",
     "export:ios": "expo export --platform ios --output-dir dist",
     "prebuild:ios": "expo prebuild --platform ios --clean",
-    "build:brownfield:ios": "expo-brownfield build:ios --release --package TempoRuntimePackage",
+    "build:brownfield:ios": "expo-brownfield build:ios --release --package TempoRuntimePackage --verbose",
     "update:preview": "eas update --branch preview",
     "update:production": "eas update --branch production"
   },
