@@ -13,7 +13,7 @@
     "update:production": "eas update --branch production"
   },
   "dependencies": {
-    "expo": "~57.0.26",
+    "expo": "57.0.10",
     "expo-brownfield": "~57.0.24",
     "expo-build-properties": "~57.0.22",
     "expo-status-bar": "~57.0.1",
@@ -25,5 +25,9 @@
     "@types/react": "~19.2.2",
     "babel-preset-expo": "~57.0.13",
     "typescript": "~6.0.3"
+  },
+  "overrides": {
+    "expo-modules-core": "57.0.9",
+    "expo-modules-jsi": "57.0.4"
   }
 }
