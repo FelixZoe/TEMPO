@@ -98,6 +98,11 @@ struct TaskListScreen: View {
           ToolbarItem(placement: .navigationBarTrailing) {
             todayMoreMenu
           }
+        } else if scope == .inbox,
+                  ambientStore.weather != nil || ambientStore.isLoading {
+          ToolbarItem(placement: .navigationBarTrailing) {
+            inboxWeatherButton
+          }
         }
         #endif
       }
@@ -205,18 +210,6 @@ struct TaskListScreen: View {
 
   private var standardTaskList: some View {
     List {
-      if scope == .inbox,
-         ambientStore.weather != nil || ambientStore.isLoading {
-        InboxWeatherLine(
-          weather: ambientStore.weather,
-          isLoading: ambientStore.isLoading,
-          refresh: { Task { await ambientStore.load(force: true) } }
-        )
-        .listRowInsets(.init(top: 4, leading: 22, bottom: 10, trailing: 22))
-        .listRowBackground(Color.clear)
-        .listRowSeparator(.hidden)
-      }
-
       taskRows
 
       if tasks.isEmpty {
@@ -298,6 +291,26 @@ struct TaskListScreen: View {
       .listRowSeparator(.hidden)
     }
   }
+
+  #if os(iOS)
+  @ViewBuilder
+  private var inboxWeatherButton: some View {
+    if let weather = ambientStore.weather {
+      Button {
+        Task { await ambientStore.load(force: true) }
+      } label: {
+        Image(systemName: qingxuWeatherSymbol(weather.icon, text: weather.text))
+          .symbolRenderingMode(.hierarchical)
+      }
+      .accessibilityLabel("\(weather.cityName)，\(weather.text)，\(weather.temperature)度")
+      .accessibilityHint("轻点刷新天气")
+    } else if ambientStore.isLoading {
+      ProgressView()
+        .controlSize(.small)
+        .accessibilityLabel("正在获取天气")
+    }
+  }
+  #endif
 
   #if os(iOS)
   @ViewBuilder
@@ -705,53 +718,15 @@ private struct TaskRow: View {
   }
 }
 
-private struct InboxWeatherLine: View {
-  let weather: QingxuWeatherSnapshot?
-  let isLoading: Bool
-  let refresh: () -> Void
-
-  var body: some View {
-    Button(action: refresh) {
-      HStack(spacing: 10) {
-        if let weather {
-          Image(systemName: weatherSymbol(weather.icon, text: weather.text))
-            .font(.system(size: 17, weight: .medium))
-          Text("\(weather.temperature)°")
-            .font(.system(.title3, design: .rounded, weight: .semibold).monospacedDigit())
-          Text("\(weather.cityName) · \(weather.text)")
-            .font(.subheadline)
-            .foregroundStyle(QingxuPalette.quiet)
-            .lineLimit(1)
-          Spacer(minLength: 8)
-          Image(systemName: "arrow.clockwise")
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(QingxuPalette.faint)
-        } else if isLoading {
-          ProgressView().controlSize(.small)
-          Text("正在获取天气")
-            .font(.subheadline)
-            .foregroundStyle(QingxuPalette.quiet)
-          Spacer(minLength: 8)
-        }
-      }
-      .foregroundStyle(QingxuPalette.ink)
-      .frame(maxWidth: .infinity, minHeight: 36, alignment: .leading)
-      .contentShape(Rectangle())
-    }
-    .buttonStyle(.plain)
-    .accessibilityLabel("刷新天气")
-  }
-
-  private func weatherSymbol(_ icon: String, text: String) -> String {
-    if text.contains("雷") { return "cloud.bolt.rain.fill" }
-    if text.contains("雨") { return "cloud.rain.fill" }
-    if text.contains("雪") { return "cloud.snow.fill" }
-    if text.contains("雾") || text.contains("霾") { return "cloud.fog.fill" }
-    if text.contains("阴") { return "cloud.fill" }
-    if text.contains("云") { return "cloud.sun.fill" }
-    if ["150", "151", "152", "153"].contains(icon) { return "moon.stars.fill" }
-    return "sun.max.fill"
-  }
+private func qingxuWeatherSymbol(_ icon: String, text: String) -> String {
+  if text.contains("雷") { return "cloud.bolt.rain.fill" }
+  if text.contains("雨") { return "cloud.rain.fill" }
+  if text.contains("雪") { return "cloud.snow.fill" }
+  if text.contains("雾") || text.contains("霾") { return "cloud.fog.fill" }
+  if text.contains("阴") { return "cloud.fill" }
+  if text.contains("云") { return "cloud.sun.fill" }
+  if ["150", "151", "152", "153"].contains(icon) { return "moon.stars.fill" }
+  return "sun.max.fill"
 }
 
 private struct InboxQuoteLine: View {
