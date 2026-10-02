@@ -1,6 +1,6 @@
 import Combine
 import Foundation
-import React
+import TempoRuntime
 import UIKit
 
 extension Notification.Name {
@@ -17,8 +17,15 @@ final class TempoNativeRegistry {
   private var subscriptions = Set<AnyCancellable>()
   private var revision = 0
   private var pendingEmission: Task<Void, Never>?
+  private var messageListenerID: String?
 
-  private init() {}
+  private init() {
+    messageListenerID = BrownfieldMessaging.addListener { [weak self] message in
+      Task { @MainActor [weak self] in
+        await self?.handleMessage(message)
+      }
+    }
+  }
 
   func connect(store: AppStore, rssStore: RSSStore, updateChecker: AppUpdateChecker) {
     guard self.store !== store || self.rssStore !== rssStore || self.updateChecker !== updateChecker else {
@@ -315,7 +322,46 @@ final class TempoNativeRegistry {
   }
 
   func sendCommand(_ type: String) {
-    TempoNativeBridge.active?.sendCommand(["type": type])
+    BrownfieldMessaging.sendMessage([
+      "type": "tempo.command",
+      "command": ["type": type],
+    ])
+  }
+
+  private func handleMessage(_ message: [String: Any?]) async {
+    guard let type = message["type"] as? String,
+          let requestID = message["requestId"] as? String
+    else { return }
+
+    do {
+      let result: Any
+      switch type {
+      case "tempo.bootstrap":
+        result = snapshot()
+      case "tempo.perform":
+        guard let action = message["action"] as? String else {
+          throw BridgeError.invalidPayload("缺少原生操作名称")
+        }
+        let payload = (message["payload"] as? [String: Any?] ?? [:])
+          .compactMapValues { $0 }
+        result = try await perform(action: action, payload: payload)
+      default:
+        return
+      }
+      BrownfieldMessaging.sendMessage([
+        "type": "tempo.response",
+        "requestId": requestID,
+        "ok": true,
+        "result": result,
+      ])
+    } catch {
+      BrownfieldMessaging.sendMessage([
+        "type": "tempo.response",
+        "requestId": requestID,
+        "ok": false,
+        "error": error.localizedDescription,
+      ])
+    }
   }
 
   private func task(_ id: String, in store: AppStore) -> TaskItem? {
@@ -337,7 +383,10 @@ final class TempoNativeRegistry {
 
   private func emitSnapshot() {
     revision += 1
-    TempoNativeBridge.active?.sendSnapshot(snapshot())
+    BrownfieldMessaging.sendMessage([
+      "type": "tempo.snapshot",
+      "snapshot": snapshot(),
+    ])
   }
 
   private func ambientSnapshot() -> [String: Any] {
@@ -402,56 +451,6 @@ final class TempoNativeRegistry {
     case "showFestivals": TempoPreferenceKey.showFestivals
     default: TempoPreferenceKey.showTaskIndicators
     }
-  }
-}
-
-@objc(TempoNativeBridge)
-final class TempoNativeBridge: RCTEventEmitter {
-  fileprivate static weak var active: TempoNativeBridge?
-  private var observing = false
-
-  override init() {
-    super.init()
-    Self.active = self
-  }
-
-  @objc override static func requiresMainQueueSetup() -> Bool { true }
-  override func supportedEvents() -> [String]! { ["tempoStateDidChange", "tempoCommand"] }
-  override func startObserving() { observing = true }
-  override func stopObserving() { observing = false }
-
-  @objc(bootstrap:rejecter:)
-  func bootstrap(
-    _ resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
-  ) {
-    Task { @MainActor in resolve(TempoNativeRegistry.shared.snapshot()) }
-  }
-
-  @objc(perform:payload:resolver:rejecter:)
-  func perform(
-    _ action: String,
-    payload: [String: Any],
-    resolver resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
-  ) {
-    Task { @MainActor in
-      do {
-        resolve(try await TempoNativeRegistry.shared.perform(action: action, payload: payload))
-      } catch {
-        reject("tempo_native_error", error.localizedDescription, error)
-      }
-    }
-  }
-
-  fileprivate func sendSnapshot(_ snapshot: [String: Any]) {
-    guard observing else { return }
-    sendEvent(withName: "tempoStateDidChange", body: snapshot)
-  }
-
-  fileprivate func sendCommand(_ command: [String: Any]) {
-    guard observing else { return }
-    sendEvent(withName: "tempoCommand", body: command)
   }
 }
 
