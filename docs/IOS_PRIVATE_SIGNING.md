@@ -31,7 +31,7 @@
 
 适合个人设备调试：
 
-1. 按 [Apple 客户端说明](../apps/apple/README.md) 先生成 Expo Brownfield 包和 `apps/apple/TempoApple.xcodeproj`。
+1. 按 [Apple 客户端说明](https://github.com/FelixZoe/TEMPO/blob/main/apps/apple/README.md) 先生成 Expo Brownfield 包和 `apps/apple/TempoApple.xcodeproj`。
 2. 在 Xcode 中为 `TempoiOS` 和 `TempoWidgets` 选择同一个 Team。
 3. 确认两个 Bundle ID 和 App Group 未被改成随机值。
 4. 选择真机运行，或 Archive 后导出适合自己账号的安装包。
