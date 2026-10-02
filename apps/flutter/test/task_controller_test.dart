@@ -76,4 +76,25 @@ void main() {
     expect(controller.currentTitle, '设置');
     expect(controller.visibleTasks, isEmpty);
   });
+
+  test('today includes tasks due today even without a start date', () async {
+    final controller = TaskController(
+      storage: TaskStorage(),
+      syncSettingsStorage: SyncSettingsStorage(),
+      secureTokenStorage: SecureTokenStorage(),
+    );
+    await controller.initialize();
+
+    controller.selectView('inbox');
+    final task = controller.addTask('今天截止')!;
+    final now = DateTime.now();
+    controller.updateTask(
+      task.copyWith(
+        deadlineAt: DateTime(now.year, now.month, now.day, 18).toUtc(),
+      ),
+    );
+
+    controller.selectView('today');
+    expect(controller.visibleTasks.any((value) => value.id == task.id), isTrue);
+  });
 }

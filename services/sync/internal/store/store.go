@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	diskFormatVersion = 3
+	diskFormatVersion = 4
 	oldestDiskVersion = 1
 	maxStoredTasks    = 20_000
 	maxStoredJSONSize = 8 << 20
@@ -147,6 +147,7 @@ func ParseTask(raw json.RawMessage) (Task, error) {
 
 type diskState struct {
 	Version  int               `json:"version"`
+	Revision uint64            `json:"revision,omitempty"`
 	Tasks    []json.RawMessage `json:"tasks"`
 	Pomodoro json.RawMessage   `json:"pomodoro,omitempty"`
 	RSS      json.RawMessage   `json:"rss,omitempty"`
@@ -282,6 +283,9 @@ func (s *Store) load() error {
 	if state.Version < oldestDiskVersion || state.Version > diskFormatVersion {
 		return fmt.Errorf("unsupported data format version %d", state.Version)
 	}
+	if state.Revision > s.revision {
+		s.revision = state.Revision
+	}
 
 	for index, raw := range state.Tasks {
 		task, err := ParseTask(raw)
@@ -361,7 +365,8 @@ func (s *Store) MergeAll(incoming []Task, incomingPomodoro *Pomodoro, incomingRS
 		if err := validateCapacity(next); err != nil {
 			return nil, nil, nil, s.revision, err
 		}
-		replaced, err := writeStateAtomic(s.path, next, nextPomodoro, nextRSS)
+		nextRevision := s.revision + 1
+		replaced, err := writeStateAtomic(s.path, next, nextPomodoro, nextRSS, nextRevision)
 		if replaced {
 			s.tasks = next
 			s.pomodoro = nextPomodoro
@@ -465,7 +470,7 @@ func snapshot(tasks map[string]Task) []json.RawMessage {
 	return result
 }
 
-func writeStateAtomic(path string, tasks map[string]Task, pomodoro *Pomodoro, rss *RSS) (bool, error) {
+func writeStateAtomic(path string, tasks map[string]Task, pomodoro *Pomodoro, rss *RSS, revision uint64) (bool, error) {
 	directory := filepath.Dir(path)
 	if err := os.MkdirAll(directory, 0o700); err != nil {
 		return false, fmt.Errorf("create data directory: %w", err)
@@ -481,6 +486,7 @@ func writeStateAtomic(path string, tasks map[string]Task, pomodoro *Pomodoro, rs
 	}
 	payload, err := json.Marshal(diskState{
 		Version:  diskFormatVersion,
+		Revision: revision,
 		Tasks:    snapshot(tasks),
 		Pomodoro: pomodoroJSON,
 		RSS:      rssJSON,

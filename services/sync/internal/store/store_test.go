@@ -71,6 +71,43 @@ func TestMergeUsesUpdatedAtAndPersistsTombstone(t *testing.T) {
 	}
 }
 
+func TestRevisionPersistsAcrossRestart(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "store.json")
+	taskStore, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	before := taskStore.Revision()
+	task := mustTask(t, `{"id":"revision","title":"persist","updatedAt":"2026-08-22T10:00:00Z","deletedAt":null}`)
+	if _, err := taskStore.Merge([]Task{task}); err != nil {
+		t.Fatal(err)
+	}
+	persisted := taskStore.Revision()
+	if persisted <= before {
+		t.Fatalf("revision did not advance: before=%d after=%d", before, persisted)
+	}
+
+	stateData, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var state diskState
+	if err := json.Unmarshal(stateData, &state); err != nil {
+		t.Fatal(err)
+	}
+	if state.Revision != persisted {
+		t.Fatalf("disk revision=%d want=%d", state.Revision, persisted)
+	}
+
+	reopened, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if reopened.Revision() < persisted {
+		t.Fatalf("revision regressed after restart: got=%d want-at-least=%d", reopened.Revision(), persisted)
+	}
+}
+
 func TestEqualTimestampKeepsServerCopy(t *testing.T) {
 	taskStore, err := Open(filepath.Join(t.TempDir(), "store.json"))
 	if err != nil {

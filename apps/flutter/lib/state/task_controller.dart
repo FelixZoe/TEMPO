@@ -124,8 +124,13 @@ class TaskController extends ChangeNotifier {
       }
       if (!task.isOpen) return false;
       final start = task.startAt?.toLocal();
+      final deadline = task.deadlineAt?.toLocal();
+      final startsTodayOrEarlier = start != null && start.isBefore(startTomorrow);
+      final isDueToday = deadline != null &&
+          !deadline.isBefore(startToday) &&
+          deadline.isBefore(startTomorrow);
       return switch (activeView) {
-        'today' => start != null && start.isBefore(startTomorrow),
+        'today' => startsTodayOrEarlier || isDueToday,
         'inbox' => start == null,
         _ => false,
       };

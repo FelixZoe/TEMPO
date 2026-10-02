@@ -17,6 +17,19 @@ class SyncSettings {
 
   String? get validationMessage {
     if (serverUrl.trim().isEmpty) return '请填写服务器地址';
+    final normalizedUrl = serverUrl.trim().contains('://')
+        ? serverUrl.trim()
+        : 'https://${serverUrl.trim()}';
+    final uri = Uri.tryParse(normalizedUrl);
+    if (uri == null || uri.host.isEmpty) return '服务器地址格式不正确';
+    final host = uri.host.toLowerCase();
+    final isLoopback = host == 'localhost' ||
+        host == '127.0.0.1' ||
+        host == '::1';
+    if (uri.scheme.toLowerCase() != 'https' &&
+        !(uri.scheme.toLowerCase() == 'http' && isLoopback)) {
+      return '远程同步必须使用 HTTPS；HTTP 仅允许本机调试';
+    }
     if (token.trim().isEmpty) return '请填写同步密钥';
     if (!hasValidToken) return '同步密钥必须是 64 位十六进制字符';
     if (deviceName.trim().isEmpty) return '请填写设备名';
