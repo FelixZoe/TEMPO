@@ -1,16 +1,8 @@
 import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
-
-export type TempoRoute = 'inbox' | 'today' | 'focus' | 'rss' | 'settings';
-
-export type TempoBootstrap = {
-  route: TempoRoute;
-  locale: string;
-  colorScheme: 'light' | 'dark';
-  revision: number;
-};
+import type { TempoCommand, TempoSnapshot } from '../types';
 
 type TempoNativeBridgeShape = {
-  bootstrap(): Promise<TempoBootstrap>;
+  bootstrap(): Promise<TempoSnapshot>;
   perform(action: string, payload: Record<string, unknown>): Promise<unknown>;
 };
 
@@ -19,7 +11,7 @@ const nativeBridge = NativeModules.TempoNativeBridge as TempoNativeBridgeShape |
 export const tempoNative = {
   isEmbedded: Platform.OS === 'ios' && nativeBridge != null,
 
-  async bootstrap(): Promise<TempoBootstrap> {
+  async bootstrap(): Promise<TempoSnapshot> {
     if (nativeBridge) {
       return nativeBridge.bootstrap();
     }
@@ -29,6 +21,8 @@ export const tempoNative = {
       locale: 'zh-Hans',
       colorScheme: 'light',
       revision: 0,
+      tasks: [],
+      displayedRemainingSeconds: 25 * 60,
     };
   },
 
@@ -39,13 +33,22 @@ export const tempoNative = {
     return nativeBridge.perform(action, payload);
   },
 
-  subscribe(listener: (bootstrap: TempoBootstrap) => void) {
+  subscribe(listener: (snapshot: TempoSnapshot) => void) {
     if (!nativeBridge) {
       return () => undefined;
     }
 
     const subscription = new NativeEventEmitter(NativeModules.TempoNativeBridge).addListener(
       'tempoStateDidChange',
+      listener,
+    );
+    return () => subscription.remove();
+  },
+
+  subscribeCommands(listener: (command: TempoCommand) => void) {
+    if (!nativeBridge) return () => undefined;
+    const subscription = new NativeEventEmitter(NativeModules.TempoNativeBridge).addListener(
+      'tempoCommand',
       listener,
     );
     return () => subscription.remove();

@@ -8,8 +8,8 @@ on:
       - ".github/workflows/ios-ota.yml"
   workflow_dispatch:
     inputs:
-      branch:
-        description: EAS Update branch
+      channel:
+        description: EAS Update channel
         required: true
         default: preview
         type: choice
@@ -120,10 +120,11 @@ jobs:
         if: env.EXPO_TOKEN != ''
         shell: bash
         run: |
-          branch="${{ github.event.inputs.branch }}"
-          if [[ -z "$branch" ]]; then branch="production"; fi
+          channel="${{ github.event.inputs.channel }}"
+          if [[ -z "$channel" ]]; then channel="production"; fi
           npx --yes eas-cli@latest update \
-            --branch "$branch" \
+            --channel "$channel" \
+            --platform ios \
             --message "${GITHUB_SHA::12}" \
             --non-interactive
       - name: Explain unpublished validation

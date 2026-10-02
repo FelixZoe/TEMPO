@@ -129,7 +129,16 @@ private struct iOSRootView: View {
         .presentationDragIndicator(.visible)
         .presentationCornerRadius(30)
     }
+    .onReceive(NotificationCenter.default.publisher(for: .tempoOpenDeveloperTools)) { _ in
+      developerToolsDetent = .medium
+      showingDeveloperTools = true
+    }
     .onAppear {
+      TempoNativeRegistry.shared.connect(
+        store: store,
+        rssStore: rssStore,
+        updateChecker: updateChecker
+      )
       consumePendingWidgetDestination()
       RSSBackgroundRefresh.schedule()
     }
@@ -141,13 +150,7 @@ private struct iOSRootView: View {
 
   @ViewBuilder
   private func tabContent(_ tab: AppTab) -> some View {
-    switch tab {
-    case .inbox: TaskListScreen(scope: .inbox)
-    case .today: TaskListScreen(scope: .today)
-    case .pomodoro: PomodoroScreen()
-    case .rss: RSSScreen(store: rssStore)
-    case .settings: SettingsScreen()
-    }
+    TempoRuntimeScreen(route: tab)
   }
 
   private func consumePendingWidgetDestination() {

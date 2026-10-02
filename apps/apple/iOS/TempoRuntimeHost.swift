@@ -13,12 +13,10 @@ final class TempoRuntimeAppDelegate: NSObject, UIApplicationDelegate {
 }
 
 struct TempoRuntimeScreen: View {
-  @Environment(\.dismiss) private var dismiss
-
   let route: AppTab
 
   var body: some View {
-    NavigationStack {
+    ZStack(alignment: .top) {
       ReactNativeView(
         moduleName: "main",
         initialProps: [
@@ -27,14 +25,48 @@ struct TempoRuntimeScreen: View {
         ]
       )
       .ignoresSafeArea(edges: .bottom)
-      .navigationTitle("OTA 内容层")
-      .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        ToolbarItem(placement: .topBarLeading) {
-          Button("关闭") { dismiss() }
-        }
+
+      TempoRuntimeChrome(route: route)
+    }
+  }
+}
+
+private struct TempoRuntimeChrome: View {
+  let route: AppTab
+
+  var body: some View {
+    HStack(spacing: 10) {
+      if route == .inbox || route == .rss {
+        chromeButton("magnifyingglass", command: "search")
+      } else if route == .pomodoro {
+        chromeButton("chart.xyaxis.line", command: "statistics")
+      }
+
+      Spacer()
+
+      if route != .settings {
+        chromeButton("ellipsis", command: "options")
       }
     }
+    .padding(.horizontal, 18)
+    .padding(.top, 8)
+    .allowsHitTesting(true)
+  }
+
+  private func chromeButton(_ symbol: String, command: String) -> some View {
+    Button {
+      TempoNativeRegistry.shared.sendCommand(command)
+      UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+    } label: {
+      Image(systemName: symbol)
+        .font(.system(size: 17, weight: .semibold))
+        .foregroundStyle(TempoPalette.ink)
+        .frame(width: 48, height: 48)
+        .contentShape(Circle())
+    }
+    .buttonStyle(.plain)
+    .tempoFloatingSurface()
+    .accessibilityLabel(command == "search" ? "搜索" : command == "statistics" ? "专注统计" : "更多")
   }
 }
 
