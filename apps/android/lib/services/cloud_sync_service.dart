@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
-import 'api_service.dart';
-import 'auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'persistence_service.dart';
 
 /// Cloud sync service — push local data to server, pull from server
@@ -13,11 +13,97 @@ class CloudSyncService {
 
   /// Reuse a single HTTP client for connection pooling (BUG-9 fix)
   final http.Client _client = http.Client();
+  static const _secureStorage = FlutterSecureStorage();
+  static const _urlKey = 'tempo_sync_server_url';
+  static const _tokenKey = 'tempo_sync_token';
+  static const _lastSyncKey = 'tempo_sync_last_time';
+  static const _dirtyKey = 'tempo_sync_local_dirty';
+  static const _hasSyncedKey = 'tempo_sync_has_completed';
+
+  String _serverUrl = '';
+  String _token = '';
+  String get serverUrl => _serverUrl;
+  bool get isConfigured => _serverUrl.isNotEmpty && _token.length == 64;
 
   bool _syncing = false;
   bool get isSyncing => _syncing;
   String? _lastSyncTime;
   String? get lastSyncTime => _lastSyncTime;
+  bool _hasPendingChanges = false;
+  bool get hasPendingChanges => _hasPendingChanges;
+  bool _hasCompletedSync = false;
+  bool get hasCompletedSync => _hasCompletedSync;
+
+  Future<void> init() async {
+    final preferences = await SharedPreferences.getInstance();
+    _serverUrl = preferences.getString(_urlKey) ?? '';
+    _lastSyncTime = preferences.getString(_lastSyncKey);
+    _hasPendingChanges = preferences.getBool(_dirtyKey) ?? false;
+    _hasCompletedSync = preferences.getBool(_hasSyncedKey) ?? false;
+    _token = await _secureStorage.read(key: _tokenKey) ?? '';
+  }
+
+  Future<void> markLocalDirty() async {
+    _hasPendingChanges = true;
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setBool(_dirtyKey, true);
+  }
+
+  Future<({bool success, String? error})> configure({
+    required String serverUrl,
+    required String token,
+  }) async {
+    final normalized = _normalizeServerUrl(serverUrl);
+    if (normalized == null) {
+      return (success: false, error: '请输入有效的 HTTPS 服务器地址');
+    }
+    final normalizedToken = token.trim();
+    if (!RegExp(r'^[0-9a-fA-F]{64}$').hasMatch(normalizedToken)) {
+      return (success: false, error: '同步令牌必须是 64 位十六进制字符');
+    }
+    final oldURL = _serverUrl;
+    final oldToken = _token;
+    _serverUrl = normalized;
+    _token = normalizedToken;
+    final test = await testConnection();
+    if (!test.success) {
+      _serverUrl = oldURL;
+      _token = oldToken;
+      return test;
+    }
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setString(_urlKey, _serverUrl);
+    await _secureStorage.write(key: _tokenKey, value: _token);
+    return (success: true, error: null);
+  }
+
+  Future<void> clearConfiguration() async {
+    _serverUrl = '';
+    _token = '';
+    _lastSyncTime = null;
+    _hasPendingChanges = false;
+    _hasCompletedSync = false;
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.remove(_urlKey);
+    await preferences.remove(_lastSyncKey);
+    await preferences.remove(_dirtyKey);
+    await preferences.remove(_hasSyncedKey);
+    await _secureStorage.delete(key: _tokenKey);
+  }
+
+  Future<({bool success, String? error})> testConnection() async {
+    if (!isConfigured) return (success: false, error: '请先配置自托管同步');
+    try {
+      final response = await _client
+          .get(Uri.parse('$_serverUrl/v1/ping'), headers: _headers)
+          .timeout(const Duration(seconds: 10));
+      if (response.statusCode == 200) return (success: true, error: null);
+      return (success: false, error: _responseError(response, '连接失败'));
+    } catch (error) {
+      if (kDebugMode) debugPrint('Sync connection error: $error');
+      return (success: false, error: '无法连接同步服务器');
+    }
+  }
 
   /// OPT-3: Throttle auto-sync — at least 30s between pushes
   int _lastPushMs = 0;
@@ -26,30 +112,39 @@ class CloudSyncService {
   /// Push all local data to cloud
   Future<({bool success, String? error})> pushToCloud() async {
     if (_syncing) return (success: false, error: '正在同步中');
-    final auth = AuthService();
-    if (!auth.isLoggedIn) return (success: false, error: '未登录');
+    if (!isConfigured) return (success: false, error: '请先配置自托管同步');
 
     _syncing = true;
     try {
       final payload = await _collectLocalData();
+      final workspace = {
+        'schema': 1,
+        'updatedAt': DateTime.now().toUtc().toIso8601String(),
+        'data': payload,
+      };
 
       final resp = await _client
           .post(
-            Uri.parse('${ServerConfig.baseUrl}/api/sync/push'),
-            headers: auth.authHeaders,
-            body: jsonEncode(payload),
+            Uri.parse('$_serverUrl/v1/sync'),
+            headers: _headers,
+            body: jsonEncode({
+              'deviceId': 'android',
+              'tasks': <dynamic>[],
+              'workspace': workspace,
+            }),
           )
           .timeout(const Duration(seconds: 30));
 
-      final data = jsonDecode(resp.body) as Map<String, dynamic>;
-      if (resp.statusCode == 200 && data['success'] == true) {
-        _lastSyncTime = data['synced_at'] as String?;
+      if (resp.statusCode == 200) {
+        final data = jsonDecode(resp.body) as Map<String, dynamic>;
+        _lastSyncTime = data['serverTime'] as String?;
+        await _markSyncCompleted();
         _lastPushMs = DateTime.now().millisecondsSinceEpoch;
         _syncing = false;
         return (success: true, error: null);
       }
       _syncing = false;
-      return (success: false, error: (data['error'] as String?) ?? '同步失败');
+      return (success: false, error: _responseError(resp, '同步失败'));
     } catch (e) {
       _syncing = false;
       if (kDebugMode) debugPrint('Push sync error: $e');
@@ -57,40 +152,54 @@ class CloudSyncService {
     }
   }
 
-  /// Pull all cloud data and overwrite local
-  /// BUG-11 fix: apply data safely — only clear old data after successful parse
+  /// Pull the server snapshot without uploading a blank local document first.
+  /// A local backup is restored if any write fails, so a partial response can
+  /// never leave the device with an empty workspace.
   Future<({bool success, String? error})> pullFromCloud() async {
     if (_syncing) return (success: false, error: '正在同步中');
-    final auth = AuthService();
-    if (!auth.isLoggedIn) return (success: false, error: '未登录');
+    if (!isConfigured) return (success: false, error: '请先配置自托管同步');
 
     _syncing = true;
     try {
       final resp = await _client
-          .get(
-            Uri.parse('${ServerConfig.baseUrl}/api/sync/pull'),
-            headers: auth.authHeaders,
+          .post(
+            Uri.parse('$_serverUrl/v1/sync'),
+            headers: _headers,
+            body: jsonEncode({'deviceId': 'android', 'tasks': <dynamic>[]}),
           )
           .timeout(const Duration(seconds: 30));
 
-      final data = jsonDecode(resp.body) as Map<String, dynamic>;
-      if (resp.statusCode == 200 && data['success'] == true) {
-        final cloudData = data['data'] as Map<String, dynamic>;
-
-        // BUG-11 fix: Parse ALL cloud data first before clearing local.
-        // If parsing fails, local data is preserved.
+      if (resp.statusCode == 200) {
+        final response = jsonDecode(resp.body) as Map<String, dynamic>;
+        final rawWorkspace = response['workspace'];
+        if (rawWorkspace == null) {
+          _syncing = false;
+          return (success: false, error: '云端尚无 Android 数据，本机数据未改动');
+        }
+        final workspace = Map<String, dynamic>.from(rawWorkspace as Map);
+        if (workspace['schema'] != 1 || workspace['data'] is! Map) {
+          _syncing = false;
+          return (success: false, error: '云端数据版本不兼容');
+        }
+        final cloudData = Map<String, dynamic>.from(workspace['data'] as Map);
         final parsedData = _parseCloudData(cloudData);
+        final localBackup = _parseCloudData(await _collectLocalData());
+        try {
+          await PersistenceService.clearAllUserData();
+          await _writeCloudData(parsedData);
+        } catch (_) {
+          await PersistenceService.clearAllUserData();
+          await _writeCloudData(localBackup);
+          rethrow;
+        }
 
-        // Only clear + write after successful parse
-        await PersistenceService.clearAllUserData();
-        await _writeCloudData(parsedData);
-
-        _lastSyncTime = cloudData['last_sync'] as String?;
+        _lastSyncTime = response['serverTime'] as String?;
+        await _markSyncCompleted();
         _syncing = false;
         return (success: true, error: null);
       }
       _syncing = false;
-      return (success: false, error: (data['error'] as String?) ?? '拉取失败');
+      return (success: false, error: _responseError(resp, '拉取失败'));
     } catch (e) {
       _syncing = false;
       if (kDebugMode) debugPrint('Pull sync error: $e');
@@ -100,31 +209,25 @@ class CloudSyncService {
 
   /// Get cloud sync status
   Future<Map<String, dynamic>?> getStatus() async {
-    final auth = AuthService();
-    if (!auth.isLoggedIn) return null;
+    if (!isConfigured) return null;
     try {
       final resp = await _client
           .get(
-            Uri.parse('${ServerConfig.baseUrl}/api/sync/status'),
-            headers: auth.authHeaders,
+            Uri.parse('$_serverUrl/v1/ping'),
+            headers: _headers,
           )
           .timeout(const Duration(seconds: 10));
 
-      final data = jsonDecode(resp.body) as Map<String, dynamic>;
-      if (resp.statusCode == 200 && data['success'] == true) {
-        _lastSyncTime = data['last_sync'] as String?;
-        return data;
-      }
+      if (resp.statusCode == 200) return {'status': 'ok'};
     } catch (_) {}
     return null;
   }
 
-  /// Auto sync: push local data when user is logged in (called after data changes)
+  /// Auto sync: push local data after self-hosted sync is configured.
   /// BUG-10 fix: catch errors to prevent unhandled exceptions
   /// OPT-3: Throttle to at least 30s between pushes
   Future<void> autoSync() async {
-    final auth = AuthService();
-    if (!auth.isLoggedIn || _syncing) return;
+    if (!isConfigured || _syncing) return;
 
     // OPT-3: Throttle check
     final now = DateTime.now().millisecondsSinceEpoch;
@@ -137,6 +240,52 @@ class CloudSyncService {
         if (kDebugMode) debugPrint('Auto-sync error (suppressed): $e');
       },
     );
+  }
+
+  Map<String, String> get _headers => {
+    'Authorization': 'Bearer $_token',
+    'Content-Type': 'application/json',
+  };
+
+  static String? _normalizeServerUrl(String value) {
+    var candidate = value.trim();
+    if (candidate.isEmpty) return null;
+    if (!candidate.contains('://')) candidate = 'https://$candidate';
+    final uri = Uri.tryParse(candidate);
+    if (uri == null || uri.host.isEmpty || uri.hasQuery || uri.hasFragment) {
+      return null;
+    }
+    final loopback = uri.host == 'localhost' ||
+        uri.host == '127.0.0.1' ||
+        uri.host == '::1';
+    if (uri.scheme != 'https' && !(loopback && uri.scheme == 'http')) {
+      return null;
+    }
+    return candidate.replaceFirst(RegExp(r'/+$'), '');
+  }
+
+  String _responseError(http.Response response, String fallback) {
+    try {
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      final error = body['error'];
+      if (error is Map && error['message'] is String) {
+        return error['message'] as String;
+      }
+      if (error is String) return error;
+    } catch (_) {}
+    if (response.statusCode == 401) return '同步令牌无效';
+    return '$fallback（HTTP ${response.statusCode}）';
+  }
+
+  Future<void> _markSyncCompleted() async {
+    _hasPendingChanges = false;
+    _hasCompletedSync = true;
+    final preferences = await SharedPreferences.getInstance();
+    if (_lastSyncTime != null) {
+      await preferences.setString(_lastSyncKey, _lastSyncTime!);
+    }
+    await preferences.setBool(_dirtyKey, false);
+    await preferences.setBool(_hasSyncedKey, true);
   }
 
   // ═══ Parse cloud data into safe typed structures (BUG-11) ═══

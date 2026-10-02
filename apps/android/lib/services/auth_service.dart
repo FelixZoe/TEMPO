@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
 import 'api_service.dart';
-import 'cloud_sync_service.dart';
 import 'persistence_service.dart';
 import 'anti_abuse_service.dart';
 import '../theme/miui_theme.dart';
@@ -464,15 +463,9 @@ class AuthService {
 
   // ═══ Logout ═══
   Future<void> logout() async {
-    // 1. Push current user's data to cloud before logout (save their latest state)
-    if (isLoggedIn) {
-      try {
-        final syncService = CloudSyncService();
-        await syncService.pushToCloud().timeout(const Duration(seconds: 10));
-      } catch (_) {}
-    }
-
-    // 2. Server-side logout
+    // Self-hosted sync is personal-device configuration and is deliberately
+    // independent from the optional account session. Logging out must not
+    // upload, erase, or rebind the user's private sync workspace.
     if (token != null) {
       try {
         await _client

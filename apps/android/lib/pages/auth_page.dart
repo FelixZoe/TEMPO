@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/miui_theme.dart';
 import '../services/auth_service.dart';
-import '../services/cloud_sync_service.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import 'files_page.dart';
@@ -307,12 +306,10 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
     if (!mounted) return;
     setState(() => _loading = false);
     if (result.success) {
-      _snack('注册成功，正在同步数据...', isError: false);
+      _snack('注册成功', isError: false);
       widget.onLoginSuccess?.call();
       // Clear stale caches
       FilesPage.clearCache();
-      // New user: push local data to cloud
-      CloudSyncService().pushToCloud();
       Navigator.of(context).pop(true);
     } else {
       _snack(result.error ?? '注册失败');

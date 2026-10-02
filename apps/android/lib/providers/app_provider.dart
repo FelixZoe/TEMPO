@@ -13,6 +13,7 @@ class AppProvider extends ChangeNotifier {
   // ═══ Cloud sync (debounced) ═══
   bool _syncPending = false;
   void _scheduleSync() {
+    CloudSyncService().markLocalDirty();
     if (_syncPending) return;
     _syncPending = true;
     Future.delayed(const Duration(seconds: 5), () {
@@ -26,11 +27,15 @@ class AppProvider extends ChangeNotifier {
   Future<bool> pullAndReload() async {
     final result = await CloudSyncService().pullFromCloud();
     if (result.success) {
-      _clearInMemoryUserData(); // Clear stale in-memory caches before reloading
-      await _loadPersistedData();
-      notifyListeners();
+      await reloadPersistedData();
     }
     return result.success;
+  }
+
+  Future<void> reloadPersistedData() async {
+    _clearInMemoryUserData();
+    await _loadPersistedData();
+    notifyListeners();
   }
 
   /// Clear all in-memory user data caches.
@@ -58,7 +63,7 @@ class AppProvider extends ChangeNotifier {
     return DateTime.now().difference(registerDate).inDays;
   }
 
-  /// 初始化：加载持久化数据，若已登录则自动从云端拉取
+  /// 初始化：加载持久化数据，若已配置自托管服务则自动从云端拉取
   Future<void> initUsageTracking() async {
     _clearInMemoryUserData(); // Start clean
     await _loadPersistedData();
@@ -67,8 +72,17 @@ class AppProvider extends ChangeNotifier {
     // Batch background tasks: cache size + cloud pull run in parallel
     // Each calls notifyListeners() only when it has new data.
     final futures = <Future>[calculateCacheSize()];
-    if (AuthService().isLoggedIn) {
-      futures.add(pullAndReload());
+    final sync = CloudSyncService();
+    if (sync.isConfigured && sync.hasCompletedSync) {
+      if (sync.hasPendingChanges) {
+        futures.add(
+          sync.pushToCloud().then((result) async {
+            if (result.success) await pullAndReload();
+          }),
+        );
+      } else {
+        futures.add(pullAndReload());
+      }
     }
     // Don't await — these complete in background and each triggers
     // its own targeted notifyListeners() call.

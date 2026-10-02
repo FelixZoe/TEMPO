@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	diskFormatVersion = 4
+	diskFormatVersion = 5
 	oldestDiskVersion = 1
 	maxStoredTasks    = 20_000
 	maxStoredJSONSize = 8 << 20
@@ -62,6 +62,35 @@ type RSS struct {
 
 type rssMetadata struct {
 	UpdatedAt string `json:"updatedAt"`
+}
+
+// Workspace stores a complete client-specific document for platforms whose
+// local model has not yet been normalized to the shared task schema. It keeps
+// Android migration lossless while still using the authenticated personal
+// sync transport and deterministic last-write-wins semantics.
+type Workspace struct {
+	UpdatedAt time.Time
+	JSON      json.RawMessage
+}
+
+type workspaceMetadata struct {
+	UpdatedAt string `json:"updatedAt"`
+}
+
+func ParseWorkspace(raw json.RawMessage) (Workspace, error) {
+	trimmed := bytes.TrimSpace(raw)
+	if len(trimmed) == 0 || trimmed[0] != '{' {
+		return Workspace{}, errors.New("workspace must be a JSON object")
+	}
+	var metadata workspaceMetadata
+	if err := json.Unmarshal(trimmed, &metadata); err != nil {
+		return Workspace{}, fmt.Errorf("decode workspace: %w", err)
+	}
+	updatedAt, err := time.Parse(time.RFC3339Nano, metadata.UpdatedAt)
+	if err != nil {
+		return Workspace{}, fmt.Errorf("invalid workspace updatedAt: %w", err)
+	}
+	return Workspace{UpdatedAt: updatedAt.UTC(), JSON: append(json.RawMessage(nil), trimmed...)}, nil
 }
 
 func ParseRSS(raw json.RawMessage) (RSS, error) {
@@ -151,6 +180,7 @@ type diskState struct {
 	Tasks    []json.RawMessage `json:"tasks"`
 	Pomodoro json.RawMessage   `json:"pomodoro,omitempty"`
 	RSS      json.RawMessage   `json:"rss,omitempty"`
+	Workspace json.RawMessage  `json:"workspace,omitempty"`
 }
 
 // Store serializes merges so the file and the in-memory snapshot always move
@@ -161,6 +191,7 @@ type Store struct {
 	tasks              map[string]Task
 	pomodoro           *Pomodoro
 	rss                *RSS
+	workspace          *Workspace
 	needsDirectorySync bool
 	readinessMu        sync.Mutex
 	readinessCheckedAt time.Time
@@ -311,6 +342,13 @@ func (s *Store) load() error {
 		}
 		s.rss = &rss
 	}
+	if len(bytes.TrimSpace(state.Workspace)) > 0 {
+		workspace, err := ParseWorkspace(state.Workspace)
+		if err != nil {
+			return fmt.Errorf("invalid stored workspace: %w", err)
+		}
+		s.workspace = &workspace
+	}
 	if err := validateCapacity(s.tasks); err != nil {
 		return err
 	}
@@ -321,18 +359,18 @@ func (s *Store) load() error {
 // server copy except that a tombstone wins over a live task. Deleted tasks are
 // deliberately kept in the returned and persisted collection.
 func (s *Store) Merge(incoming []Task) ([]json.RawMessage, error) {
-	tasks, _, _, _, err := s.MergeAll(incoming, nil, nil)
+	tasks, _, _, _, _, err := s.MergeAll(incoming, nil, nil, nil)
 	return tasks, err
 }
 
 // MergeAll atomically merges all user data represented by the sync protocol.
-func (s *Store) MergeAll(incoming []Task, incomingPomodoro *Pomodoro, incomingRSS *RSS) ([]json.RawMessage, json.RawMessage, json.RawMessage, uint64, error) {
+func (s *Store) MergeAll(incoming []Task, incomingPomodoro *Pomodoro, incomingRSS *RSS, incomingWorkspace *Workspace) ([]json.RawMessage, json.RawMessage, json.RawMessage, json.RawMessage, uint64, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.needsDirectorySync {
 		if err := syncDirectory(filepath.Dir(s.path)); err != nil {
 			s.markReadiness(err)
-			return nil, nil, nil, s.revision, fmt.Errorf("sync data directory: %w", err)
+			return nil, nil, nil, nil, s.revision, fmt.Errorf("sync data directory: %w", err)
 		}
 		s.needsDirectorySync = false
 		s.markReadiness(nil)
@@ -341,6 +379,7 @@ func (s *Store) MergeAll(incoming []Task, incomingPomodoro *Pomodoro, incomingRS
 	next := cloneTasks(s.tasks)
 	nextPomodoro := s.pomodoro
 	nextRSS := s.rss
+	nextWorkspace := s.workspace
 	changed := false
 	for _, task := range incoming {
 		current, exists := next[task.ID]
@@ -360,23 +399,29 @@ func (s *Store) MergeAll(incoming []Task, incomingPomodoro *Pomodoro, incomingRS
 		nextRSS = &copy
 		changed = true
 	}
+	if incomingWorkspace != nil && (nextWorkspace == nil || incomingWorkspace.UpdatedAt.After(nextWorkspace.UpdatedAt)) {
+		copy := *incomingWorkspace
+		nextWorkspace = &copy
+		changed = true
+	}
 
 	if changed {
 		if err := validateCapacity(next); err != nil {
-			return nil, nil, nil, s.revision, err
+			return nil, nil, nil, nil, s.revision, err
 		}
 		nextRevision := s.revision + 1
-		replaced, err := writeStateAtomic(s.path, next, nextPomodoro, nextRSS, nextRevision)
+		replaced, err := writeStateAtomic(s.path, next, nextPomodoro, nextRSS, nextWorkspace, nextRevision)
 		if replaced {
 			s.tasks = next
 			s.pomodoro = nextPomodoro
 			s.rss = nextRSS
+			s.workspace = nextWorkspace
 			s.bumpRevisionLocked()
 		}
 		if err != nil {
 			s.needsDirectorySync = replaced
 			s.markReadiness(err)
-			return nil, nil, nil, s.revision, err
+			return nil, nil, nil, nil, s.revision, err
 		}
 		s.markReadiness(nil)
 	}
@@ -388,7 +433,11 @@ func (s *Store) MergeAll(incoming []Task, incomingPomodoro *Pomodoro, incomingRS
 	if nextRSS != nil {
 		rssJSON = append(json.RawMessage(nil), nextRSS.JSON...)
 	}
-	return snapshot(next), pomodoroJSON, rssJSON, s.revision, nil
+	var workspaceJSON json.RawMessage
+	if nextWorkspace != nil {
+		workspaceJSON = append(json.RawMessage(nil), nextWorkspace.JSON...)
+	}
+	return snapshot(next), pomodoroJSON, rssJSON, workspaceJSON, s.revision, nil
 }
 
 // WaitForChange blocks without polling until the store revision advances or
@@ -470,7 +519,7 @@ func snapshot(tasks map[string]Task) []json.RawMessage {
 	return result
 }
 
-func writeStateAtomic(path string, tasks map[string]Task, pomodoro *Pomodoro, rss *RSS, revision uint64) (bool, error) {
+func writeStateAtomic(path string, tasks map[string]Task, pomodoro *Pomodoro, rss *RSS, workspace *Workspace, revision uint64) (bool, error) {
 	directory := filepath.Dir(path)
 	if err := os.MkdirAll(directory, 0o700); err != nil {
 		return false, fmt.Errorf("create data directory: %w", err)
@@ -484,12 +533,17 @@ func writeStateAtomic(path string, tasks map[string]Task, pomodoro *Pomodoro, rs
 	if rss != nil {
 		rssJSON = rss.JSON
 	}
+	var workspaceJSON json.RawMessage
+	if workspace != nil {
+		workspaceJSON = workspace.JSON
+	}
 	payload, err := json.Marshal(diskState{
 		Version:  diskFormatVersion,
 		Revision: revision,
 		Tasks:    snapshot(tasks),
 		Pomodoro: pomodoroJSON,
 		RSS:      rssJSON,
+		Workspace: workspaceJSON,
 	})
 	if err != nil {
 		return false, fmt.Errorf("encode data file: %w", err)

@@ -169,7 +169,7 @@ func TestPomodoroMergePersistsNewestState(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, merged, _, _, err := taskStore.MergeAll(nil, &first, nil)
+	_, merged, _, _, _, err := taskStore.MergeAll(nil, &first, nil, nil)
 	if err != nil || !strings.Contains(string(merged), `"status":"running"`) {
 		t.Fatalf("MergeAll(first) = %s, %v", merged, err)
 	}
@@ -178,7 +178,7 @@ func TestPomodoroMergePersistsNewestState(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, merged, _, _, err = taskStore.MergeAll(nil, &stale, nil)
+	_, merged, _, _, _, err = taskStore.MergeAll(nil, &stale, nil, nil)
 	if err != nil || !strings.Contains(string(merged), `"status":"running"`) {
 		t.Fatalf("stale pomodoro won: %s, %v", merged, err)
 	}
@@ -187,7 +187,7 @@ func TestPomodoroMergePersistsNewestState(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, merged, _, _, err = reopened.MergeAll(nil, nil, nil)
+	_, merged, _, _, _, err = reopened.MergeAll(nil, nil, nil, nil)
 	if err != nil || !strings.Contains(string(merged), `"status":"running"`) {
 		t.Fatalf("persisted pomodoro lost: %s, %v", merged, err)
 	}
@@ -203,7 +203,7 @@ func TestRSSMergePersistsNewestState(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, _, merged, _, err := taskStore.MergeAll(nil, nil, &first)
+	_, _, merged, _, _, err := taskStore.MergeAll(nil, nil, &first, nil)
 	if err != nil || !strings.Contains(string(merged), `"2026-08-25T01:00:00Z"`) {
 		t.Fatalf("MergeAll(first RSS) = %s, %v", merged, err)
 	}
@@ -212,7 +212,7 @@ func TestRSSMergePersistsNewestState(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, _, merged, _, err = taskStore.MergeAll(nil, nil, &stale)
+	_, _, merged, _, _, err = taskStore.MergeAll(nil, nil, &stale, nil)
 	if err != nil || !strings.Contains(string(merged), `"2026-08-25T01:00:00Z"`) {
 		t.Fatalf("stale RSS won: %s, %v", merged, err)
 	}
@@ -221,9 +221,43 @@ func TestRSSMergePersistsNewestState(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, _, merged, _, err = reopened.MergeAll(nil, nil, nil)
+	_, _, merged, _, _, err = reopened.MergeAll(nil, nil, nil, nil)
 	if err != nil || !strings.Contains(string(merged), `"2026-08-25T01:00:00Z"`) {
 		t.Fatalf("persisted RSS lost: %s, %v", merged, err)
+	}
+}
+
+func TestWorkspaceMergePersistsNewestState(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "store.json")
+	taskStore, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	first, err := ParseWorkspace(json.RawMessage(`{"schema":1,"data":{"events":{}},"updatedAt":"2026-08-25T01:00:00Z"}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, _, _, merged, _, err := taskStore.MergeAll(nil, nil, nil, &first)
+	if err != nil || !strings.Contains(string(merged), `"2026-08-25T01:00:00Z"`) {
+		t.Fatalf("MergeAll(first workspace) = %s, %v", merged, err)
+	}
+
+	stale, err := ParseWorkspace(json.RawMessage(`{"schema":1,"data":{"events":{"stale":[]}},"updatedAt":"2026-08-25T00:59:00Z"}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, _, _, merged, _, err = taskStore.MergeAll(nil, nil, nil, &stale)
+	if err != nil || strings.Contains(string(merged), `"stale"`) {
+		t.Fatalf("stale workspace won: %s, %v", merged, err)
+	}
+
+	reopened, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, _, _, merged, _, err = reopened.MergeAll(nil, nil, nil, nil)
+	if err != nil || !strings.Contains(string(merged), `"2026-08-25T01:00:00Z"`) {
+		t.Fatalf("persisted workspace lost: %s, %v", merged, err)
 	}
 }
 

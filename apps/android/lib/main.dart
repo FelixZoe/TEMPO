@@ -23,6 +23,7 @@ import 'services/weather_service.dart';
 import 'services/deepseek_service.dart';
 import 'services/integrity_service.dart';
 import 'services/secure_config.dart';
+import 'services/cloud_sync_service.dart';
 import 'widgets/splash_screen.dart';
 import 'pages/auth_page.dart';
 
@@ -58,6 +59,7 @@ Future<void> _initializeApp() async {
   // Phase 3: All services that depend on Hive, in parallel
   await Future.wait([
     AuthService().init(),
+    CloudSyncService().init(),
     AntiAbuseService.init(),
     WeatherService.init(),
     DeepSeekService.init(),

@@ -475,7 +475,14 @@ jobs:
               old_apk="$(find previous -maxdepth 1 -name 'TEMPO-*-Android.apk' -print -quit)"
               if [[ -n "$old_apk" ]]; then
                 patch_name="TEMPO-${previous_version}-to-${APP_VERSION}-Android.bpatch"
-                dart run tool/create_binary_patch.dart "$old_apk" "$full" "$patch_name"
+                # APK binary diffs can become CPU-heavy when ZIP ordering changes.
+                # A patch is an optional optimization: never let it block the full
+                # APK release. Fall back to the verified full installer after 3 min.
+                if ! timeout 180s dart run tool/create_binary_patch.dart "$old_apk" "$full" "$patch_name"; then
+                  echo "Incremental patch generation failed or timed out; publishing full APK only."
+                  rm -f "$patch_name" "$patch_name.verified"
+                  patch_name=""
+                fi
               fi
             fi
           fi

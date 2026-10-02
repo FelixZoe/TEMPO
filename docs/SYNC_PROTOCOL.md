@@ -19,7 +19,7 @@
 | --- | --- | --- | --- |
 | `GET` | `/health` | 否 | 检查进程与数据目录可写性 |
 | `GET` | `/v1/ping` | 是 | 测试地址和密钥，不读写数据 |
-| `POST` | `/v1/sync` | 是 | 合并并返回任务、番茄钟和 RSS 状态 |
+| `POST` | `/v1/sync` | 是 | 合并并返回任务、番茄钟、RSS 与迁移工作区状态 |
 | `GET` | `/v1/changes?since=<revision>` | 是 | 等待修订号变化，最长 25 秒 |
 | `POST` | `/v1/ai` | 是 | 可选 RSS 摘要、翻译和任务规划代理 |
 
@@ -97,6 +97,11 @@ Content-Type: application/json
     "folders": [],
     "articleStates": [],
     "updatedAt": "2026-08-28T08:30:00.000Z"
+  },
+  "workspace": {
+    "schema": 1,
+    "updatedAt": "2026-08-28T08:30:00.000Z",
+    "data": {}
   }
 }
 ```
@@ -123,6 +128,11 @@ Content-Type: application/json
     "articleStates": [],
     "updatedAt": "2026-08-28T08:30:00.000Z"
   },
+  "workspace": {
+    "schema": 1,
+    "updatedAt": "2026-08-28T08:30:00.000Z",
+    "data": {}
+  },
   "serverTime": "2026-08-28T08:30:01.123Z",
   "revision": 1787905801123
 }
@@ -130,7 +140,9 @@ Content-Type: application/json
 
 `deviceId` 长度为 1–128 个字符，只用于日志识别。服务端解释任务的 `id`、`updatedAt` 与 `deletedAt`，其余字段作为完整 JSON 保存，因此客户端可以在不迁移服务端代码的情况下增加普通任务字段。
 
-客户端可以省略尚未支持的 `pomodoro` 或 `rss`。服务端会保留已有文档，不会因旧客户端缺少字段而清空数据。
+客户端可以省略尚未支持的 `pomodoro`、`rss` 或 `workspace`。服务端会保留已有文档，不会因旧客户端缺少字段而清空数据。
+
+`workspace` 是 Android 完整替换共享任务模型期间使用的过渡文档。它同样按 `updatedAt` 做单例 LWW 合并，`schema` 用于拒绝不兼容快照。客户端拉取前必须先完整解析并备份本地数据；任何写入失败都要恢复备份，禁止用空响应清空设备。待 Android 完成共享任务模型迁移后，该字段可以保留用于兼容旧版本，但不应继续扩展业务语义。
 
 ## 合并规则
 

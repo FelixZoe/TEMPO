@@ -12,6 +12,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   provider: ^6.1.5
   shared_preferences: ^2.5.3
+  flutter_secure_storage: ^9.2.4
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   intl: ^0.20.0

@@ -396,8 +396,10 @@ class _SettingsPageState extends State<SettingsPage> {
               _buildGroup(context, colors, provider, [
                 _SettingRow(
                   icon: Icons.cloud_sync_outlined,
-                  title: '自动同步',
-                  subtitle: '数据变更自动上传，登录后自动恢复',
+                  title: '自托管同步',
+                  subtitle: CloudSyncService().isConfigured
+                      ? CloudSyncService().serverUrl
+                      : '填写你的服务器地址和同步令牌',
                   colors: colors,
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -406,7 +408,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         width: 8,
                         height: 8,
                         decoration: BoxDecoration(
-                          color: AuthService().isLoggedIn
+                          color: CloudSyncService().isConfigured
                               ? MiuiColors.green
                               : colors.textTertiary,
                           shape: BoxShape.circle,
@@ -414,16 +416,17 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        AuthService().isLoggedIn ? '已启用' : '未登录',
+                        CloudSyncService().isConfigured ? '已连接' : '未配置',
                         style: TextStyle(
                           fontSize: 12,
-                          color: AuthService().isLoggedIn
+                          color: CloudSyncService().isConfigured
                               ? MiuiColors.green
                               : colors.textTertiary,
                         ),
                       ),
                     ],
                   ),
+                  onTap: () => _showSyncConfiguration(context, colors),
                 ),
                 if (CloudSyncService().lastSyncTime != null)
                   _SettingRow(
@@ -833,19 +836,214 @@ class _SettingsPageState extends State<SettingsPage> {
 
   // ═══ Cloud Sync ═══
 
+  Future<void> _showSyncConfiguration(
+    BuildContext context,
+    AppColors colors,
+  ) async {
+    final service = CloudSyncService();
+    final serverController = TextEditingController(text: service.serverUrl);
+    final tokenController = TextEditingController();
+    var saving = false;
+    var obscureToken = true;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: colors.card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, setSheetState) {
+          Future<void> save() async {
+            if (saving) return;
+            setSheetState(() => saving = true);
+            final result = await service.configure(
+              serverUrl: serverController.text,
+              token: tokenController.text,
+            );
+            if (!sheetContext.mounted) return;
+            setSheetState(() => saving = false);
+            if (!result.success) {
+              _showSnack(sheetContext, colors, result.error ?? '配置失败');
+              return;
+            }
+            Navigator.of(sheetContext).pop();
+            if (mounted) {
+              setState(() {});
+              _showSnack(this.context, colors, '连接成功，配置已安全保存');
+            }
+          }
+
+          return SafeArea(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                24,
+                18,
+                24,
+                24 + MediaQuery.viewInsetsOf(context).bottom,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '自托管同步',
+                    style: TextStyle(
+                      color: colors.textPrimary,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '仅连接你自己的 TEMPO 同步服务。远程服务器必须使用 HTTPS，令牌保存在系统安全存储中。',
+                    style: TextStyle(
+                      color: colors.textSecondary,
+                      fontSize: 14,
+                      height: 1.45,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: serverController,
+                    keyboardType: TextInputType.url,
+                    autocorrect: false,
+                    decoration: const InputDecoration(
+                      labelText: '服务器地址',
+                      hintText: 'https://sync.example.com',
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: tokenController,
+                    obscureText: obscureToken,
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    decoration: InputDecoration(
+                      labelText: '64 位同步令牌',
+                      suffixIcon: IconButton(
+                        onPressed: () => setSheetState(
+                          () => obscureToken = !obscureToken,
+                        ),
+                        icon: Icon(
+                          obscureToken
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: saving ? null : save,
+                      child: saving
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('测试并保存'),
+                    ),
+                  ),
+                  if (service.isConfigured) ...[
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: TextButton(
+                        onPressed: saving
+                            ? null
+                            : () async {
+                                await service.clearConfiguration();
+                                if (!sheetContext.mounted) return;
+                                Navigator.of(sheetContext).pop();
+                                if (mounted) setState(() {});
+                              },
+                        child: const Text('移除配置'),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+    serverController.dispose();
+    tokenController.dispose();
+  }
+
   Future<void> _manualSync(
     BuildContext context,
     AppProvider provider,
     AppColors colors,
   ) async {
-    final auth = AuthService();
-    if (!auth.isLoggedIn) {
-      _showSnack(context, colors, '请先登录账号');
+    final sync = CloudSyncService();
+    if (!sync.isConfigured) {
+      _showSnack(context, colors, '请先配置自托管同步');
       return;
     }
+
+    if (!sync.hasCompletedSync) {
+      final direction = await showDialog<String>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          backgroundColor: colors.card,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          title: const Text('选择首次同步方向'),
+          content: const Text(
+            '为了避免覆盖已有数据，请确认以哪一端为准。以后会自动双向同步。',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop('download'),
+              child: const Text('从服务器恢复'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop('upload'),
+              child: const Text('以本机数据为准'),
+            ),
+          ],
+        ),
+      );
+      if (!context.mounted || direction == null) return;
+      _showSnack(context, colors, '正在同步...');
+      if (direction == 'download') {
+        final result = await sync.pullFromCloud();
+        if (!context.mounted) return;
+        if (result.success) {
+          await provider.reloadPersistedData();
+        }
+        if (!context.mounted) return;
+        _showSnack(
+          context,
+          colors,
+          result.success ? '已从服务器恢复' : result.error ?? '恢复失败',
+        );
+        return;
+      }
+      final upload = await sync.pushToCloud();
+      if (!context.mounted) return;
+      _showSnack(
+        context,
+        colors,
+        upload.success ? '本机数据已上传' : upload.error ?? '上传失败',
+      );
+      return;
+    }
+
     _showSnack(context, colors, '正在同步...');
     // Push local → cloud, then pull cloud → local
-    final pushResult = await CloudSyncService().pushToCloud();
+    final pushResult = await sync.pushToCloud();
     if (!context.mounted) return;
     if (pushResult.success) {
       final ok = await provider.pullAndReload();

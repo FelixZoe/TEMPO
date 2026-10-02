@@ -130,6 +130,30 @@ func TestSyncMergesAndReturnsCompleteTaskDocuments(t *testing.T) {
 	}
 }
 
+func TestSyncAcceptsAndReturnsAndroidWorkspace(t *testing.T) {
+	handler := newTestHandler(t, Config{Token: testToken, MaxBodyBytes: 8192})
+	body := []byte(`{
+      "deviceId":"android-test",
+      "tasks":[],
+      "workspace":{
+        "schema":1,
+        "updatedAt":"2026-08-25T01:00:00Z",
+        "data":{"events":{"2026-8-25":[]},"goals":[],"habits":[]}
+      }
+    }`)
+	response := performSync(handler, body)
+	if response.Code != http.StatusOK {
+		t.Fatalf("workspace sync status = %d, body = %s", response.Code, response.Body)
+	}
+	var output syncResponse
+	if err := json.Unmarshal(response.Body.Bytes(), &output); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(output.Workspace), `"events"`) {
+		t.Fatalf("workspace missing from response: %s", response.Body)
+	}
+}
+
 func TestChangesRequiresAuthenticationAndReturnsCurrentRevision(t *testing.T) {
 	handler := newTestHandler(t, Config{Token: testToken, MaxBodyBytes: 2048})
 	request := httptest.NewRequest(http.MethodGet, "/v1/changes?since=0", nil)

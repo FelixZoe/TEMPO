@@ -117,12 +117,14 @@ type syncRequest struct {
 	Tasks    []json.RawMessage `json:"tasks"`
 	Pomodoro json.RawMessage   `json:"pomodoro,omitempty"`
 	RSS      json.RawMessage   `json:"rss,omitempty"`
+	Workspace json.RawMessage  `json:"workspace,omitempty"`
 }
 
 type syncResponse struct {
 	Tasks      []json.RawMessage `json:"tasks"`
 	Pomodoro   json.RawMessage   `json:"pomodoro,omitempty"`
 	RSS        json.RawMessage   `json:"rss,omitempty"`
+	Workspace  json.RawMessage   `json:"workspace,omitempty"`
 	ServerTime string            `json:"serverTime"`
 	Revision   uint64            `json:"revision"`
 }
@@ -206,9 +208,22 @@ func (s *Server) sync(response http.ResponseWriter, request *http.Request) {
 		}
 		rss = &parsed
 	}
+	var workspace *store.Workspace
+	if len(input.Workspace) > 0 && string(input.Workspace) != "null" {
+		parsed, err := store.ParseWorkspace(input.Workspace)
+		if err != nil {
+			writeError(response, http.StatusBadRequest, "invalid_workspace", err.Error())
+			return
+		}
+		if parsed.UpdatedAt.After(latestAllowedUpdate) {
+			writeError(response, http.StatusBadRequest, "future_updated_at", "workspace.updatedAt is more than 5 minutes in the future")
+			return
+		}
+		workspace = &parsed
+	}
 
 	previousRevision := s.store.Revision()
-	merged, mergedPomodoro, mergedRSS, revision, err := s.store.MergeAll(tasks, pomodoro, rss)
+	merged, mergedPomodoro, mergedRSS, mergedWorkspace, revision, err := s.store.MergeAll(tasks, pomodoro, rss, workspace)
 	if err != nil {
 		log.Printf("persist sync data: %v", err)
 		if errors.Is(err, store.ErrCapacityExceeded) {
@@ -220,18 +235,20 @@ func (s *Server) sync(response http.ResponseWriter, request *http.Request) {
 	}
 	if revision > previousRevision {
 		log.Printf(
-			"sync change device=%q revision=%d tasks=%d pomodoro=%t rss=%t",
+			"sync change device=%q revision=%d tasks=%d pomodoro=%t rss=%t workspace=%t",
 			input.DeviceID,
 			revision,
 			len(tasks),
 			pomodoro != nil,
 			rss != nil,
+			workspace != nil,
 		)
 	}
 	writeJSON(response, http.StatusOK, syncResponse{
 		Tasks:      merged,
 		Pomodoro:   mergedPomodoro,
 		RSS:        mergedRSS,
+		Workspace:  mergedWorkspace,
 		ServerTime: time.Now().UTC().Format(time.RFC3339Nano),
 		Revision:   revision,
 	})
