@@ -18,26 +18,26 @@ end
 
 runner_group = project.main_group.find_subpath('Runner', true)
 shared_group = project.main_group.find_subpath('Shared', true)
-widgets_group = project.main_group.find_subpath('QingxuWidgets', true)
+widgets_group = project.main_group.find_subpath('TempoWidgets', true)
 shared_group.path = 'Shared'
-widgets_group.path = 'QingxuWidgets'
+widgets_group.path = 'TempoWidgets'
 
 bridge = file_reference(runner_group, 'IOSSystemFeaturesBridge.swift')
-attributes = file_reference(shared_group, 'QingxuPomodoroAttributes.swift')
+attributes = file_reference(shared_group, 'TempoPomodoroAttributes.swift')
 runner.add_file_references([bridge, attributes])
 
-widgets = project.targets.find { |target| target.name == 'QingxuWidgets' }
-widgets ||= project.new_target(:app_extension, 'QingxuWidgets', :ios, '16.2')
-widget_source = file_reference(widgets_group, 'QingxuWidgets.swift')
+widgets = project.targets.find { |target| target.name == 'TempoWidgets' }
+widgets ||= project.new_target(:app_extension, 'TempoWidgets', :ios, '17.0')
+widget_source = file_reference(widgets_group, 'TempoWidgets.swift')
 widgets.add_file_references([widget_source, attributes])
 
 widgets.build_configurations.each do |configuration|
   settings = configuration.build_settings
   settings['APPLICATION_EXTENSION_API_ONLY'] = 'YES'
-  settings['CODE_SIGN_ENTITLEMENTS'] = 'QingxuWidgets/QingxuWidgets.entitlements'
+  settings['CODE_SIGN_ENTITLEMENTS'] = 'TempoWidgets/TempoWidgets.entitlements'
   settings['CURRENT_PROJECT_VERSION'] = build_number
   settings['GENERATE_INFOPLIST_FILE'] = 'NO'
-  settings['INFOPLIST_FILE'] = 'QingxuWidgets/Info.plist'
+  settings['INFOPLIST_FILE'] = 'TempoWidgets/Info.plist'
   settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.2'
   settings['MARKETING_VERSION'] = app_version
   settings['PRODUCT_BUNDLE_IDENTIFIER'] = 'one.darker.qingxu.widgets'
@@ -71,4 +71,4 @@ thin_binary_index = runner.build_phases.index { |phase| phase.respond_to?(:name)
 runner.build_phases.insert(thin_binary_index || runner.build_phases.length, embed_phase)
 
 project.save
-puts 'Configured QingxuWidgets and Live Activity targets.'
+puts 'Configured TempoWidgets and Live Activity targets.'

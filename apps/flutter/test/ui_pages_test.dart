@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:qingxu/models/pomodoro_state.dart';
-import 'package:qingxu/models/sync_settings.dart';
-import 'package:qingxu/models/task_item.dart';
-import 'package:qingxu/services/sync_client_base.dart';
-import 'package:qingxu/state/task_controller.dart';
-import 'package:qingxu/ui/design_system.dart';
-import 'package:qingxu/ui/pomodoro_page.dart';
-import 'package:qingxu/ui/sync_settings_page.dart';
-import 'package:qingxu/ui/task_list.dart';
+import 'package:tempo/models/pomodoro_state.dart';
+import 'package:tempo/models/sync_settings.dart';
+import 'package:tempo/models/task_item.dart';
+import 'package:tempo/services/sync_client_base.dart';
+import 'package:tempo/state/task_controller.dart';
+import 'package:tempo/ui/design_system.dart';
+import 'package:tempo/ui/pomodoro_page.dart';
+import 'package:tempo/ui/sync_settings_page.dart';
+import 'package:tempo/ui/task_list.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -16,7 +16,7 @@ void main() {
   Widget host(Widget child) => MaterialApp(
     theme: ThemeData(
       useMaterial3: true,
-      extensions: const [QingxuPalette.light],
+      extensions: const [TempoPalette.light],
     ),
     home: Scaffold(body: SafeArea(bottom: false, child: child)),
   );

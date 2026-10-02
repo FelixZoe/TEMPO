@@ -62,7 +62,7 @@ class _AndroidRSSPageState extends State<AndroidRSSPage> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return AnimatedBuilder(
       animation: widget.store,
       builder: (context, _) {
@@ -132,7 +132,7 @@ class _AndroidRSSPageState extends State<AndroidRSSPage> {
     );
   }
 
-  Widget _header(QingxuPalette palette) => Column(
+  Widget _header(TempoPalette palette) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Row(
@@ -244,7 +244,7 @@ class _AndroidRSSPageState extends State<AndroidRSSPage> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      backgroundColor: QingxuPalette.of(context).canvas,
+      backgroundColor: TempoPalette.of(context).canvas,
       builder: (_) => _RSSReader(
         article: article.copyWith(isRead: true),
         store: widget.store,
@@ -268,7 +268,7 @@ class _ArticleLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final published = article.publishedAt?.toLocal();
     final date = published == null
         ? ''
@@ -419,7 +419,7 @@ class _RSSReaderState extends State<_RSSReader> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final originalBody = widget.article.content.trim().isEmpty
         ? widget.article.summary
         : widget.article.content;
@@ -478,7 +478,7 @@ class _RSSReaderState extends State<_RSSReader> {
           ),
           if (_summary != null) ...[
             const SizedBox(height: 24),
-            QingxuSurface(
+            TempoSurface(
               padding: const EdgeInsets.all(18),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -519,7 +519,7 @@ class _EmptyRSS extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(28, 48, 28, 130),
       child: Column(
@@ -592,7 +592,7 @@ class _AddFeedSheetState extends State<_AddFeedSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return Padding(
       padding: EdgeInsets.fromLTRB(
         12,

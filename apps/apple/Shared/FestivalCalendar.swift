@@ -4,7 +4,7 @@ import Foundation
 ///
 /// These are display labels rather than statutory workday/holiday schedules,
 /// so they never require a network request or access to the user's calendars.
-enum QingxuFestivalCalendar {
+enum TempoFestivalCalendar {
   private static let solarFestivals: [Int: String] = [
     101: "元旦",
     308: "妇女节",

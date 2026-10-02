@@ -94,7 +94,7 @@ struct RSSScreen: View {
     let date = article.publishedAt ?? article.fetchedAt
     HStack(alignment: .top, spacing: 12) {
       Circle()
-        .fill(article.isRead ? Color.clear : QingxuPalette.accent)
+        .fill(article.isRead ? Color.clear : TempoPalette.accent)
         .frame(width: 6, height: 6)
         .padding(.top, 7)
 

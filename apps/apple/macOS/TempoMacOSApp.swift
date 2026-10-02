@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct QingxumacOSApp: App {
+struct TempoMacOSApp: App {
   @StateObject private var store = AppStore()
   @StateObject private var rssStore = RSSStore()
   @StateObject private var floatingPanel = MacFloatingPanelController()
@@ -50,7 +50,7 @@ private struct MacRootView: View {
       case .settings: SettingsScreen()
       }
     }
-    .tint(QingxuPalette.accent)
+    .tint(TempoPalette.accent)
     .onAppear {
       floatingPanel.present(store: store)
     }

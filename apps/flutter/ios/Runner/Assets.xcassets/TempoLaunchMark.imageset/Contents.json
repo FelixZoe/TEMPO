@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "QingxuLaunchMark@1x.png",
+      "filename" : "TempoLaunchMark@1x.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "QingxuLaunchMark@2x.png",
+      "filename" : "TempoLaunchMark@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "QingxuLaunchMark@3x.png",
+      "filename" : "TempoLaunchMark@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

@@ -45,6 +45,9 @@ module.exports = {
       checkAutomatically: 'ON_LOAD',
       fallbackToCacheTimeout: 0,
       url: `https://u.expo.dev/${projectId}`,
+      requestHeaders: {
+        'expo-channel-name': 'production',
+      },
     },
     runtimeVersion: appVersion,
     extra: {

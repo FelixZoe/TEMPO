@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:qingxu/state/task_controller.dart';
-import 'package:qingxu/ui/pomodoro_page.dart';
+import 'package:tempo/state/task_controller.dart';
+import 'package:tempo/ui/pomodoro_page.dart';
 
 void main() {
   testWidgets('pomodoro timer starts, pauses, and resets', (tester) async {

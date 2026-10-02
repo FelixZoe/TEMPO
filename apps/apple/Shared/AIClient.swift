@@ -1,17 +1,17 @@
 import Foundation
 
-struct QingxuAISuggestion: Codable, Identifiable, Hashable {
+struct TempoAISuggestion: Codable, Identifiable, Hashable {
   var title: String
   var dayOffset: Int
   var id: String { "\(title)-\(dayOffset)" }
 }
 
-struct QingxuAITaskPlan: Codable, Hashable {
+struct TempoAITaskPlan: Codable, Hashable {
   var summary: String
-  var suggestions: [QingxuAISuggestion]
+  var suggestions: [TempoAISuggestion]
 }
 
-enum QingxuAIError: LocalizedError {
+enum TempoAIError: LocalizedError {
   case unavailable
   case invalidResponse
   case server(String)
@@ -25,7 +25,7 @@ enum QingxuAIError: LocalizedError {
   }
 }
 
-struct QingxuAIClient {
+struct TempoAIClient {
   func summarize(
     title: String,
     content: String,
@@ -55,7 +55,7 @@ struct QingxuAIClient {
     for batch in segments.translationBatches(maximumCount: 24, maximumCharacters: 7_000) {
       let data = try JSONEncoder().encode(batch)
       guard let content = String(data: data, encoding: .utf8) else {
-        throw QingxuAIError.invalidResponse
+        throw TempoAIError.invalidResponse
       }
       let body = AIRequest(
         mode: "rss_translation",
@@ -72,7 +72,7 @@ struct QingxuAIClient {
       guard let translatedData = raw.data(using: .utf8),
             let translated = try? JSONDecoder().decode([String].self, from: translatedData),
             translated.count == batch.count
-      else { throw QingxuAIError.invalidResponse }
+      else { throw TempoAIError.invalidResponse }
       result.append(contentsOf: translated)
     }
     return result
@@ -83,7 +83,7 @@ struct QingxuAIClient {
     tasks: [TaskItem],
     settings: SyncSettings,
     aiSettings: AISettings
-  ) async throws -> QingxuAITaskPlan {
+  ) async throws -> TempoAITaskPlan {
     let inputs = tasks.prefix(200).map {
       AITaskInput(title: $0.title, scheduledAt: $0.startAt?.ISO8601Format())
     }
@@ -100,14 +100,14 @@ struct QingxuAIClient {
       .replacingOccurrences(of: "```", with: "")
       .trimmingCharacters(in: .whitespacesAndNewlines)
     guard let data = raw.data(using: .utf8),
-          let plan = try? JSONDecoder().decode(QingxuAITaskPlan.self, from: data)
-    else { throw QingxuAIError.invalidResponse }
+          let plan = try? JSONDecoder().decode(TempoAITaskPlan.self, from: data)
+    else { throw TempoAIError.invalidResponse }
     return plan
   }
 
   func test(settings: SyncSettings, aiSettings: AISettings) async throws {
     guard aiSettings.validationMessage(syncSettings: settings) == nil else {
-      throw QingxuAIError.unavailable
+      throw TempoAIError.unavailable
     }
     let body = AIRequest(
       mode: "rss_summary",
@@ -119,7 +119,7 @@ struct QingxuAIClient {
     )
     let response = try await perform(body, settings: settings, aiSettings: aiSettings)
     guard !response.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-      throw QingxuAIError.invalidResponse
+      throw TempoAIError.invalidResponse
     }
   }
 
@@ -129,7 +129,7 @@ struct QingxuAIClient {
     aiSettings: AISettings
   ) async throws -> AIResponse {
     guard aiSettings.validationMessage(syncSettings: settings) == nil else {
-      throw QingxuAIError.unavailable
+      throw TempoAIError.unavailable
     }
     switch aiSettings.mode {
     case .selfHosted:
@@ -142,12 +142,12 @@ struct QingxuAIClient {
   private func performSelfHosted(_ body: AIRequest, settings: SyncSettings) async throws -> AIResponse {
     guard settings.isConfigured,
           var components = URLComponents(string: settings.normalizedServerURL)
-    else { throw QingxuAIError.unavailable }
+    else { throw TempoAIError.unavailable }
     components.path = components.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
     components.path = "/" + [components.path, "/v1/ai"].map {
       $0.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
     }.filter { !$0.isEmpty }.joined(separator: "/")
-    guard let url = components.url else { throw QingxuAIError.unavailable }
+    guard let url = components.url else { throw TempoAIError.unavailable }
 
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
@@ -158,20 +158,20 @@ struct QingxuAIClient {
     request.httpBody = try JSONEncoder().encode(body)
 
     let (data, response) = try await URLSession.shared.data(for: request)
-    guard let http = response as? HTTPURLResponse else { throw QingxuAIError.invalidResponse }
+    guard let http = response as? HTTPURLResponse else { throw TempoAIError.invalidResponse }
     guard 200..<300 ~= http.statusCode else {
-      if http.statusCode == 503 { throw QingxuAIError.unavailable }
-      throw QingxuAIError.server(serverMessage(from: data))
+      if http.statusCode == 503 { throw TempoAIError.unavailable }
+      throw TempoAIError.server(serverMessage(from: data))
     }
     guard let result = try? JSONDecoder().decode(AIResponse.self, from: data) else {
-      throw QingxuAIError.invalidResponse
+      throw TempoAIError.invalidResponse
     }
     return result
   }
 
   private func performCompatible(_ body: AIRequest, settings: AISettings) async throws -> AIResponse {
     guard let url = URL(string: settings.normalizedBaseURL) else {
-      throw QingxuAIError.unavailable
+      throw TempoAIError.unavailable
     }
     let payload = ChatCompletionRequest(
       model: settings.model.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -193,14 +193,14 @@ struct QingxuAIClient {
     request.httpBody = try JSONEncoder().encode(payload)
 
     let (data, response) = try await URLSession.shared.data(for: request)
-    guard let http = response as? HTTPURLResponse else { throw QingxuAIError.invalidResponse }
+    guard let http = response as? HTTPURLResponse else { throw TempoAIError.invalidResponse }
     guard 200..<300 ~= http.statusCode else {
-      throw QingxuAIError.server(serverMessage(from: data))
+      throw TempoAIError.server(serverMessage(from: data))
     }
     guard let result = try? JSONDecoder().decode(ChatCompletionResponse.self, from: data),
           let content = result.choices.first?.message.content,
           !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    else { throw QingxuAIError.invalidResponse }
+    else { throw TempoAIError.invalidResponse }
     return AIResponse(text: content)
   }
 

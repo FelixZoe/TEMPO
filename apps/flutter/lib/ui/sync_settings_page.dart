@@ -158,8 +158,8 @@ class _SyncSettingsPageState extends State<SyncSettingsPage> {
               title: '自托管同步',
               subtitle: syncDetail,
               statusColor: configured
-                  ? QingxuPalette.of(context).success
-                  : QingxuPalette.of(context).faint,
+                  ? TempoPalette.of(context).success
+                  : TempoPalette.of(context).faint,
               onTap: () => setState(() => _section = _SettingsSection.sync),
             ),
           ],
@@ -168,7 +168,7 @@ class _SyncSettingsPageState extends State<SyncSettingsPage> {
         Text(
           configured ? '任务、番茄钟和计时设置会自动同步。' : '应用可以完全离线使用；需要跨设备时再配置服务器。',
           style: TextStyle(
-            color: QingxuPalette.of(context).muted,
+            color: TempoPalette.of(context).muted,
             fontSize: 12,
             height: 1.5,
           ),
@@ -208,7 +208,7 @@ class _SyncSettingsPageState extends State<SyncSettingsPage> {
       Text(
         '跟随系统会根据设备的日间与夜间模式自动切换。外观属于设备偏好，不会同步到其他设备。',
         style: TextStyle(
-          color: QingxuPalette.of(context).muted,
+          color: TempoPalette.of(context).muted,
           fontSize: 12,
           height: 1.55,
         ),
@@ -233,7 +233,7 @@ class _SyncSettingsPageState extends State<SyncSettingsPage> {
         const SizedBox(height: 26),
         const _SectionLabel(title: '服务器'),
         const SizedBox(height: 9),
-        QingxuSurface(
+        TempoSurface(
           padding: const EdgeInsets.fromLTRB(18, 18, 18, 8),
           child: Column(
             children: [
@@ -335,7 +335,7 @@ class _SyncSettingsPageState extends State<SyncSettingsPage> {
         style: TextStyle(
           fontSize: 12,
           height: 1.55,
-          color: QingxuPalette.of(context).muted,
+          color: TempoPalette.of(context).muted,
         ),
       ),
     ],
@@ -349,7 +349,7 @@ class _SyncSettingsPageState extends State<SyncSettingsPage> {
     bool showBack = false,
     Widget? trailing,
   }) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     if (widget.embedded) {
       return ColoredBox(
         color: Colors.transparent,
@@ -424,7 +424,7 @@ class _SyncSettingsPageState extends State<SyncSettingsPage> {
       color: palette.canvas,
       child: Column(
         children: [
-          QingxuPageHeader(
+          TempoPageHeader(
             title: title,
             subtitle: subtitle,
             leading: showBack
@@ -448,7 +448,7 @@ class _SyncSettingsPageState extends State<SyncSettingsPage> {
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final gutter = QingxuLayout.gutterFor(constraints.maxWidth);
+                final gutter = TempoLayout.gutterFor(constraints.maxWidth);
                 return SingleChildScrollView(
                   keyboardDismissBehavior:
                       ScrollViewKeyboardDismissBehavior.onDrag,
@@ -456,7 +456,7 @@ class _SyncSettingsPageState extends State<SyncSettingsPage> {
                   child: Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(
-                        maxWidth: QingxuLayout.contentMaxWidth,
+                        maxWidth: TempoLayout.contentMaxWidth,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -481,8 +481,8 @@ class _SettingsGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
-    if (qingxuIsDesktop) {
+    final palette = TempoPalette.of(context);
+    if (tempoIsDesktop) {
       return DecoratedBox(
         decoration: BoxDecoration(
           border: Border(
@@ -501,9 +501,9 @@ class _SettingsGroup extends StatelessWidget {
         ),
       );
     }
-    return QingxuSurface(
+    return TempoSurface(
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(QingxuLayout.sectionRadius),
+        borderRadius: BorderRadius.circular(TempoLayout.sectionRadius),
         child: Column(
           children: [
             for (var index = 0; index < children.length; index++) ...[
@@ -535,9 +535,9 @@ class _SettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final color = statusColor ?? palette.accent;
-    final desktop = qingxuIsDesktop;
+    final desktop = tempoIsDesktop;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -598,7 +598,7 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return Text(
       title,
       style: TextStyle(
@@ -618,7 +618,7 @@ class _AppearanceSection extends StatelessWidget {
   final ValueChanged<ThemeMode> onChanged;
 
   @override
-  Widget build(BuildContext context) => QingxuSurface(
+  Widget build(BuildContext context) => TempoSurface(
     padding: const EdgeInsets.all(6),
     child: Row(
       children: [
@@ -660,10 +660,10 @@ class _ThemeChoice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return Expanded(
       child: AnimatedContainer(
-        duration: QingxuMotion.standard,
+        duration: TempoMotion.standard,
         decoration: BoxDecoration(
           color: selected ? palette.accentSoft : Colors.transparent,
           borderRadius: BorderRadius.circular(14),
@@ -708,7 +708,7 @@ class _SyncStatus extends StatelessWidget {
   Widget build(BuildContext context) => AnimatedBuilder(
     animation: controller,
     builder: (context, _) {
-      final palette = QingxuPalette.of(context);
+      final palette = TempoPalette.of(context);
       final (icon, color) = switch (controller.syncActivity) {
         SyncActivity.testing ||
         SyncActivity.syncing => (Icons.sync_rounded, palette.info),
@@ -717,7 +717,7 @@ class _SyncStatus extends StatelessWidget {
         SyncActivity.idle => (Icons.cloud_queue_outlined, palette.success),
         SyncActivity.unconfigured => (Icons.cloud_outlined, palette.faint),
       };
-      return QingxuSurface(
+      return TempoSurface(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
@@ -787,7 +787,7 @@ class _Field extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 18),
       child: Column(
@@ -826,7 +826,7 @@ class _SettingSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return Container(
       padding: const EdgeInsets.fromLTRB(2, 12, 0, 10),
       decoration: BoxDecoration(

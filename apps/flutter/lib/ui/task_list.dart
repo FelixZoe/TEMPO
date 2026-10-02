@@ -60,8 +60,8 @@ class _TaskListPaneState extends State<TaskListPane> {
   @override
   Widget build(BuildContext context) {
     final tasks = widget.controller.visibleTasks;
-    final palette = QingxuPalette.of(context);
-    if (qingxuIsDesktop) {
+    final palette = TempoPalette.of(context);
+    if (tempoIsDesktop) {
       return _DesktopTaskList(
         controller: widget.controller,
         tasks: tasks,
@@ -75,7 +75,7 @@ class _TaskListPaneState extends State<TaskListPane> {
         children: [
           Column(
             children: [
-              QingxuPageHeader(
+              TempoPageHeader(
                 title: widget.controller.currentTitle,
                 subtitle: _taskViewDescription(widget.controller.activeView),
                 leading: widget.onMenu == null
@@ -92,7 +92,7 @@ class _TaskListPaneState extends State<TaskListPane> {
                     ? _EmptyState(view: widget.controller.activeView)
                     : LayoutBuilder(
                         builder: (context, constraints) {
-                          final gutter = QingxuLayout.gutterFor(
+                          final gutter = TempoLayout.gutterFor(
                             constraints.maxWidth,
                           );
                           return ListView.separated(
@@ -112,7 +112,7 @@ class _TaskListPaneState extends State<TaskListPane> {
                             itemBuilder: (context, index) => Center(
                               child: ConstrainedBox(
                                 constraints: const BoxConstraints(
-                                  maxWidth: QingxuLayout.contentMaxWidth,
+                                  maxWidth: TempoLayout.contentMaxWidth,
                                 ),
                                 child: _TaskRow(
                                   controller: widget.controller,
@@ -128,7 +128,7 @@ class _TaskListPaneState extends State<TaskListPane> {
             ],
           ),
           Positioned(
-            right: QingxuLayout.mobileGutter,
+            right: TempoLayout.mobileGutter,
             bottom: 22,
             child: Focus(
               focusNode: widget.quickAddFocus,
@@ -179,7 +179,7 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return Dialog(
       backgroundColor: palette.surfaceRaised,
       surfaceTintColor: Colors.transparent,
@@ -260,14 +260,14 @@ class _DesktopTaskList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return ColoredBox(
       color: palette.canvas,
       child: Stack(
         children: [
           Column(
             children: [
-              QingxuPageHeader(
+              TempoPageHeader(
                 title: controller.currentTitle,
                 subtitle: _taskViewDescription(controller.activeView),
                 trailing: _TaskCount(count: tasks.length),
@@ -278,7 +278,7 @@ class _DesktopTaskList extends StatelessWidget {
                     alignment: Alignment.topCenter,
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(
-                        maxWidth: QingxuLayout.contentMaxWidth,
+                        maxWidth: TempoLayout.contentMaxWidth,
                       ),
                       child: tasks.isEmpty
                           ? _EmptyState(view: controller.activeView)
@@ -398,7 +398,7 @@ class _DesktopTaskRowState extends State<_DesktopTaskRow> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final task = widget.task;
     final completed = task.status == TaskStatus.completed;
     final selected = widget.controller.selectedTaskId == task.id;
@@ -416,7 +416,7 @@ class _DesktopTaskRowState extends State<_DesktopTaskRow> {
       onEnter: (_) => setState(() => hovered = true),
       onExit: (_) => setState(() => hovered = false),
       child: AnimatedContainer(
-        duration: QingxuMotion.quick,
+        duration: TempoMotion.quick,
         decoration: BoxDecoration(
           color: highlighted
               ? palette.surfaceRaised.withValues(alpha: selected ? 1 : 0.68)
@@ -446,7 +446,7 @@ class _DesktopTaskRowState extends State<_DesktopTaskRow> {
                       onTap: () => widget.controller.toggleTask(task),
                       radius: 22,
                       child: AnimatedContainer(
-                        duration: QingxuMotion.quick,
+                        duration: TempoMotion.quick,
                         width: 21,
                         height: 21,
                         decoration: BoxDecoration(
@@ -513,7 +513,7 @@ class _DesktopTaskRowState extends State<_DesktopTaskRow> {
                       ),
                     ),
                     AnimatedOpacity(
-                      duration: QingxuMotion.quick,
+                      duration: TempoMotion.quick,
                       opacity: highlighted ? 1 : 0,
                       child: IconButton(
                         tooltip: '删除任务',
@@ -556,7 +556,7 @@ class _TaskCount extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
         color: palette.accentSoft,
@@ -590,7 +590,7 @@ class _TaskRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final messenger = ScaffoldMessenger.of(context);
     final completed = task.status == TaskStatus.completed;
     final selected = controller.selectedTaskId == task.id;
@@ -644,7 +644,7 @@ class _TaskRow extends StatelessWidget {
                     onTap: () => controller.toggleTask(task),
                     radius: 24,
                     child: AnimatedContainer(
-                      duration: QingxuMotion.quick,
+                      duration: TempoMotion.quick,
                       width: 23,
                       height: 23,
                       margin: const EdgeInsets.only(top: 1),
@@ -738,7 +738,7 @@ class _TaskMeta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -757,7 +757,7 @@ class _ProjectMeta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -786,7 +786,7 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final (icon, title, message) = switch (view) {
       'inbox' => (Icons.inbox_outlined, '收集箱空空的', '先把脑海里的事情放下来。'),
       _ => (Icons.check_rounded, '今天没有待办', '留一点空白，也是一种完成。'),

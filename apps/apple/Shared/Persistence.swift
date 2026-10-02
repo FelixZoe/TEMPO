@@ -1,7 +1,7 @@
 import Foundation
 import Security
 
-enum QingxuFiles {
+enum TempoFiles {
   private static var root: URL {
     #if os(iOS)
     let base = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
@@ -14,12 +14,12 @@ enum QingxuFiles {
   static func load<T: Decodable>(_ type: T.Type, name: String) -> T? {
     let url = root.appendingPathComponent(name)
     guard let data = try? Data(contentsOf: url) else { return nil }
-    return try? QingxuCoding.decoder.decode(type, from: data)
+    return try? TempoCoding.decoder.decode(type, from: data)
   }
 
   static func save<T: Encodable>(_ value: T, name: String) throws {
     try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
-    let data = try QingxuCoding.encoder.encode(value)
+    let data = try TempoCoding.encoder.encode(value)
     try data.write(to: root.appendingPathComponent(name), options: .atomic)
   }
 
@@ -133,7 +133,7 @@ private enum KeychainSecret {
 }
 
 
-enum QingxuInstallPrivacy {
+enum TempoInstallPrivacy {
   private static let launchMarker = "qingxu.install.didLaunch.v1"
 
   /// Keychain values survive uninstall on iOS. Clear them only when the app has
@@ -143,7 +143,7 @@ enum QingxuInstallPrivacy {
     #if os(iOS)
     let defaults = UserDefaults.standard
     guard !defaults.bool(forKey: launchMarker) else { return }
-    if !QingxuFiles.hasPersistedInstallState {
+    if !TempoFiles.hasPersistedInstallState {
       SecureSyncToken.clear()
       SecureAIAPIKey.clear()
       SecureWeatherAPIKey.clear()

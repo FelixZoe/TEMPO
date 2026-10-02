@@ -41,12 +41,12 @@ struct TaskListScreen: View {
   @State private var undoDismissTask: Task<Void, Never>?
   @State private var showingAIPlanner = false
   @State private var selectedDate = Date.now
-  @AppStorage(QingxuPreferenceKey.showFestivals) private var showFestivalLabels = true
-  @AppStorage(QingxuPreferenceKey.showTaskIndicators) private var showTaskIndicators = true
-  @AppStorage(QingxuPreferenceKey.weekStartsMonday) private var weekStartsMonday = true
+  @AppStorage(TempoPreferenceKey.showFestivals) private var showFestivalLabels = true
+  @AppStorage(TempoPreferenceKey.showTaskIndicators) private var showTaskIndicators = true
+  @AppStorage(TempoPreferenceKey.weekStartsMonday) private var weekStartsMonday = true
   #if os(iOS)
-  @AppStorage(QingxuPreferenceKey.haptics) private var hapticsEnabled = true
-  @AppStorage(QingxuPreferenceKey.completionSound) private var completionSoundEnabled = false
+  @AppStorage(TempoPreferenceKey.haptics) private var hapticsEnabled = true
+  @AppStorage(TempoPreferenceKey.completionSound) private var completionSoundEnabled = false
   #endif
   #if os(iOS)
   @State private var calendarExpansion: CGFloat = 0
@@ -78,11 +78,11 @@ struct TaskListScreen: View {
         standardTaskList
         #endif
       }
-      .qingxuScreen()
+      .tempoScreen()
       #if os(iOS)
       .navigationTitle(scope == .today ? "" : navigationTitle)
       .navigationBarTitleDisplayMode(scope == .today ? .inline : .large)
-      .qingxuInboxSearch(enabled: scope == .inbox, text: $searchText)
+      .tempoInboxSearch(enabled: scope == .inbox, text: $searchText)
       #else
       .navigationTitle(navigationTitle)
       .searchable(text: $searchText, prompt: "搜索任务")
@@ -148,7 +148,7 @@ struct TaskListScreen: View {
       #if os(iOS)
       .overlay {
         if capture != nil {
-          QingxuPalette.scrim.opacity(0.18)
+          TempoPalette.scrim.opacity(0.18)
             .ignoresSafeArea()
             .contentShape(Rectangle())
             .onTapGesture { dismissCapture() }
@@ -182,7 +182,7 @@ struct TaskListScreen: View {
       .onChange(of: store.tasks) { _ in
         if scope == .today { refreshCalendarTaskDays() }
       }
-      .onReceive(NotificationCenter.default.publisher(for: QingxuAmbientPreferencesStore.didChange)) { _ in
+      .onReceive(NotificationCenter.default.publisher(for: TempoAmbientPreferencesStore.didChange)) { _ in
         guard scope == .inbox else { return }
         Task { await ambientStore.load(force: true) }
       }
@@ -201,11 +201,11 @@ struct TaskListScreen: View {
         .font(.system(size: 42, weight: .light))
       Text(scope.emptyTitle)
         .font(.title3.weight(.semibold))
-        .foregroundStyle(QingxuPalette.ink)
+        .foregroundStyle(TempoPalette.ink)
       Text(scope.emptyDetail)
         .font(.subheadline)
     }
-    .foregroundStyle(QingxuPalette.quiet)
+    .foregroundStyle(TempoPalette.quiet)
   }
 
   private var standardTaskList: some View {
@@ -251,7 +251,7 @@ struct TaskListScreen: View {
       if task.id == firstCompletedTaskID {
         Text("已完成")
           .font(.caption.weight(.semibold))
-          .foregroundStyle(QingxuPalette.quiet)
+          .foregroundStyle(TempoPalette.quiet)
           .textCase(nil)
           .listRowInsets(.init(top: 14, leading: 22, bottom: 2, trailing: 20))
           .listRowBackground(Color.clear)
@@ -266,12 +266,12 @@ struct TaskListScreen: View {
         withAnimation(.easeInOut(duration: 0.2)) { store.toggleTask(task) }
         #if os(iOS)
         if completing {
-          QingxuFeedback.taskCompletion(
+          TempoFeedback.taskCompletion(
             haptics: hapticsEnabled,
             sound: completionSoundEnabled
           )
         } else {
-          QingxuFeedback.selection(enabled: hapticsEnabled)
+          TempoFeedback.selection(enabled: hapticsEnabled)
         }
         #endif
       }
@@ -284,7 +284,7 @@ struct TaskListScreen: View {
         Button { moveRoute = TaskMoveRoute(task: task) } label: {
           Label("迁移", systemImage: "calendar")
         }
-        .tint(QingxuPalette.quiet)
+        .tint(TempoPalette.quiet)
       }
       .listRowInsets(.init(top: 5, leading: 20, bottom: 5, trailing: 20))
       .listRowBackground(Color.clear)
@@ -299,7 +299,7 @@ struct TaskListScreen: View {
       Button {
         Task { await ambientStore.load(force: true) }
       } label: {
-        Image(systemName: qingxuWeatherSymbol(weather.icon, text: weather.text))
+        Image(systemName: tempoWeatherSymbol(weather.icon, text: weather.text))
           .symbolRenderingMode(.hierarchical)
       }
       .accessibilityLabel("\(weather.cityName)，\(weather.text)，\(weather.temperature)度")
@@ -319,7 +319,7 @@ struct TaskListScreen: View {
       if task.id == firstCompletedTaskID {
         Text("已完成")
           .font(.caption.weight(.semibold))
-          .foregroundStyle(QingxuPalette.quiet)
+          .foregroundStyle(TempoPalette.quiet)
           .padding(.top, 6)
           .padding(.leading, 4)
       }
@@ -331,12 +331,12 @@ struct TaskListScreen: View {
           let completing = task.status != .completed
           withAnimation(.easeInOut(duration: 0.2)) { store.toggleTask(task) }
           if completing {
-            QingxuFeedback.taskCompletion(
+            TempoFeedback.taskCompletion(
               haptics: hapticsEnabled,
               sound: completionSoundEnabled
             )
           } else {
-            QingxuFeedback.selection(enabled: hapticsEnabled)
+            TempoFeedback.selection(enabled: hapticsEnabled)
           }
         }
         .contentShape(Rectangle())
@@ -353,7 +353,7 @@ struct TaskListScreen: View {
           }
         }
       }
-      .background(QingxuPalette.secondaryBackground.opacity(0.72))
+      .background(TempoPalette.secondaryBackground.opacity(0.72))
       .clipShape(RoundedRectangle(cornerRadius: 17, style: .continuous))
     }
   }
@@ -374,7 +374,7 @@ struct TaskListScreen: View {
         .padding(.horizontal, 20)
         .frame(maxWidth: .infinity)
         .padding(.top, TodayCalendarMetrics.topPadding)
-        .background(QingxuPalette.background)
+        .background(TempoPalette.background)
         .contentShape(Rectangle())
         .gesture(todayCalendarDrag)
         .zIndex(1)
@@ -394,7 +394,7 @@ struct TaskListScreen: View {
               .padding(.top, 12)
               .padding(.bottom, 8)
               .background(
-                QingxuPalette.surface,
+                TempoPalette.surface,
                 in: RoundedRectangle(cornerRadius: 24, style: .continuous)
               )
               .padding(.horizontal, 20)
@@ -467,8 +467,8 @@ struct TaskListScreen: View {
       Image(systemName: "plus")
         .font(.system(size: 20, weight: .semibold))
         .frame(width: 54, height: 54)
-        .foregroundStyle(QingxuPalette.onAccent)
-        .background(QingxuPalette.actionGradient, in: Circle())
+        .foregroundStyle(TempoPalette.onAccent)
+        .background(TempoPalette.actionGradient, in: Circle())
     }
     .buttonStyle(.plain)
     .accessibilityLabel("新增任务")
@@ -521,7 +521,7 @@ struct TaskListScreen: View {
     } label: {
       Image(systemName: "ellipsis")
     }
-    .foregroundStyle(QingxuPalette.ink)
+    .foregroundStyle(TempoPalette.ink)
     .accessibilityLabel("更多日历操作")
   }
 
@@ -594,9 +594,9 @@ struct TaskListScreen: View {
     } label: {
       Image(systemName: "arrow.uturn.backward")
         .font(.system(size: 20, weight: .semibold))
-        .foregroundStyle(QingxuPalette.onAccent)
+        .foregroundStyle(TempoPalette.onAccent)
         .frame(width: 54, height: 54)
-        .background(QingxuPalette.actionGradient, in: Circle())
+        .background(TempoPalette.actionGradient, in: Circle())
     }
     .buttonStyle(.plain)
     .accessibilityLabel("撤销删除")
@@ -622,7 +622,7 @@ struct TaskListScreen: View {
     moveRoute = nil
   }
 
-  private func addAISuggestions(_ suggestions: [QingxuAISuggestion]) {
+  private func addAISuggestions(_ suggestions: [TempoAISuggestion]) {
     let calendar = Calendar.autoupdatingCurrent
     for suggestion in suggestions {
       guard var task = store.addTask(title: suggestion.title, forToday: false) else { continue }
@@ -654,33 +654,33 @@ private struct TaskRow: View {
           ZStack {
             RoundedRectangle(cornerRadius: 5, style: .continuous)
               .stroke(
-                task.status == .completed ? QingxuPalette.success : QingxuPalette.quiet.opacity(0.55),
+                task.status == .completed ? TempoPalette.success : TempoPalette.quiet.opacity(0.55),
                 lineWidth: 1.6
               )
               .frame(width: 23, height: 23)
             if task.status == .completed {
               Image(systemName: "checkmark")
                 .font(.caption.weight(.bold))
-                .foregroundStyle(QingxuPalette.success)
+                .foregroundStyle(TempoPalette.success)
             }
           }
         } else {
           Image(systemName: task.status == .completed ? "checkmark.circle.fill" : "circle")
             .font(.title3)
-            .foregroundStyle(task.status == .completed ? QingxuPalette.success : QingxuPalette.quiet)
+            .foregroundStyle(task.status == .completed ? TempoPalette.success : TempoPalette.quiet)
         }
       }
       .buttonStyle(.plain)
 
       VStack(alignment: .leading, spacing: 4) {
         Text(task.title)
-          .font(task.status == .completed ? QingxuType.rowTitleCompleted : QingxuType.rowTitle)
-          .strikethrough(task.status == .completed, color: QingxuPalette.quiet)
-          .foregroundStyle(task.status == .completed ? QingxuPalette.quiet : QingxuPalette.ink)
+          .font(task.status == .completed ? TempoType.rowTitleCompleted : TempoType.rowTitle)
+          .strikethrough(task.status == .completed, color: TempoPalette.quiet)
+          .foregroundStyle(task.status == .completed ? TempoPalette.quiet : TempoPalette.ink)
         if !task.notes.isEmpty {
           Text(task.notes)
             .font(.subheadline)
-            .foregroundStyle(QingxuPalette.quiet)
+            .foregroundStyle(TempoPalette.quiet)
             .lineLimit(2)
         }
       }
@@ -694,11 +694,11 @@ private struct TaskRow: View {
       if let deadline = task.deadlineAt {
         Text(numericChineseDate(deadline))
           .font(.caption)
-          .foregroundStyle(QingxuPalette.quiet)
+          .foregroundStyle(TempoPalette.quiet)
       } else if let scheduleLabel {
         Text(scheduleLabel)
-          .font(QingxuType.metadata.weight(.medium))
-          .foregroundStyle(QingxuPalette.quiet)
+          .font(TempoType.metadata.weight(.medium))
+          .foregroundStyle(TempoPalette.quiet)
       }
     }
     .padding(.horizontal, style == .todayPanel ? 14 : 16)
@@ -706,7 +706,7 @@ private struct TaskRow: View {
     .opacity(task.status == .completed ? 0.72 : 1)
     .background {
       if style == .card {
-        QingxuPalette.surface
+        TempoPalette.surface
           .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
       }
     }
@@ -718,7 +718,7 @@ private struct TaskRow: View {
   }
 }
 
-private func qingxuWeatherSymbol(_ icon: String, text: String) -> String {
+private func tempoWeatherSymbol(_ icon: String, text: String) -> String {
   if text.contains("雷") { return "cloud.bolt.rain.fill" }
   if text.contains("雨") { return "cloud.rain.fill" }
   if text.contains("雪") { return "cloud.snow.fill" }
@@ -730,7 +730,7 @@ private func qingxuWeatherSymbol(_ icon: String, text: String) -> String {
 }
 
 private struct InboxQuoteLine: View {
-  let quote: QingxuQuoteSnapshot
+  let quote: TempoQuoteSnapshot
   let refresh: () -> Void
 
   var body: some View {
@@ -738,15 +738,15 @@ private struct InboxQuoteLine: View {
       VStack(alignment: .leading, spacing: 8) {
         Text("今日一句")
           .font(.caption.weight(.semibold))
-          .foregroundStyle(QingxuPalette.faint)
+          .foregroundStyle(TempoPalette.faint)
         Text(quote.text)
           .font(.system(.body, design: .serif, weight: .regular))
-          .foregroundStyle(QingxuPalette.ink.opacity(0.82))
+          .foregroundStyle(TempoPalette.ink.opacity(0.82))
           .lineSpacing(4)
           .fixedSize(horizontal: false, vertical: true)
         Text(quote.source)
           .font(.caption)
-          .foregroundStyle(QingxuPalette.quiet)
+          .foregroundStyle(TempoPalette.quiet)
       }
       .frame(maxWidth: .infinity, alignment: .leading)
       .contentShape(Rectangle())
@@ -790,10 +790,10 @@ private struct TaskSwipeContainer<Content: View>: View {
 
       content()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(QingxuPalette.surface)
+        .background(TempoPalette.surface)
         .offset(x: offset)
     }
-    .background(QingxuPalette.surface)
+    .background(TempoPalette.surface)
     .contentShape(Rectangle())
     .clipShape(Rectangle())
     .simultaneousGesture(
@@ -830,10 +830,10 @@ private struct TaskSwipeContainer<Content: View>: View {
         Image(systemName: symbol).font(.system(size: 17, weight: .semibold))
         Text(title).font(.caption2.weight(.medium))
       }
-      .foregroundStyle(prominent ? QingxuPalette.onAccent : QingxuPalette.ink)
+      .foregroundStyle(prominent ? TempoPalette.onAccent : TempoPalette.ink)
       .frame(width: 61, height: 56)
       .background(
-        prominent ? QingxuPalette.accent : QingxuPalette.secondaryBackground,
+        prominent ? TempoPalette.accent : TempoPalette.secondaryBackground,
         in: RoundedRectangle(cornerRadius: 16, style: .continuous)
       )
     }
@@ -859,7 +859,7 @@ private struct TaskMoveSheet: View {
           .font(.title2.weight(.semibold))
         Text(task.title)
           .font(.subheadline)
-          .foregroundStyle(QingxuPalette.quiet)
+          .foregroundStyle(TempoPalette.quiet)
           .lineLimit(1)
       }
 
@@ -879,7 +879,7 @@ private struct TaskMoveSheet: View {
       }
       .padding(.horizontal, 14)
       .frame(height: 52)
-      .background(QingxuPalette.secondaryBackground, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+      .background(TempoPalette.secondaryBackground, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
 
       Button {
         onMove(nil)
@@ -891,11 +891,11 @@ private struct TaskMoveSheet: View {
           .frame(height: 46)
       }
       .buttonStyle(.plain)
-      .foregroundStyle(QingxuPalette.quiet)
+      .foregroundStyle(TempoPalette.quiet)
     }
     .padding(22)
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-    .background(QingxuPalette.surface)
+    .background(TempoPalette.surface)
   }
 
   private func choice(_ title: String, symbol: String, date: Date) -> some View {
@@ -907,10 +907,10 @@ private struct TaskMoveSheet: View {
         Image(systemName: symbol).font(.system(size: 20, weight: .medium))
         Text(title).font(.caption.weight(.medium))
       }
-      .foregroundStyle(QingxuPalette.ink)
+      .foregroundStyle(TempoPalette.ink)
       .frame(maxWidth: .infinity)
       .frame(height: 74)
-      .background(QingxuPalette.secondaryBackground, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+      .background(TempoPalette.secondaryBackground, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
     .buttonStyle(.plain)
   }
@@ -932,10 +932,10 @@ private struct AITaskPlannerSheet: View {
   @EnvironmentObject private var store: AppStore
   @Environment(\.dismiss) private var dismiss
   let tasks: [TaskItem]
-  let onApply: ([QingxuAISuggestion]) -> Void
+  let onApply: ([TempoAISuggestion]) -> Void
 
   @State private var goal = ""
-  @State private var plan: QingxuAITaskPlan?
+  @State private var plan: TempoAITaskPlan?
   @State private var selected = Set<String>()
   @State private var isLoading = false
   @State private var errorMessage: String?
@@ -946,12 +946,12 @@ private struct AITaskPlannerSheet: View {
         VStack(alignment: .leading, spacing: 22) {
           VStack(alignment: .leading, spacing: 8) {
             Text("你接下来想完成什么？")
-              .font(QingxuType.sectionTitle)
+              .font(TempoType.sectionTitle)
             TextField("例如：本周完成课程项目", text: $goal, axis: .vertical)
-              .font(QingxuType.body)
+              .font(TempoType.body)
               .padding(14)
               .background(
-                QingxuPalette.secondaryBackground,
+                TempoPalette.secondaryBackground,
                 in: RoundedRectangle(cornerRadius: 16, style: .continuous)
               )
           }
@@ -960,15 +960,15 @@ private struct AITaskPlannerSheet: View {
             Task { await generate() }
           } label: {
             HStack(spacing: 8) {
-              if isLoading { ProgressView().tint(QingxuPalette.onAccent) }
+              if isLoading { ProgressView().tint(TempoPalette.onAccent) }
               Image(systemName: "sparkles")
               Text(isLoading ? "正在整理" : "生成轻量计划")
             }
             .font(.subheadline.weight(.semibold))
-            .foregroundStyle(QingxuPalette.onAccent)
+            .foregroundStyle(TempoPalette.onAccent)
             .frame(maxWidth: .infinity)
             .frame(height: 48)
-            .background(QingxuPalette.accent, in: Capsule())
+            .background(TempoPalette.accent, in: Capsule())
           }
           .buttonStyle(.plain)
           .disabled(isLoading || (goal.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && tasks.isEmpty))
@@ -976,8 +976,8 @@ private struct AITaskPlannerSheet: View {
           if let plan {
             VStack(alignment: .leading, spacing: 14) {
               Text(plan.summary)
-                .font(QingxuType.body)
-                .foregroundStyle(QingxuPalette.quiet)
+                .font(TempoType.body)
+                .foregroundStyle(TempoPalette.quiet)
 
               ForEach(plan.suggestions) { suggestion in
                 Button {
@@ -991,11 +991,11 @@ private struct AITaskPlannerSheet: View {
                     Image(systemName: selected.contains(suggestion.id) ? "checkmark.circle.fill" : "circle")
                     VStack(alignment: .leading, spacing: 3) {
                       Text(suggestion.title)
-                        .font(QingxuType.rowTitle)
-                        .foregroundStyle(QingxuPalette.ink)
+                        .font(TempoType.rowTitle)
+                        .foregroundStyle(TempoPalette.ink)
                       Text(suggestion.dayOffset == 0 ? "今天" : "\(suggestion.dayOffset) 天后")
-                        .font(QingxuType.metadata)
-                        .foregroundStyle(QingxuPalette.quiet)
+                        .font(TempoType.metadata)
+                        .foregroundStyle(TempoPalette.quiet)
                     }
                     Spacer()
                   }
@@ -1004,17 +1004,17 @@ private struct AITaskPlannerSheet: View {
                 .buttonStyle(.plain)
 
                 if suggestion.id != plan.suggestions.last?.id {
-                  Divider().overlay(QingxuPalette.separator)
+                  Divider().overlay(TempoPalette.separator)
                 }
               }
             }
             .padding(18)
-            .background(QingxuPalette.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .background(TempoPalette.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
           }
         }
         .padding(20)
       }
-      .qingxuScreen()
+      .tempoScreen()
       .navigationTitle("智能安排")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
@@ -1046,7 +1046,7 @@ private struct AITaskPlannerSheet: View {
     isLoading = true
     defer { isLoading = false }
     do {
-      let result = try await QingxuAIClient().plan(
+      let result = try await TempoAIClient().plan(
         goal: goal.trimmingCharacters(in: .whitespacesAndNewlines),
         tasks: tasks,
         settings: store.syncSettings,
@@ -1064,7 +1064,7 @@ private struct AITaskPlannerSheet: View {
 #if os(iOS)
 private extension View {
   @ViewBuilder
-  func qingxuInboxSearch(enabled: Bool, text: Binding<String>) -> some View {
+  func tempoInboxSearch(enabled: Bool, text: Binding<String>) -> some View {
     if enabled {
       searchable(
         text: text,
@@ -1110,7 +1110,7 @@ private struct TaskQuickCaptureBar: View {
       .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
       .overlay {
         RoundedRectangle(cornerRadius: 28, style: .continuous)
-          .stroke(QingxuPalette.separator.opacity(0.7), lineWidth: 0.7)
+          .stroke(TempoPalette.separator.opacity(0.7), lineWidth: 0.7)
       }
       .shadow(color: .black.opacity(0.12), radius: 18, y: 8)
       .sheet(item: $presentedModal) { _ in
@@ -1132,7 +1132,7 @@ private struct TaskQuickCaptureBar: View {
 
         TextField("描述", text: $notes, axis: .vertical)
           .font(.subheadline)
-          .foregroundStyle(QingxuPalette.quiet)
+          .foregroundStyle(TempoPalette.quiet)
           .lineLimit(1...2)
           .accessibilityIdentifier("quickCaptureNotes")
       }
@@ -1165,9 +1165,9 @@ private struct TaskQuickCaptureBar: View {
           }
         } label: {
           Image(systemName: priority?.symbol ?? "flag")
-            .foregroundStyle(priority?.color ?? QingxuPalette.quiet)
+            .foregroundStyle(priority?.color ?? TempoPalette.quiet)
             .frame(width: 38, height: 38)
-            .background(QingxuPalette.secondaryBackground, in: Circle())
+            .background(TempoPalette.secondaryBackground, in: Circle())
         }
         .accessibilityLabel(priority?.title ?? "设置优先级")
 
@@ -1179,10 +1179,10 @@ private struct TaskQuickCaptureBar: View {
         } label: {
           Image(systemName: hasSchedule ? "sun.max.fill" : "tray")
             .frame(width: 38, height: 38)
-            .background(QingxuPalette.secondaryBackground, in: Circle())
+            .background(TempoPalette.secondaryBackground, in: Circle())
         }
         .buttonStyle(.plain)
-        .foregroundStyle(hasSchedule ? QingxuPalette.accent : QingxuPalette.quiet)
+        .foregroundStyle(hasSchedule ? TempoPalette.accent : TempoPalette.quiet)
         .accessibilityLabel(hasSchedule ? "已安排到今天" : "保存在收集箱")
 
         Spacer()
@@ -1191,8 +1191,8 @@ private struct TaskQuickCaptureBar: View {
           Image(systemName: "checkmark")
             .font(.system(size: 17, weight: .bold))
             .frame(width: 42, height: 42)
-            .foregroundStyle(QingxuPalette.onAccent)
-            .background(QingxuPalette.actionGradient, in: Circle())
+            .foregroundStyle(TempoPalette.onAccent)
+            .background(TempoPalette.actionGradient, in: Circle())
         }
         .buttonStyle(.plain)
         .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -1227,7 +1227,7 @@ private struct TaskQuickCaptureBar: View {
             displayedComponents: .date
           )
           .datePickerStyle(.graphical)
-          .tint(QingxuPalette.accent)
+          .tint(TempoPalette.accent)
 
           VStack(spacing: 0) {
             Toggle("指定时间", isOn: $includesTime)
@@ -1244,7 +1244,7 @@ private struct TaskQuickCaptureBar: View {
               .frame(height: 54)
             }
           }
-          .background(QingxuPalette.surface, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+          .background(TempoPalette.surface, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 24)
@@ -1279,10 +1279,10 @@ private struct TaskQuickCaptureBar: View {
         Text(label).lineLimit(1)
       }
       .font(.subheadline.weight(.medium))
-      .foregroundStyle(hasSchedule ? QingxuPalette.accent : QingxuPalette.quiet)
+      .foregroundStyle(hasSchedule ? TempoPalette.accent : TempoPalette.quiet)
       .padding(.horizontal, 12)
       .frame(height: 38)
-      .background(QingxuPalette.secondaryBackground, in: Capsule())
+      .background(TempoPalette.secondaryBackground, in: Capsule())
     }
     .buttonStyle(.plain)
   }
@@ -1296,10 +1296,10 @@ private struct TaskQuickCaptureBar: View {
         Image(systemName: symbol).font(.title3)
         Text(title).font(.caption)
       }
-      .foregroundStyle(QingxuPalette.accent)
+      .foregroundStyle(TempoPalette.accent)
       .frame(maxWidth: .infinity)
       .frame(height: 72)
-      .background(QingxuPalette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+      .background(TempoPalette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
     .buttonStyle(.plain)
   }
@@ -1502,7 +1502,7 @@ private struct TodayTaskPanelHeader: View {
   var body: some View {
     Text(title)
       .font(.system(size: 21, weight: .semibold, design: .rounded))
-      .foregroundStyle(QingxuPalette.ink)
+      .foregroundStyle(TempoPalette.ink)
       .fixedSize(horizontal: false, vertical: true)
       .padding(.bottom, 14)
       .frame(maxWidth: .infinity, alignment: .leading)
@@ -1518,11 +1518,11 @@ private struct TodayNavigationTitle: View {
     ZStack {
       Text(monthTitle)
         .font(.caption.weight(.semibold))
-        .foregroundStyle(QingxuPalette.quiet.opacity(0.72 + 0.28 * Double(expansion)))
+        .foregroundStyle(TempoPalette.quiet.opacity(0.72 + 0.28 * Double(expansion)))
         .offset(y: -7 * (1 - expansion))
       Text(dayTitle)
         .font(.headline)
-        .foregroundStyle(QingxuPalette.ink)
+        .foregroundStyle(TempoPalette.ink)
         .opacity(1 - expansion)
         .offset(y: 8 * (1 - expansion))
     }
@@ -1608,7 +1608,7 @@ private struct TodayExpandableCalendar: View {
         ForEach(weekdays, id: \.self) { value in
           Text(value)
             .font(.caption)
-            .foregroundStyle(QingxuPalette.quiet.opacity(0.8))
+            .foregroundStyle(TempoPalette.quiet.opacity(0.8))
             .frame(maxWidth: .infinity)
         }
       }
@@ -1676,7 +1676,7 @@ private struct TodayCalendarGrid: View, Equatable {
     let isSelected = calendar.isDate(day, inSameDayAs: selection)
     let isToday = calendar.isDateInToday(day)
     let isCurrentMonth = calendar.isDate(day, equalTo: selection, toGranularity: .month)
-    let festival = showsFestivals ? QingxuFestivalCalendar.title(for: day) : nil
+    let festival = showsFestivals ? TempoFestivalCalendar.title(for: day) : nil
 
     return Button {
       withAnimation(.easeInOut(duration: 0.18)) { selection = day }
@@ -1690,7 +1690,7 @@ private struct TodayCalendarGrid: View, Equatable {
             today: isToday,
             currentMonth: isCurrentMonth
           ))
-          .background(isSelected ? QingxuPalette.accent : Color.clear, in: Circle())
+          .background(isSelected ? TempoPalette.accent : Color.clear, in: Circle())
 
         ZStack {
           if let festival {
@@ -1698,10 +1698,10 @@ private struct TodayCalendarGrid: View, Equatable {
               .font(.system(size: 9, weight: .medium))
               .lineLimit(1)
               .minimumScaleFactor(0.72)
-              .foregroundStyle(isSelected ? QingxuPalette.onAccent.opacity(0.92) : QingxuPalette.success)
+              .foregroundStyle(isSelected ? TempoPalette.onAccent.opacity(0.92) : TempoPalette.success)
           } else if hasTasks {
             Circle()
-              .fill(isSelected ? QingxuPalette.onAccent.opacity(0.9) : QingxuPalette.accent)
+              .fill(isSelected ? TempoPalette.onAccent.opacity(0.9) : TempoPalette.accent)
               .frame(width: 3.5, height: 3.5)
           }
         }
@@ -1715,9 +1715,9 @@ private struct TodayCalendarGrid: View, Equatable {
   }
 
   private func dayForeground(selected: Bool, today: Bool, currentMonth: Bool) -> Color {
-    if selected { return QingxuPalette.onAccent }
-    if today { return QingxuPalette.accent }
-    return currentMonth ? QingxuPalette.ink : QingxuPalette.quiet.opacity(0.38)
+    if selected { return TempoPalette.onAccent }
+    if today { return TempoPalette.accent }
+    return currentMonth ? TempoPalette.ink : TempoPalette.quiet.opacity(0.38)
   }
 }
 
@@ -1726,23 +1726,23 @@ private struct TodayEmptyState: View {
     VStack(spacing: 16) {
       ZStack {
         RoundedRectangle(cornerRadius: 34, style: .continuous)
-          .fill(QingxuPalette.selected.opacity(0.52))
+          .fill(TempoPalette.selected.opacity(0.52))
           .frame(width: 156, height: 106)
           .rotationEffect(.degrees(-8))
 
         Image(systemName: "sparkle")
           .font(.system(size: 17, weight: .medium))
-          .foregroundStyle(QingxuPalette.accent.opacity(0.62))
+          .foregroundStyle(TempoPalette.accent.opacity(0.62))
           .offset(x: -69, y: -42)
         Image(systemName: "sparkle")
           .font(.system(size: 13, weight: .medium))
-          .foregroundStyle(QingxuPalette.quiet.opacity(0.7))
+          .foregroundStyle(TempoPalette.quiet.opacity(0.7))
           .offset(x: 72, y: 35)
 
         Image(systemName: "calendar")
           .font(.system(size: 68, weight: .light))
           .symbolRenderingMode(.hierarchical)
-          .foregroundStyle(QingxuPalette.accent)
+          .foregroundStyle(TempoPalette.accent)
           .rotationEffect(.degrees(4))
       }
       .frame(height: 126)
@@ -1750,10 +1750,10 @@ private struct TodayEmptyState: View {
       VStack(spacing: 7) {
         Text("你这一天没有任务")
           .font(.title3.weight(.medium))
-          .foregroundStyle(QingxuPalette.ink)
+          .foregroundStyle(TempoPalette.ink)
         Text("放松一下吧")
           .font(.subheadline)
-          .foregroundStyle(QingxuPalette.quiet)
+          .foregroundStyle(TempoPalette.quiet)
       }
     }
     .accessibilityElement(children: .combine)
@@ -1763,15 +1763,15 @@ private struct TodayEmptyState: View {
 private extension TaskPriority {
   var color: Color {
     switch self {
-    case .high: QingxuPalette.danger
-    case .medium: QingxuPalette.warning
-    case .low: QingxuPalette.accent
+    case .high: TempoPalette.danger
+    case .medium: TempoPalette.warning
+    case .low: TempoPalette.accent
     }
   }
 }
 #else
 private extension TaskPriority {
-  var color: Color { QingxuPalette.accent }
+  var color: Color { TempoPalette.accent }
 }
 #endif
 
@@ -1814,7 +1814,7 @@ private struct TaskEditorSheet: View {
           }
         }
       }
-      .qingxuScreen()
+      .tempoScreen()
       .navigationTitle(task == nil ? "新增任务" : "编辑任务")
       #if os(iOS)
       .navigationBarTitleDisplayMode(.inline)

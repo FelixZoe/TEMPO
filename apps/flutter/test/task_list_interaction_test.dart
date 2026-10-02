@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:qingxu/state/task_controller.dart';
-import 'package:qingxu/ui/task_list.dart';
+import 'package:tempo/state/task_controller.dart';
+import 'package:tempo/ui/task_list.dart';
 
 void main() {
   testWidgets('quick add stays in the list and offers explicit editing', (

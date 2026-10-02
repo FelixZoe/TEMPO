@@ -18,7 +18,7 @@ class SceneDelegate: FlutterSceneDelegate {
       return
     }
 
-    let tabBarController = QingxuTabBarController(
+    let tabBarController = TempoTabBarController(
       flutterViewController: flutterViewController,
       navigationBridge: appDelegate.navigationBridge
     )
@@ -31,8 +31,8 @@ class SceneDelegate: FlutterSceneDelegate {
     super.scene(scene, openURLContexts: URLContexts)
     guard
       let value = URLContexts.first?.url.host,
-      let tab = QingxuTab(rawValue: value),
-      let controller = window?.rootViewController as? QingxuTabBarController,
+      let tab = TempoTab(rawValue: value),
+      let controller = window?.rootViewController as? TempoTabBarController,
       let appDelegate = UIApplication.shared.delegate as? AppDelegate
     else { return }
     controller.select(tab)
@@ -44,8 +44,8 @@ class SceneDelegate: FlutterSceneDelegate {
     guard
       let defaults = UserDefaults(suiteName: Self.appGroup),
       let rawValue = defaults.string(forKey: "pendingWidgetDestination"),
-      let tab = QingxuTab(rawValue: rawValue),
-      let controller = window?.rootViewController as? QingxuTabBarController,
+      let tab = TempoTab(rawValue: rawValue),
+      let controller = window?.rootViewController as? TempoTabBarController,
       let appDelegate = UIApplication.shared.delegate as? AppDelegate
     else { return }
     defaults.removeObject(forKey: "pendingWidgetDestination")
@@ -59,17 +59,17 @@ class SceneDelegate: FlutterSceneDelegate {
 /// When built with the iOS 26 SDK, UIKit automatically gives this tab bar the
 /// native Liquid Glass appearance. Earlier systems keep their standard native
 /// tab bar, without a custom blur or a hand-drawn glass imitation.
-final class QingxuTabBarController: UITabBarController, UITabBarControllerDelegate {
+final class TempoTabBarController: UITabBarController, UITabBarControllerDelegate {
   private let flutterViewController: FlutterViewController
-  private let qingxuNavigationBridge: NativeNavigationBridge
-  private let qingxuTabs = QingxuTab.allCases
+  private let tempoNavigationBridge: NativeNavigationBridge
+  private let tempoTabs = TempoTab.allCases
 
   init(
     flutterViewController: FlutterViewController,
     navigationBridge: NativeNavigationBridge
   ) {
     self.flutterViewController = flutterViewController
-    self.qingxuNavigationBridge = navigationBridge
+    self.tempoNavigationBridge = navigationBridge
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -81,10 +81,10 @@ final class QingxuTabBarController: UITabBarController, UITabBarControllerDelega
   override func viewDidLoad() {
     super.viewDidLoad()
     delegate = self
-    view.backgroundColor = .qingxuCanvas
-    flutterViewController.view.backgroundColor = .qingxuCanvas
-    tabBar.tintColor = .qingxuAccent
-    tabBar.unselectedItemTintColor = .qingxuMuted
+    view.backgroundColor = .tempoCanvas
+    flutterViewController.view.backgroundColor = .tempoCanvas
+    tabBar.tintColor = .tempoAccent
+    tabBar.unselectedItemTintColor = .tempoMuted
     tabBar.isTranslucent = true
 
     // Keep UIKit's native tab bar and Liquid Glass behavior, while removing
@@ -100,7 +100,7 @@ final class QingxuTabBarController: UITabBarController, UITabBarControllerDelega
     tabBar.standardAppearance = appearance
     tabBar.scrollEdgeAppearance = appearance
 
-    viewControllers = qingxuTabs.map { tab in
+    viewControllers = tempoTabs.map { tab in
       let controller = FlutterTabContentController()
       controller.tabBarItem = UITabBarItem(
         title: tab.title,
@@ -115,22 +115,22 @@ final class QingxuTabBarController: UITabBarController, UITabBarControllerDelega
   }
 
   private func configureItems(_ appearance: UITabBarItemAppearance) {
-    appearance.normal.iconColor = .qingxuMuted
+    appearance.normal.iconColor = .tempoMuted
     appearance.normal.titleTextAttributes = [
-      .foregroundColor: UIColor.qingxuMuted,
+      .foregroundColor: UIColor.tempoMuted,
       .font: UIFont.systemFont(ofSize: 10.5, weight: .medium),
     ]
-    appearance.selected.iconColor = .qingxuAccent
+    appearance.selected.iconColor = .tempoAccent
     appearance.selected.titleTextAttributes = [
-      .foregroundColor: UIColor.qingxuAccent,
+      .foregroundColor: UIColor.tempoAccent,
       .font: UIFont.systemFont(ofSize: 10.5, weight: .semibold),
     ]
   }
 
-  func select(_ tab: QingxuTab) {
+  func select(_ tab: TempoTab) {
     loadViewIfNeeded()
     guard
-      let index = qingxuTabs.firstIndex(of: tab),
+      let index = tempoTabs.firstIndex(of: tab),
       let contentController = viewControllers?[index] as? FlutterTabContentController
     else {
       return
@@ -140,7 +140,7 @@ final class QingxuTabBarController: UITabBarController, UITabBarControllerDelega
     contentController.embed(flutterViewController)
   }
 
-  func applyThemeMode(_ mode: QingxuThemeMode) {
+  func applyThemeMode(_ mode: TempoThemeMode) {
     overrideUserInterfaceStyle = switch mode {
     case .system: .unspecified
     case .light: .light
@@ -161,7 +161,7 @@ final class QingxuTabBarController: UITabBarController, UITabBarControllerDelega
     }
 
     contentController.embed(flutterViewController)
-    qingxuNavigationBridge.userSelected(qingxuTabs[index])
+    tempoNavigationBridge.userSelected(tempoTabs[index])
   }
 }
 
@@ -171,7 +171,7 @@ private final class FlutterTabContentController: UIViewController {
 
   override func viewDidLoad() {
     super.viewDidLoad()
-    view.backgroundColor = .qingxuCanvas
+    view.backgroundColor = .tempoCanvas
   }
 
   func embed(_ flutterViewController: FlutterViewController) {
@@ -214,19 +214,19 @@ private final class FlutterTabContentController: UIViewController {
 }
 
 private extension UIColor {
-  static let qingxuCanvas = UIColor { traits in
+  static let tempoCanvas = UIColor { traits in
     traits.userInterfaceStyle == .dark
       ? UIColor(red: 0.055, green: 0.063, blue: 0.059, alpha: 1)
       : UIColor(red: 0.961, green: 0.961, blue: 0.945, alpha: 1)
   }
 
-  static let qingxuAccent = UIColor { traits in
+  static let tempoAccent = UIColor { traits in
     traits.userInterfaceStyle == .dark
       ? UIColor(red: 0.451, green: 0.639, blue: 0.522, alpha: 1)
       : UIColor(red: 0.357, green: 0.490, blue: 0.573, alpha: 1)
   }
 
-  static let qingxuMuted = UIColor { traits in
+  static let tempoMuted = UIColor { traits in
     traits.userInterfaceStyle == .dark
       ? UIColor(red: 0.643, green: 0.675, blue: 0.655, alpha: 1)
       : UIColor(red: 0.408, green: 0.463, blue: 0.486, alpha: 1)

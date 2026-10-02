@@ -57,14 +57,14 @@ final class AppStore: ObservableObject {
   private var activeSync: Task<Bool, Never>?
 
   init() {
-    QingxuInstallPrivacy.prepareForLaunch()
-    tasks = QingxuFiles.load([TaskItem].self, name: "tasks.json") ?? []
-    pomodoro = QingxuFiles.load(PomodoroState.self, name: "pomodoro.json") ?? .initial()
-    syncSettings = QingxuFiles.load(SyncSettings.self, name: "sync.json") ?? SyncSettings()
+    TempoInstallPrivacy.prepareForLaunch()
+    tasks = TempoFiles.load([TaskItem].self, name: "tasks.json") ?? []
+    pomodoro = TempoFiles.load(PomodoroState.self, name: "pomodoro.json") ?? .initial()
+    syncSettings = TempoFiles.load(SyncSettings.self, name: "sync.json") ?? SyncSettings()
     syncSettings.token = SecureSyncToken.read()
-    aiSettings = QingxuFiles.load(AISettings.self, name: "ai.json") ?? AISettings()
+    aiSettings = TempoFiles.load(AISettings.self, name: "ai.json") ?? AISettings()
     aiSettings.apiKey = SecureAIAPIKey.read()
-    if let metadata = QingxuFiles.load(SyncMetadata.self, name: "sync-state.json") {
+    if let metadata = TempoFiles.load(SyncMetadata.self, name: "sync-state.json") {
       lastRevision = metadata.revision
       dirtyTaskIDs = metadata.dirtyTaskIDs
       pomodoroDirty = metadata.pomodoroDirty
@@ -314,7 +314,7 @@ final class AppStore: ObservableObject {
       || settings.token != previous.token
     try SecureSyncToken.write(settings.token)
     do {
-      try QingxuFiles.save(settings, name: "sync.json")
+      try TempoFiles.save(settings, name: "sync.json")
     } catch {
       try? SecureSyncToken.write(previous.token)
       throw error
@@ -339,7 +339,7 @@ final class AppStore: ObservableObject {
     let previous = aiSettings
     try SecureAIAPIKey.write(settings.apiKey)
     do {
-      try QingxuFiles.save(settings, name: "ai.json")
+      try TempoFiles.save(settings, name: "ai.json")
     } catch {
       try? SecureAIAPIKey.write(previous.apiKey)
       throw error
@@ -348,7 +348,7 @@ final class AppStore: ObservableObject {
   }
 
   func testAIConnection(_ settings: AISettings) async throws {
-    try await QingxuAIClient().test(settings: syncSettings, aiSettings: settings)
+    try await TempoAIClient().test(settings: syncSettings, aiSettings: settings)
   }
 
   @discardableResult
@@ -440,7 +440,7 @@ final class AppStore: ObservableObject {
 
   private func changed(taskID: String) {
     dirtyTaskIDs.insert(taskID)
-    try? QingxuFiles.save(tasks, name: "tasks.json")
+    try? TempoFiles.save(tasks, name: "tasks.json")
     try? persistSyncMetadata()
     refreshSystemSurfaces()
     scheduleSync()
@@ -449,19 +449,19 @@ final class AppStore: ObservableObject {
   private func pomodoroChanged() {
     pomodoroDirty = true
     displayedRemainingSeconds = pomodoro.remaining(at: estimatedNow)
-    try? QingxuFiles.save(pomodoro, name: "pomodoro.json")
+    try? TempoFiles.save(pomodoro, name: "pomodoro.json")
     try? persistSyncMetadata()
     refreshSystemSurfaces()
     scheduleSync(delay: .zero)
   }
 
   private func persistAll() throws {
-    try QingxuFiles.save(tasks, name: "tasks.json")
-    try QingxuFiles.save(pomodoro, name: "pomodoro.json")
+    try TempoFiles.save(tasks, name: "tasks.json")
+    try TempoFiles.save(pomodoro, name: "pomodoro.json")
   }
 
   private func persistSyncMetadata() throws {
-    try QingxuFiles.save(
+    try TempoFiles.save(
       SyncMetadata(
         revision: lastRevision,
         dirtyTaskIDs: dirtyTaskIDs,

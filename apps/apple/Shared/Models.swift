@@ -249,7 +249,7 @@ struct SyncSettings: Codable, Equatable {
     guard let url = URL(string: normalizedServerURL), let host = url.host?.lowercased() else {
       return "服务器地址格式不正确"
     }
-    guard QingxuTransportSecurity.allows(url: url, host: host) else {
+    guard TempoTransportSecurity.allows(url: url, host: host) else {
       return "远程同步必须使用 HTTPS；HTTP 仅允许本机调试"
     }
     guard token.range(of: "^[0-9a-fA-F]{64}$", options: .regularExpression) != nil else {
@@ -347,7 +347,7 @@ struct AISettings: Codable, Equatable {
       guard let url = URL(string: normalizedBaseURL), let host = url.host?.lowercased() else {
         return "AI 接口地址格式不正确"
       }
-      guard QingxuTransportSecurity.allows(url: url, host: host) else {
+      guard TempoTransportSecurity.allows(url: url, host: host) else {
         return "远程 AI 接口必须使用 HTTPS；HTTP 仅允许本机调试"
       }
       guard !model.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
@@ -369,7 +369,7 @@ struct AISettings: Codable, Equatable {
   }
 }
 
-private enum QingxuTransportSecurity {
+private enum TempoTransportSecurity {
   static func allows(url: URL, host: String) -> Bool {
     if url.scheme?.lowercased() == "https" { return true }
     let localHosts: Set<String> = ["localhost", "127.0.0.1", "::1"]
@@ -407,7 +407,7 @@ enum AppTab: String, CaseIterable, Identifiable, Hashable {
   }
 }
 
-enum QingxuCoding {
+enum TempoCoding {
   static let encoder: JSONEncoder = {
     let encoder = JSONEncoder()
     encoder.outputFormatting = [.sortedKeys]

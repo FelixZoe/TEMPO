@@ -73,7 +73,7 @@ class _AndroidSchedulePageState extends State<AndroidSchedulePage> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return AnimatedBuilder(
       animation: Listenable.merge([widget.controller, widget.store]),
       builder: (context, _) => ColoredBox(
@@ -162,7 +162,7 @@ class _AndroidSchedulePageState extends State<AndroidSchedulePage> {
     );
   }
 
-  Widget _buildHeader(QingxuPalette palette) => Row(
+  Widget _buildHeader(TempoPalette palette) => Row(
     crossAxisAlignment: CrossAxisAlignment.end,
     children: [
       Expanded(
@@ -195,7 +195,7 @@ class _AndroidSchedulePageState extends State<AndroidSchedulePage> {
     ],
   );
 
-  Widget _buildCalendar(QingxuPalette palette) {
+  Widget _buildCalendar(TempoPalette palette) {
     final dates = _monthExpanded ? _monthDates(_selectedDate) : _weekDates(_selectedDate);
     return Material(
       color: palette.surfaceRaised,
@@ -283,7 +283,7 @@ class _CalendarDay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final lunar = _lunarLabel(date);
     return InkResponse(
       onTap: onTap,
@@ -335,7 +335,7 @@ class _DailyBrief extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final weather = store.weather;
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
@@ -390,7 +390,7 @@ class _ScheduleTaskRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final completed = task.status == TaskStatus.completed;
     return Dismissible(
       key: ValueKey('android-schedule-${task.id}'),
@@ -479,7 +479,7 @@ class _ScheduleEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 130),
       child: Column(
@@ -517,7 +517,7 @@ class _ScheduleQuickAddSheetState extends State<_ScheduleQuickAddSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return Padding(
       padding: EdgeInsets.fromLTRB(12, 0, 12, MediaQuery.viewInsetsOf(context).bottom + 12),
       child: Material(

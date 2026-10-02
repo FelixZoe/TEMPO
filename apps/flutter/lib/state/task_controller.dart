@@ -46,7 +46,7 @@ class TaskController extends ChangeNotifier {
 
   static const projects = <ProjectItem>[
     ProjectItem('personal', '个人', 0xFF78A4D6),
-    ProjectItem('qingxu', 'Tempo第一版', 0xFFD79468),
+    ProjectItem('tempo', 'Tempo 第一版', 0xFFD79468),
   ];
 
   String activeView = 'today';
@@ -812,11 +812,11 @@ class TaskController extends ChangeNotifier {
         '确认离线保存正常',
         3000,
         today,
-        'qingxu',
+        'tempo',
         created,
         notes: '新增任务后刷新页面，内容仍然保留。',
       ),
-      _seedTask('seed-sync', '配置你的多端同步', 4000, tomorrow, 'qingxu', created),
+      _seedTask('seed-sync', '配置你的多端同步', 4000, tomorrow, 'tempo', created),
     ]);
     unawaited(_persistTasks().catchError((Object _) {}));
   }

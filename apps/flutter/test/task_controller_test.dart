@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:qingxu/services/secure_token_storage_stub.dart';
-import 'package:qingxu/services/sync_settings_storage_stub.dart';
-import 'package:qingxu/services/task_storage_stub.dart';
-import 'package:qingxu/state/task_controller.dart';
+import 'package:tempo/services/secure_token_storage_stub.dart';
+import 'package:tempo/services/sync_settings_storage_stub.dart';
+import 'package:tempo/services/task_storage_stub.dart';
+import 'package:tempo/state/task_controller.dart';
 
 void main() {
   test('seeds today and persists a newly added task', () async {

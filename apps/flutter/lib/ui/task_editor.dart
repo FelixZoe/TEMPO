@@ -85,7 +85,7 @@ class _TaskEditorState extends State<TaskEditor> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return ColoredBox(
       color: palette.surfaceRaised,
       child: Column(
@@ -243,7 +243,7 @@ class _EditorLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return Text(
       label,
       style: TextStyle(
@@ -271,7 +271,7 @@ class _EditorField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -304,7 +304,7 @@ class _ProjectField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return SizedBox(
       height: 49,
       child: Row(

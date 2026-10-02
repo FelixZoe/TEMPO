@@ -15,7 +15,7 @@ private struct MacWidgetQuote: Decodable {
   let source: String
 }
 
-private struct QingxuWidgetEntry: TimelineEntry {
+private struct TempoWidgetEntry: TimelineEntry {
   let date: Date
   let taskCount: Int
   let taskTitles: [String]
@@ -33,21 +33,21 @@ private struct QingxuWidgetEntry: TimelineEntry {
   let snapshotUpdatedAt: Date?
 }
 
-private struct QingxuWidgetProvider: TimelineProvider {
-  func placeholder(in context: Context) -> QingxuWidgetEntry { sample }
+private struct TempoWidgetProvider: TimelineProvider {
+  func placeholder(in context: Context) -> TempoWidgetEntry { sample }
 
-  func getSnapshot(in context: Context, completion: @escaping (QingxuWidgetEntry) -> Void) {
+  func getSnapshot(in context: Context, completion: @escaping (TempoWidgetEntry) -> Void) {
     completion(context.isPreview ? sample : load())
   }
 
-  func getTimeline(in context: Context, completion: @escaping (Timeline<QingxuWidgetEntry>) -> Void) {
+  func getTimeline(in context: Context, completion: @escaping (Timeline<TempoWidgetEntry>) -> Void) {
     let entry = load()
     let interval: TimeInterval = entry.status == "running" ? 60 : 15 * 60
     completion(Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(interval))))
   }
 
-  private var sample: QingxuWidgetEntry {
-    QingxuWidgetEntry(
+  private var sample: TempoWidgetEntry {
+    TempoWidgetEntry(
       date: .now,
       taskCount: 3,
       taskTitles: ["完成今日计划", "整理阅读列表", "专注 25 分钟"],
@@ -66,11 +66,11 @@ private struct QingxuWidgetProvider: TimelineProvider {
     )
   }
 
-  private func load() -> QingxuWidgetEntry {
+  private func load() -> TempoWidgetEntry {
     let defaults = UserDefaults(suiteName: suiteName)
     let heatmapData = defaults?.data(forKey: "focusHeatmap")
     let heatmap = heatmapData.flatMap { try? JSONDecoder().decode([String: Int].self, from: $0) } ?? [:]
-    return QingxuWidgetEntry(
+    return TempoWidgetEntry(
       date: .now,
       taskCount: defaults?.integer(forKey: "todayTaskCount") ?? 0,
       taskTitles: defaults?.stringArray(forKey: "todayTaskTitles") ?? [],
@@ -115,7 +115,7 @@ private struct WidgetSurface<Content: View>: View {
 }
 
 private struct MacOverviewWidgetView: View {
-  let entry: QingxuWidgetEntry
+  let entry: TempoWidgetEntry
 
   var body: some View {
     WidgetSurface {
@@ -180,7 +180,7 @@ private struct MacOverviewWidgetView: View {
 }
 
 private struct MacAmbientWidgetView: View {
-  let entry: QingxuWidgetEntry
+  let entry: TempoWidgetEntry
 
   var body: some View {
     WidgetSurface {
@@ -214,7 +214,7 @@ private struct MacAmbientWidgetView: View {
 
 private struct TodayTasksWidgetView: View {
   @Environment(\.widgetFamily) private var family
-  let entry: QingxuWidgetEntry
+  let entry: TempoWidgetEntry
 
   var body: some View {
     WidgetSurface {
@@ -254,7 +254,7 @@ private struct TodayTasksWidgetView: View {
 }
 
 private struct FocusTimerWidgetView: View {
-  let entry: QingxuWidgetEntry
+  let entry: TempoWidgetEntry
 
   private var modeTitle: String {
     switch entry.mode {
@@ -301,7 +301,7 @@ private struct FocusTimerWidgetView: View {
 }
 
 private struct DailyGoalWidgetView: View {
-  let entry: QingxuWidgetEntry
+  let entry: TempoWidgetEntry
 
   private var progress: Double {
     min(1, Double(entry.completed) / Double(max(1, entry.goal)))
@@ -337,7 +337,7 @@ private struct DailyGoalWidgetView: View {
 }
 
 private struct FocusHeatmapWidgetView: View {
-  let entry: QingxuWidgetEntry
+  let entry: TempoWidgetEntry
 
   private let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
 
@@ -406,7 +406,7 @@ struct MacTodayTasksWidget: Widget {
   let kind = "QingxuMacTodayTasks"
 
   var body: some WidgetConfiguration {
-    StaticConfiguration(kind: kind, provider: QingxuWidgetProvider()) { entry in
+    StaticConfiguration(kind: kind, provider: TempoWidgetProvider()) { entry in
       TodayTasksWidgetView(entry: entry)
     }
     .configurationDisplayName("今日任务")
@@ -419,7 +419,7 @@ struct MacFocusTimerWidget: Widget {
   let kind = "QingxuMacFocusTimer"
 
   var body: some WidgetConfiguration {
-    StaticConfiguration(kind: kind, provider: QingxuWidgetProvider()) { entry in
+    StaticConfiguration(kind: kind, provider: TempoWidgetProvider()) { entry in
       FocusTimerWidgetView(entry: entry)
     }
     .configurationDisplayName("番茄计时")
@@ -432,7 +432,7 @@ struct MacDailyGoalWidget: Widget {
   let kind = "QingxuMacDailyGoal"
 
   var body: some WidgetConfiguration {
-    StaticConfiguration(kind: kind, provider: QingxuWidgetProvider()) { entry in
+    StaticConfiguration(kind: kind, provider: TempoWidgetProvider()) { entry in
       DailyGoalWidgetView(entry: entry)
     }
     .configurationDisplayName("今日专注目标")
@@ -445,7 +445,7 @@ struct MacFocusHeatmapWidget: Widget {
   let kind = "QingxuMacFocusHeatmap"
 
   var body: some WidgetConfiguration {
-    StaticConfiguration(kind: kind, provider: QingxuWidgetProvider()) { entry in
+    StaticConfiguration(kind: kind, provider: TempoWidgetProvider()) { entry in
       FocusHeatmapWidgetView(entry: entry)
     }
     .configurationDisplayName("专注热力图")
@@ -458,7 +458,7 @@ struct MacOverviewWidget: Widget {
   let kind = "QingxuMacOverview"
 
   var body: some WidgetConfiguration {
-    StaticConfiguration(kind: kind, provider: QingxuWidgetProvider()) { entry in
+    StaticConfiguration(kind: kind, provider: TempoWidgetProvider()) { entry in
       MacOverviewWidgetView(entry: entry)
     }
     .configurationDisplayName("今日总览")
@@ -471,7 +471,7 @@ struct MacAmbientWidget: Widget {
   let kind = "QingxuMacAmbient"
 
   var body: some WidgetConfiguration {
-    StaticConfiguration(kind: kind, provider: QingxuWidgetProvider()) { entry in
+    StaticConfiguration(kind: kind, provider: TempoWidgetProvider()) { entry in
       MacAmbientWidgetView(entry: entry)
     }
     .configurationDisplayName("天气与一言")
@@ -481,7 +481,7 @@ struct MacAmbientWidget: Widget {
 }
 
 @main
-struct QingxumacOSWidgetBundle: WidgetBundle {
+struct TempoMacOSWidgetBundle: WidgetBundle {
   var body: some Widget {
     MacTodayTasksWidget()
     MacFocusTimerWidget()

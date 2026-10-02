@@ -121,7 +121,7 @@ jobs:
         shell: bash
         run: |
           branch="${{ github.event.inputs.branch }}"
-          if [[ -z "$branch" ]]; then branch="preview"; fi
+          if [[ -z "$branch" ]]; then branch="production"; fi
           npx --yes eas-cli@latest update \
             --branch "$branch" \
             --message "${GITHUB_SHA::12}" \

@@ -1,6 +1,6 @@
 import Foundation
 
-enum QingxuPreferenceKey {
+enum TempoPreferenceKey {
   static let moduleOrder = "qingxu.modules.order"
   static let haptics = "qingxu.feedback.haptics"
   static let completionSound = "qingxu.feedback.completionSound"
@@ -11,7 +11,7 @@ enum QingxuPreferenceKey {
   static let showTaskIndicators = "qingxu.calendar.showTaskIndicators"
 }
 
-enum QingxuModuleOrder {
+enum TempoModuleOrder {
   static let defaultValue = AppTab.allCases.map(\.rawValue).joined(separator: ",")
 
   static func decode(_ rawValue: String) -> [AppTab] {
@@ -31,11 +31,11 @@ enum QingxuModuleOrder {
   }
 }
 
-enum QingxuNavigationPolicy {
+enum TempoNavigationPolicy {
   static let maximumVisibleTabs = 5
 
   static func visibleTabs(order: [AppTab]) -> [AppTab] {
-    QingxuModuleOrder.decode(order.map(\.rawValue).joined(separator: ","))
+    TempoModuleOrder.decode(order.map(\.rawValue).joined(separator: ","))
       .prefix(maximumVisibleTabs)
       .map { $0 }
   }
@@ -46,7 +46,7 @@ import AudioToolbox
 import UIKit
 import UserNotifications
 
-enum QingxuFeedback {
+enum TempoFeedback {
   static func selection(enabled: Bool) {
     guard enabled else { return }
     UISelectionFeedbackGenerator().selectionChanged()
@@ -62,7 +62,7 @@ enum QingxuFeedback {
   }
 }
 
-enum QingxuDailyReminder {
+enum TempoDailyReminder {
   static let identifier = "qingxu.daily-reminder"
 
   static func authorizationStatus() async -> UNAuthorizationStatus {

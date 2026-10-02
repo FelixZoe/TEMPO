@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 
-struct QingxuLaunchExperience: View {
+struct TempoLaunchExperience: View {
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
   let onFinished: () -> Void
@@ -34,10 +34,10 @@ struct QingxuLaunchExperience: View {
     ZStack(alignment: .bottomTrailing) {
       Text("T")
         .font(.system(size: 92, weight: .black, design: .rounded))
-        .foregroundStyle(.white)
+        .foregroundStyle(TempoPalette.ink)
 
       Circle()
-        .fill(QingxuPalette.accent)
+        .fill(TempoPalette.accent)
         .frame(width: 9, height: 9)
         .scaleEffect(sealVisible ? 1 : 1.9)
         .opacity(sealVisible ? 1 : 0)
@@ -63,10 +63,10 @@ struct QingxuLaunchExperience: View {
 
   private func launchPanel(edge: HorizontalEdge) -> some View {
     ZStack(alignment: edge == .leading ? .leading : .trailing) {
-      Color.black
+      TempoPalette.background
 
       LinearGradient(
-        colors: [Color.white.opacity(0.08), Color.clear],
+        colors: [TempoPalette.ink.opacity(0.08), Color.clear],
         startPoint: edge == .leading ? .leading : .trailing,
         endPoint: edge == .leading ? .trailing : .leading
       )

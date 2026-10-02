@@ -4,9 +4,9 @@ import SwiftUI
 import UIKit
 import WidgetKit
 
-private let qingxuAppGroup = "group.one.darker.qingxu"
+private let tempoAppGroup = "group.one.darker.qingxu"
 
-private enum QingxuWidgetPalette {
+private enum TempoWidgetPalette {
   static let background = Color(uiColor: UIColor { traits in
     traits.userInterfaceStyle == .dark
       ? UIColor(red: 0.071, green: 0.071, blue: 0.078, alpha: 1)
@@ -29,7 +29,7 @@ private enum QingxuWidgetPalette {
   })
 }
 
-enum QingxuWidgetDestination: String, AppEnum {
+enum TempoWidgetDestination: String, AppEnum {
   case today
   case pomodoro
 
@@ -40,17 +40,17 @@ enum QingxuWidgetDestination: String, AppEnum {
   ]
 }
 
-struct OpenQingxuWidgetIntent: AppIntent {
+struct OpenTempoWidgetIntent: AppIntent {
   static let title: LocalizedStringResource = "打开Tempo"
   static let openAppWhenRun = true
 
-  @Parameter(title: "页面") var destination: QingxuWidgetDestination
+  @Parameter(title: "页面") var destination: TempoWidgetDestination
 
   init() { destination = .today }
-  init(destination: QingxuWidgetDestination) { self.destination = destination }
+  init(destination: TempoWidgetDestination) { self.destination = destination }
 
   func perform() async throws -> some IntentResult {
-    UserDefaults(suiteName: qingxuAppGroup)?.set(
+    UserDefaults(suiteName: tempoAppGroup)?.set(
       destination.rawValue,
       forKey: "pendingWidgetDestination"
     )
@@ -70,7 +70,7 @@ private struct WidgetQuote: Decodable {
   let source: String
 }
 
-private struct QingxuEntry: TimelineEntry {
+private struct TempoEntry: TimelineEntry {
   let date: Date
   let todayTaskCount: Int
   let nextTodayTaskTitle: String?
@@ -89,9 +89,9 @@ private struct QingxuEntry: TimelineEntry {
   let snapshotUpdatedAt: Date?
 }
 
-private struct QingxuProvider: TimelineProvider {
-  func placeholder(in context: Context) -> QingxuEntry {
-    QingxuEntry(
+private struct TempoProvider: TimelineProvider {
+  func placeholder(in context: Context) -> TempoEntry {
+    TempoEntry(
       date: .now,
       todayTaskCount: 3,
       nextTodayTaskTitle: "整理今天的安排",
@@ -111,11 +111,11 @@ private struct QingxuProvider: TimelineProvider {
     )
   }
 
-  func getSnapshot(in context: Context, completion: @escaping (QingxuEntry) -> Void) {
+  func getSnapshot(in context: Context, completion: @escaping (TempoEntry) -> Void) {
     completion(entry())
   }
 
-  func getTimeline(in context: Context, completion: @escaping (Timeline<QingxuEntry>) -> Void) {
+  func getTimeline(in context: Context, completion: @escaping (Timeline<TempoEntry>) -> Void) {
     let snapshot = entry()
     let nextUpdate = snapshot.status == "running"
       ? max(Date().addingTimeInterval(60), snapshot.endsAt ?? Date().addingTimeInterval(15 * 60))
@@ -123,11 +123,11 @@ private struct QingxuProvider: TimelineProvider {
     completion(Timeline(entries: [snapshot], policy: .after(nextUpdate)))
   }
 
-  private func entry() -> QingxuEntry {
-    let defaults = UserDefaults(suiteName: qingxuAppGroup)
+  private func entry() -> TempoEntry {
+    let defaults = UserDefaults(suiteName: tempoAppGroup)
     let weather = decode(WidgetWeather.self, data: defaults?.data(forKey: "qingxu.ambient.weather-cache.v1"))
     let quote = decode(WidgetQuote.self, data: defaults?.data(forKey: "qingxu.ambient.quote-cache.v1"))
-    return QingxuEntry(
+    return TempoEntry(
       date: .now,
       todayTaskCount: defaults?.integer(forKey: "todayTaskCount") ?? 0,
       nextTodayTaskTitle: defaults?.string(forKey: "nextTodayTaskTitle"),
@@ -153,7 +153,7 @@ private struct QingxuProvider: TimelineProvider {
   }
 }
 
-private struct QingxuWidgetSurface<Content: View>: View {
+private struct TempoWidgetSurface<Content: View>: View {
   let content: Content
 
   init(@ViewBuilder content: () -> Content) {
@@ -167,7 +167,7 @@ private struct QingxuWidgetSurface<Content: View>: View {
 
 private extension View {
   @ViewBuilder
-  func qingxuWidgetBackground(_ color: Color) -> some View {
+  func tempoWidgetBackground(_ color: Color) -> some View {
     if #available(iOSApplicationExtension 17.0, *) {
       containerBackground(for: .widget) { color }
     } else {
@@ -177,7 +177,7 @@ private extension View {
 }
 
 private struct TodayWidgetView: View {
-  let entry: QingxuEntry
+  let entry: TempoEntry
   @Environment(\.widgetFamily) private var family
 
   var body: some View {
@@ -201,16 +201,16 @@ private struct TodayWidgetView: View {
       Label("今日 \(entry.todayTaskCount) 项待办", systemImage: "checkmark.circle")
         .widgetURL(URL(string: "qingxu://today"))
     } else {
-      QingxuWidgetSurface {
+      TempoWidgetSurface {
         VStack(alignment: .leading, spacing: 10) {
           HStack(spacing: 8) {
             Image(systemName: "calendar")
-              .foregroundStyle(QingxuWidgetPalette.accent)
+              .foregroundStyle(TempoWidgetPalette.accent)
             Text(entry.date, format: .dateTime.month().day())
               .font(.caption.weight(.semibold))
             Spacer()
             if #available(iOSApplicationExtension 17.0, *) {
-              Button(intent: OpenQingxuWidgetIntent(destination: .today)) {
+              Button(intent: OpenTempoWidgetIntent(destination: .today)) {
                 Image(systemName: "arrow.up.right")
                   .font(.caption.weight(.semibold))
               }
@@ -232,7 +232,7 @@ private struct TodayWidgetView: View {
               .frame(width: 72, alignment: .leading)
 
               Rectangle()
-                .fill(QingxuWidgetPalette.hairline)
+                .fill(TempoWidgetPalette.hairline)
                 .frame(width: 1)
 
               VStack(alignment: .leading, spacing: 7) {
@@ -272,7 +272,7 @@ private struct TodayWidgetView: View {
 }
 
 private struct FocusWidgetView: View {
-  let entry: QingxuEntry
+  let entry: TempoEntry
   @Environment(\.widgetFamily) private var family
 
   var body: some View {
@@ -297,12 +297,12 @@ private struct FocusWidgetView: View {
       }
       .widgetURL(URL(string: "qingxu://pomodoro"))
     } else {
-      QingxuWidgetSurface {
+      TempoWidgetSurface {
         VStack(alignment: .leading, spacing: 9) {
           HStack {
             Label(modeTitle, systemImage: "timer")
               .font(.caption.weight(.semibold))
-              .foregroundStyle(QingxuWidgetPalette.accent)
+              .foregroundStyle(TempoWidgetPalette.accent)
             Spacer()
             Text("\(entry.todayCompleted)/\(entry.dailyGoal)")
               .font(.caption2.weight(.semibold).monospacedDigit())
@@ -315,14 +315,14 @@ private struct FocusWidgetView: View {
             .minimumScaleFactor(0.7)
           HStack(spacing: 6) {
             Circle()
-              .fill(entry.status == "running" ? QingxuWidgetPalette.accent : .secondary.opacity(0.35))
+              .fill(entry.status == "running" ? TempoWidgetPalette.accent : .secondary.opacity(0.35))
               .frame(width: 6, height: 6)
             Text(statusTitle)
               .font(.caption2.weight(.medium))
               .foregroundStyle(.secondary)
             Spacer()
             if #available(iOSApplicationExtension 17.0, *) {
-              Button(intent: OpenQingxuWidgetIntent(destination: .pomodoro)) {
+              Button(intent: OpenTempoWidgetIntent(destination: .pomodoro)) {
                 Image(systemName: "arrow.up.right")
                   .font(.caption.weight(.semibold))
               }
@@ -369,15 +369,15 @@ private struct FocusWidgetView: View {
 }
 
 private struct OverviewWidgetView: View {
-  let entry: QingxuEntry
+  let entry: TempoEntry
 
   var body: some View {
-    QingxuWidgetSurface {
+    TempoWidgetSurface {
       HStack(spacing: 16) {
         VStack(alignment: .leading, spacing: 8) {
           Label("今天", systemImage: "sun.horizon.fill")
             .font(.caption.weight(.semibold))
-            .foregroundStyle(QingxuWidgetPalette.accent)
+            .foregroundStyle(TempoWidgetPalette.accent)
           Text("\(entry.todayTaskCount)")
             .font(.system(size: 38, weight: .semibold, design: .rounded))
             .monospacedDigit()
@@ -388,7 +388,7 @@ private struct OverviewWidgetView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
 
-        Rectangle().fill(QingxuWidgetPalette.hairline).frame(width: 1)
+        Rectangle().fill(TempoWidgetPalette.hairline).frame(width: 1)
 
         VStack(alignment: .leading, spacing: 8) {
           HStack {
@@ -435,11 +435,11 @@ private struct OverviewWidgetView: View {
 }
 
 private struct AmbientWidgetView: View {
-  let entry: QingxuEntry
+  let entry: TempoEntry
   @Environment(\.widgetFamily) private var family
 
   var body: some View {
-    QingxuWidgetSurface {
+    TempoWidgetSurface {
       VStack(alignment: .leading, spacing: 9) {
         HStack(alignment: .firstTextBaseline) {
           if let weather = entry.weather {
@@ -457,7 +457,7 @@ private struct AmbientWidgetView: View {
           Spacer()
           Image(systemName: "quote.opening")
             .font(.caption)
-            .foregroundStyle(QingxuWidgetPalette.accent)
+            .foregroundStyle(TempoWidgetPalette.accent)
         }
         Spacer(minLength: 0)
         Text(entry.quote?.text ?? "把今天真正重要的事做好。")
@@ -476,11 +476,11 @@ private struct AmbientWidgetView: View {
 }
 
 private struct WidgetHeatmapView: View {
-  let entry: QingxuEntry
+  let entry: TempoEntry
   private let columns = Array(repeating: GridItem(.flexible(), spacing: 3), count: 18)
 
   var body: some View {
-    QingxuWidgetSurface {
+    TempoWidgetSurface {
       VStack(alignment: .leading, spacing: 9) {
         HStack {
           Label("专注热力图", systemImage: "square.grid.3x3.fill")
@@ -513,22 +513,22 @@ private struct WidgetHeatmapView: View {
 
   private func heatColor(_ level: Int) -> Color {
     switch level {
-    case 1: return QingxuWidgetPalette.accent.opacity(0.28)
-    case 2: return QingxuWidgetPalette.accent.opacity(0.48)
-    case 3: return QingxuWidgetPalette.accent.opacity(0.72)
-    case 4: return QingxuWidgetPalette.accent
+    case 1: return TempoWidgetPalette.accent.opacity(0.28)
+    case 2: return TempoWidgetPalette.accent.opacity(0.48)
+    case 3: return TempoWidgetPalette.accent.opacity(0.72)
+    case 4: return TempoWidgetPalette.accent
     default: return Color.secondary.opacity(0.10)
     }
   }
 }
 
-struct QingxuTodayWidget: Widget {
+struct TempoTodayWidget: Widget {
   let kind = "QingxuTodayWidget"
 
   var body: some WidgetConfiguration {
-    StaticConfiguration(kind: kind, provider: QingxuProvider()) { entry in
+    StaticConfiguration(kind: kind, provider: TempoProvider()) { entry in
       TodayWidgetView(entry: entry)
-        .qingxuWidgetBackground(QingxuWidgetPalette.background)
+        .tempoWidgetBackground(TempoWidgetPalette.background)
     }
     .configurationDisplayName("今日任务")
     .description("快速查看今天还剩多少项任务。")
@@ -536,13 +536,13 @@ struct QingxuTodayWidget: Widget {
   }
 }
 
-struct QingxuFocusWidget: Widget {
+struct TempoFocusWidget: Widget {
   let kind = "QingxuFocusWidget"
 
   var body: some WidgetConfiguration {
-    StaticConfiguration(kind: kind, provider: QingxuProvider()) { entry in
+    StaticConfiguration(kind: kind, provider: TempoProvider()) { entry in
       FocusWidgetView(entry: entry)
-        .qingxuWidgetBackground(QingxuWidgetPalette.background)
+        .tempoWidgetBackground(TempoWidgetPalette.background)
     }
     .configurationDisplayName("专注状态")
     .description("查看当前番茄钟，并快速回到专注页面。")
@@ -551,12 +551,12 @@ struct QingxuFocusWidget: Widget {
 }
 
 @available(iOSApplicationExtension 16.2, *)
-struct QingxuLiveActivity: Widget {
+struct TempoLiveActivity: Widget {
   var body: some WidgetConfiguration {
-    ActivityConfiguration(for: QingxuPomodoroAttributes.self) { context in
+    ActivityConfiguration(for: TempoPomodoroAttributes.self) { context in
       HStack(spacing: 10) {
         Image(systemName: context.state.mode == "focus" ? "timer" : "cup.and.saucer.fill")
-          .foregroundStyle(QingxuWidgetPalette.accent)
+          .foregroundStyle(TempoWidgetPalette.accent)
         VStack(alignment: .leading, spacing: 2) {
           HStack(spacing: 6) {
             Text(modeTitle(context.state.mode)).font(.caption.weight(.semibold))
@@ -580,7 +580,7 @@ struct QingxuLiveActivity: Widget {
         DynamicIslandExpandedRegion(.leading) {
           Image(systemName: context.state.mode == "focus" ? "timer" : "cup.and.saucer.fill")
             .font(.system(size: 16, weight: .semibold))
-            .foregroundStyle(QingxuWidgetPalette.accent)
+            .foregroundStyle(TempoWidgetPalette.accent)
             .frame(width: 28, height: 28)
         }
         DynamicIslandExpandedRegion(.trailing) {
@@ -612,7 +612,7 @@ struct QingxuLiveActivity: Widget {
       } compactLeading: {
         Image(systemName: context.state.mode == "focus" ? "timer" : "cup.and.saucer.fill")
           .font(.system(size: 11, weight: .semibold))
-          .foregroundStyle(QingxuWidgetPalette.accent)
+          .foregroundStyle(TempoWidgetPalette.accent)
           .frame(width: 12)
       } compactTrailing: {
         liveTimer(context.state)
@@ -625,12 +625,12 @@ struct QingxuLiveActivity: Widget {
         Image(systemName: context.state.mode == "focus" ? "timer" : "cup.and.saucer.fill")
       }
       .widgetURL(URL(string: "qingxu://pomodoro"))
-      .keylineTint(QingxuWidgetPalette.accent)
+      .keylineTint(TempoWidgetPalette.accent)
     }
   }
 
   @ViewBuilder
-  private func liveTimer(_ state: QingxuPomodoroAttributes.ContentState) -> some View {
+  private func liveTimer(_ state: TempoPomodoroAttributes.ContentState) -> some View {
     if state.status == "running", state.timerDirection == "countUp", let startedAt = state.startedAt {
       Text(timerInterval: startedAt...Date.distantFuture, countsDown: false)
     } else if state.status == "running", let endsAt = state.endsAt, endsAt > Date() {
@@ -650,13 +650,13 @@ struct QingxuLiveActivity: Widget {
 
 }
 
-struct QingxuOverviewWidget: Widget {
+struct TempoOverviewWidget: Widget {
   let kind = "QingxuOverviewWidget"
 
   var body: some WidgetConfiguration {
-    StaticConfiguration(kind: kind, provider: QingxuProvider()) { entry in
+    StaticConfiguration(kind: kind, provider: TempoProvider()) { entry in
       OverviewWidgetView(entry: entry)
-        .qingxuWidgetBackground(QingxuWidgetPalette.background)
+        .tempoWidgetBackground(TempoWidgetPalette.background)
     }
     .configurationDisplayName("今日总览")
     .description("在一个简洁组件中查看任务与实时专注状态。")
@@ -664,13 +664,13 @@ struct QingxuOverviewWidget: Widget {
   }
 }
 
-struct QingxuAmbientWidget: Widget {
+struct TempoAmbientWidget: Widget {
   let kind = "QingxuAmbientWidget"
 
   var body: some WidgetConfiguration {
-    StaticConfiguration(kind: kind, provider: QingxuProvider()) { entry in
+    StaticConfiguration(kind: kind, provider: TempoProvider()) { entry in
       AmbientWidgetView(entry: entry)
-        .qingxuWidgetBackground(QingxuWidgetPalette.background)
+        .tempoWidgetBackground(TempoWidgetPalette.background)
     }
     .configurationDisplayName("天气与一言")
     .description("安静地查看天气与每日一句。")
@@ -678,13 +678,13 @@ struct QingxuAmbientWidget: Widget {
   }
 }
 
-struct QingxuHeatmapWidget: Widget {
+struct TempoHeatmapWidget: Widget {
   let kind = "QingxuHeatmapWidget"
 
   var body: some WidgetConfiguration {
-    StaticConfiguration(kind: kind, provider: QingxuProvider()) { entry in
+    StaticConfiguration(kind: kind, provider: TempoProvider()) { entry in
       WidgetHeatmapView(entry: entry)
-        .qingxuWidgetBackground(QingxuWidgetPalette.background)
+        .tempoWidgetBackground(TempoWidgetPalette.background)
     }
     .configurationDisplayName("专注热力图")
     .description("以简洁热力图查看近十八周的专注节奏。")
@@ -730,14 +730,14 @@ private struct FocusHeatmapStrip: View {
 }
 
 @main
-struct QingxuWidgetBundle: WidgetBundle {
+struct TempoWidgetBundle: WidgetBundle {
   @WidgetBundleBuilder
   var body: some Widget {
-    QingxuTodayWidget()
-    QingxuFocusWidget()
-    QingxuOverviewWidget()
-    QingxuAmbientWidget()
-    QingxuHeatmapWidget()
-    QingxuLiveActivity()
+    TempoTodayWidget()
+    TempoFocusWidget()
+    TempoOverviewWidget()
+    TempoAmbientWidget()
+    TempoHeatmapWidget()
+    TempoLiveActivity()
   }
 }

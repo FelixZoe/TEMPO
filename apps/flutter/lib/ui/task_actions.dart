@@ -5,7 +5,7 @@ import '../state/task_controller.dart';
 import 'design_system.dart';
 
 Future<bool> confirmTaskDeletion(BuildContext context, TaskItem task) async {
-  final palette = QingxuPalette.of(context);
+  final palette = TempoPalette.of(context);
   return await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(

@@ -18,7 +18,7 @@ import 'task_editor.dart';
 
 /// Android presentation adapted from the user's FlowTime project.
 ///
-/// Qingxu keeps its own controller, persistence, sync and timer model. The
+/// Tempo keeps its own controller, persistence, sync and timer model. The
 /// visual shell, breathing rhythm, glass navigation and task cards follow the
 /// FlowTime Android implementation so the two apps feel deliberately related.
 class AndroidFlowtimeShell extends StatefulWidget {
@@ -83,7 +83,7 @@ class _AndroidFlowtimeShellState extends State<AndroidFlowtimeShell> {
     );
   }
 
-  Widget _buildContent(QingxuPalette palette) {
+  Widget _buildContent(TempoPalette palette) {
     if (widget.controller.selectedTask != null &&
         _pageIndex(widget.controller) == 0) {
       return Scaffold(
@@ -231,7 +231,7 @@ class _FlowtimeTaskPageState extends State<_FlowtimeTaskPage> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final tasks = widget.controller.visibleTasks;
     final title = widget.controller.activeView == 'today' ? '今天' : '收集箱';
     final subtitle = widget.controller.activeView == 'today'
@@ -341,7 +341,7 @@ class _FlowtimeTaskCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final completed = task.status == TaskStatus.completed;
     return Dismissible(
       key: ValueKey('android-flowtime-task-${task.id}'),
@@ -483,7 +483,7 @@ class _FlowtimeQuickAddSheetState extends State<_FlowtimeQuickAddSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final keyboard = MediaQuery.viewInsetsOf(context).bottom;
     return Padding(
       padding: EdgeInsets.fromLTRB(12, 0, 12, keyboard + 12),
@@ -552,7 +552,7 @@ class _FlowtimeTaskCount extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
@@ -578,7 +578,7 @@ class _FlowtimeEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(28, 48, 28, 130),
       child: Column(
@@ -725,7 +725,7 @@ class _FlowtimeNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return Expanded(
       child: Semantics(
         selected: active,
@@ -770,7 +770,7 @@ class _FlowtimeNavItem extends StatelessWidget {
   }
 }
 
-ThemeData _flowtimeTheme(ThemeData base, QingxuPalette palette) {
+ThemeData _flowtimeTheme(ThemeData base, TempoPalette palette) {
   final dark = base.brightness == Brightness.dark;
   return base.copyWith(
     scaffoldBackgroundColor: palette.canvas,
@@ -863,7 +863,7 @@ abstract final class _FlowtimeAndroidColors {
   static const darkTextSecondary = Color(0xFF98989D);
   static const darkTextTertiary = Color(0xFF6C6C72);
 
-  static const lightPalette = QingxuPalette(
+  static const lightPalette = TempoPalette(
     accent: primary,
     accentStrong: Color(0xFF005FCC),
     accentSoft: Color(0x1F007AFF),
@@ -880,7 +880,7 @@ abstract final class _FlowtimeAndroidColors {
     info: primary,
   );
 
-  static const darkPalette = QingxuPalette(
+  static const darkPalette = TempoPalette(
     accent: Color(0xFF0A84FF),
     accentStrong: Color(0xFF64B5FF),
     accentSoft: Color(0x2E0A84FF),

@@ -15,7 +15,7 @@ class Sidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final dark = Theme.of(context).brightness == Brightness.dark;
     return ColoredBox(
       color: palette.sidebar,
@@ -162,7 +162,7 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return Padding(
       padding: EdgeInsets.fromLTRB(24, top, 24, 8),
       child: Text(
@@ -195,7 +195,7 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final selected = controller.activeView == id && controller.search.isEmpty;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 1),
@@ -211,7 +211,7 @@ class _NavItem extends StatelessWidget {
             }
           },
           child: AnimatedContainer(
-            duration: QingxuMotion.quick,
+            duration: TempoMotion.quick,
             height: 40,
             decoration: BoxDecoration(
               color: selected
@@ -258,7 +258,7 @@ class _SyncFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final (color, label) = controller.syncSupported
         ? switch (controller.syncActivity) {
             SyncActivity.syncing ||

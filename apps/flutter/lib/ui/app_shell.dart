@@ -74,7 +74,7 @@ class _AppShellState extends State<AppShell> {
                 animation: widget.controller,
                 builder: (context, _) => LayoutBuilder(
                   builder: (context, constraints) {
-                    final palette = QingxuPalette.of(context);
+                    final palette = TempoPalette.of(context);
                     final compact = constraints.maxWidth < 760;
                     final useNativeIosTabs =
                         !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
@@ -121,7 +121,7 @@ class _DesktopShell extends StatelessWidget {
   final FocusNode searchFocus;
   final ThemeMode themeMode;
   final ValueChanged<ThemeMode> onThemeModeChanged;
-  final QingxuPalette palette;
+  final TempoPalette palette;
 
   @override
   Widget build(BuildContext context) {
@@ -145,8 +145,8 @@ class _DesktopShell extends StatelessWidget {
             ),
           ),
           AnimatedContainer(
-            duration: QingxuMotion.standard,
-            curve: QingxuMotion.curve,
+            duration: TempoMotion.standard,
+            curve: TempoMotion.curve,
             width: showEditor ? 382 : 0,
             clipBehavior: Clip.hardEdge,
             decoration: BoxDecoration(
@@ -191,7 +191,7 @@ class _CompactShell extends StatelessWidget {
   Widget build(BuildContext context) {
     if (controller.selectedTask != null && _viewIndex(controller) == 0) {
       return Scaffold(
-        backgroundColor: QingxuPalette.of(context).canvas,
+        backgroundColor: TempoPalette.of(context).canvas,
         body: SafeArea(
           bottom: false,
           child: TaskEditor(
@@ -212,7 +212,7 @@ class _CompactShell extends StatelessWidget {
         useNativeIosTabs || useAndroidTabs || useCompactWindowsTabs;
     return Builder(
       builder: (context) => Scaffold(
-        backgroundColor: QingxuPalette.of(context).canvas,
+        backgroundColor: TempoPalette.of(context).canvas,
         drawer: useBottomTabs
             ? null
             : Drawer(
@@ -240,9 +240,9 @@ class _CompactShell extends StatelessWidget {
             ? NavigationBar(
                 height: 72,
                 elevation: 0,
-                backgroundColor: QingxuPalette.of(context).canvas,
+                backgroundColor: TempoPalette.of(context).canvas,
                 surfaceTintColor: Colors.transparent,
-                indicatorColor: QingxuPalette.of(context).accentSoft,
+                indicatorColor: TempoPalette.of(context).accentSoft,
                 labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
                 selectedIndex: _navigationIndex(controller),
                 onDestinationSelected: (index) =>
@@ -315,8 +315,8 @@ class _Workspace extends StatelessWidget {
         for (var index = 0; index < pages.length; index++)
           AnimatedOpacity(
             opacity: index == selected ? 1 : 0,
-            duration: QingxuMotion.standard,
-            curve: QingxuMotion.curve,
+            duration: TempoMotion.standard,
+            curve: TempoMotion.curve,
             child: IgnorePointer(
               ignoring: index != selected,
               child: TickerMode(

@@ -39,6 +39,12 @@ jobs:
           xcodegen version
           7zz --help >/dev/null
 
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/ios-runtime/package-lock.json
+
       - name: Resolve version and generate project
         env:
           REQUESTED_VERSION: ${{ inputs.version }}
@@ -61,14 +67,28 @@ jobs:
 
           grep -q 'PRODUCT_BUNDLE_IDENTIFIER: one.darker.qingxu$' project.yml
           grep -q 'PRODUCT_BUNDLE_IDENTIFIER: one.darker.qingxu.widgets$' project.yml
-          grep -q 'group.one.darker.qingxu' Configuration/QingxuiOS.entitlements
-          grep -q 'group.one.darker.qingxu' Configuration/QingxuWidgets.entitlements
-          xcodegen generate
+          grep -q 'group.one.darker.qingxu' Configuration/TempoiOS.entitlements
+          grep -q 'group.one.darker.qingxu' Configuration/TempoWidgets.entitlements
 
           {
             echo "APP_VERSION=$app_version"
             echo "BUILD_NUMBER=$GITHUB_RUN_NUMBER"
           } >> "$GITHUB_ENV"
+
+      - name: Build embedded OTA runtime
+        working-directory: apps/ios-runtime
+        env:
+          CI: "1"
+        run: |
+          set -euo pipefail
+          export TEMPO_APP_VERSION="$APP_VERSION"
+          npm ci
+          npm run prebuild:ios
+          npm run build:brownfield:ios
+          test -f artifacts/TempoRuntimePackage-release/Package.swift
+
+      - name: Generate native Apple project
+        run: xcodegen generate
 
       - name: Import and validate private signing assets
         env:
@@ -87,18 +107,18 @@ jobs:
             fi
           done
 
-          certificate_path="$RUNNER_TEMP/qingxu-signing.p12"
-          main_profile_path="$RUNNER_TEMP/qingxu-main.mobileprovision"
-          widget_profile_path="$RUNNER_TEMP/qingxu-widget.mobileprovision"
-          keychain_path="$RUNNER_TEMP/qingxu-signing.keychain-db"
+          certificate_path="$RUNNER_TEMP/tempo-signing.p12"
+          main_profile_path="$RUNNER_TEMP/tempo-main.mobileprovision"
+          widget_profile_path="$RUNNER_TEMP/tempo-widget.mobileprovision"
+          keychain_path="$RUNNER_TEMP/tempo-signing.keychain-db"
           keychain_password="$(openssl rand -hex 32)"
 
           printf '%s' "$CERTIFICATE_BASE64" | /usr/bin/base64 -D > "$certificate_path"
           printf '%s' "$MAIN_PROFILE_BASE64" | /usr/bin/base64 -D > "$main_profile_path"
           printf '%s' "$WIDGET_PROFILE_BASE64" | /usr/bin/base64 -D > "$widget_profile_path"
 
-          main_plist="$RUNNER_TEMP/qingxu-main-profile.plist"
-          widget_plist="$RUNNER_TEMP/qingxu-widget-profile.plist"
+          main_plist="$RUNNER_TEMP/tempo-main-profile.plist"
+          widget_plist="$RUNNER_TEMP/tempo-widget-profile.plist"
           security cms -D -i "$main_profile_path" > "$main_plist"
           security cms -D -i "$widget_profile_path" > "$widget_plist"
 
@@ -166,8 +186,8 @@ jobs:
 
           archive_path="$RUNNER_TEMP/TEMPO.xcarchive"
           xcodebuild \
-            -project QingxuApple.xcodeproj \
-            -scheme QingxuiOS \
+            -project TempoApple.xcodeproj \
+            -scheme TempoiOS \
             -configuration Release \
             -sdk iphoneos \
             -destination 'generic/platform=iOS' \
@@ -198,7 +218,7 @@ jobs:
           test "$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' "$signed_main_plist")" = "$IOS_DEVELOPMENT_TEAM.$MAIN_BUNDLE_ID"
           test "$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' "$signed_widget_plist")" = "$IOS_DEVELOPMENT_TEAM.$WIDGET_BUNDLE_ID"
 
-          package_dir="$RUNNER_TEMP/qingxu-private-package"
+          package_dir="$RUNNER_TEMP/tempo-private-package"
           mkdir -p "$package_dir/Payload"
           ditto "$app_path" "$package_dir/Payload/TEMPO.app"
           (cd "$package_dir" && /usr/bin/zip -qry "$RUNNER_TEMP/TEMPO-${APP_VERSION}-iOS-signed.ipa" Payload)
@@ -215,7 +235,7 @@ jobs:
             exit 1
           fi
 
-          output_dir="$RUNNER_TEMP/qingxu-encrypted-output"
+          output_dir="$RUNNER_TEMP/tempo-encrypted-output"
           mkdir -p "$output_dir"
           7zz a \
             -t7z \
@@ -250,12 +270,12 @@ jobs:
           fi
           rm -rf \
             "$RUNNER_TEMP/TEMPO.xcarchive" \
-            "$RUNNER_TEMP/qingxu-private-package" \
-            "$RUNNER_TEMP/qingxu-encrypted-output" \
-            "$RUNNER_TEMP/qingxu-signing.p12" \
-            "$RUNNER_TEMP/qingxu-main.mobileprovision" \
-            "$RUNNER_TEMP/qingxu-widget.mobileprovision" \
-            "$RUNNER_TEMP/qingxu-main-profile.plist" \
-            "$RUNNER_TEMP/qingxu-widget-profile.plist" \
+            "$RUNNER_TEMP/tempo-private-package" \
+            "$RUNNER_TEMP/tempo-encrypted-output" \
+            "$RUNNER_TEMP/tempo-signing.p12" \
+            "$RUNNER_TEMP/tempo-main.mobileprovision" \
+            "$RUNNER_TEMP/tempo-widget.mobileprovision" \
+            "$RUNNER_TEMP/tempo-main-profile.plist" \
+            "$RUNNER_TEMP/tempo-widget-profile.plist" \
             "$RUNNER_TEMP/signed-main-profile.plist" \
             "$RUNNER_TEMP/signed-widget-profile.plist"

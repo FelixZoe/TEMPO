@@ -1,7 +1,7 @@
 import Foundation
 import WidgetKit
 
-struct QingxuAmbientPreferences: Codable, Equatable {
+struct TempoAmbientPreferences: Codable, Equatable {
   var quoteEnabled = true
   var weatherEnabled = true
   var weatherHost = ""
@@ -16,7 +16,7 @@ struct QingxuAmbientPreferences: Codable, Equatable {
   }
 }
 
-struct QingxuWeatherSnapshot: Codable, Equatable {
+struct TempoWeatherSnapshot: Codable, Equatable {
   var cityName: String
   var temperature: String
   var text: String
@@ -26,31 +26,31 @@ struct QingxuWeatherSnapshot: Codable, Equatable {
   var updatedAt: Date
 }
 
-struct QingxuQuoteSnapshot: Codable, Equatable {
+struct TempoQuoteSnapshot: Codable, Equatable {
   var text: String
   var source: String
   var updatedAt: Date
 }
 
-enum QingxuAmbientPreferencesStore {
+enum TempoAmbientPreferencesStore {
   static let didChange = Notification.Name("qingxu.ambient-preferences.changed")
   static let appGroup = "group.one.darker.qingxu"
   private static let preferencesKey = "qingxu.ambient.preferences.v1"
 
-  static func load() -> QingxuAmbientPreferences {
+  static func load() -> TempoAmbientPreferences {
     guard let data = UserDefaults.standard.data(forKey: preferencesKey),
-          let value = try? JSONDecoder().decode(QingxuAmbientPreferences.self, from: data)
-    else { return QingxuAmbientPreferences() }
+          let value = try? JSONDecoder().decode(TempoAmbientPreferences.self, from: data)
+    else { return TempoAmbientPreferences() }
     return value
   }
 
-  static func save(_ value: QingxuAmbientPreferences) throws {
+  static func save(_ value: TempoAmbientPreferences) throws {
     UserDefaults.standard.set(try JSONEncoder().encode(value), forKey: preferencesKey)
     NotificationCenter.default.post(name: didChange, object: nil)
   }
 }
 
-enum QingxuAmbientServiceError: LocalizedError {
+enum TempoAmbientServiceError: LocalizedError {
   case invalidHost
   case notConfigured
   case server(String)
@@ -66,7 +66,7 @@ enum QingxuAmbientServiceError: LocalizedError {
   }
 }
 
-struct QingxuWeatherClient {
+struct TempoWeatherClient {
   private struct Response: Decodable {
     struct Now: Decodable {
       let temp: String
@@ -80,13 +80,13 @@ struct QingxuWeatherClient {
   }
 
   func fetch(
-    preferences: QingxuAmbientPreferences,
+    preferences: TempoAmbientPreferences,
     apiKey: String = SecureWeatherAPIKey.read()
-  ) async throws -> QingxuWeatherSnapshot {
+  ) async throws -> TempoWeatherSnapshot {
     let host = try normalizedHost(preferences.weatherHost)
     let key = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
     let location = preferences.locationID.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard !key.isEmpty, !location.isEmpty else { throw QingxuAmbientServiceError.notConfigured }
+    guard !key.isEmpty, !location.isEmpty else { throw TempoAmbientServiceError.notConfigured }
 
     var components = URLComponents()
     components.scheme = "https"
@@ -96,16 +96,16 @@ struct QingxuWeatherClient {
       URLQueryItem(name: "location", value: location),
       URLQueryItem(name: "key", value: key),
     ]
-    guard let url = components.url else { throw QingxuAmbientServiceError.invalidHost }
+    guard let url = components.url else { throw TempoAmbientServiceError.invalidHost }
     let (data, response) = try await URLSession.shared.data(from: url)
     guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
-      throw QingxuAmbientServiceError.server("天气服务连接失败")
+      throw TempoAmbientServiceError.server("天气服务连接失败")
     }
     let decoded = try JSONDecoder().decode(Response.self, from: data)
     guard decoded.code == "200", let now = decoded.now else {
-      throw QingxuAmbientServiceError.server(qweatherMessage(decoded.code))
+      throw TempoAmbientServiceError.server(qweatherMessage(decoded.code))
     }
-    return QingxuWeatherSnapshot(
+    return TempoWeatherSnapshot(
       cityName: preferences.cityName.trimmingCharacters(in: .whitespacesAndNewlines),
       temperature: now.temp,
       text: now.text,
@@ -122,7 +122,7 @@ struct QingxuWeatherClient {
     text = text.replacingOccurrences(of: "http://", with: "")
     text = text.split(separator: "/").first.map(String.init) ?? ""
     guard !text.isEmpty, text.contains("."), !text.contains(" ") else {
-      throw QingxuAmbientServiceError.invalidHost
+      throw TempoAmbientServiceError.invalidHost
     }
     return text
   }
@@ -138,7 +138,7 @@ struct QingxuWeatherClient {
   }
 }
 
-struct QingxuQuoteClient {
+struct TempoQuoteClient {
   private struct Response: Decodable {
     let hitokoto: String
     let from: String
@@ -146,29 +146,29 @@ struct QingxuQuoteClient {
 
   private let rejectedWords = ["死亡", "自杀", "绝望", "痛苦", "孤独", "悲伤", "遗憾"]
 
-  func fetch() async throws -> QingxuQuoteSnapshot {
+  func fetch() async throws -> TempoQuoteSnapshot {
     guard let url = URL(string: "https://v1.hitokoto.cn/?encode=json") else {
-      throw QingxuAmbientServiceError.invalidResponse
+      throw TempoAmbientServiceError.invalidResponse
     }
     for _ in 0..<3 {
       let (data, response) = try await URLSession.shared.data(from: url)
       guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
-        throw QingxuAmbientServiceError.server("每日一句暂时不可用")
+        throw TempoAmbientServiceError.server("每日一句暂时不可用")
       }
       let value = try JSONDecoder().decode(Response.self, from: data)
       let text = value.hitokoto.trimmingCharacters(in: .whitespacesAndNewlines)
       if !text.isEmpty, !rejectedWords.contains(where: text.contains) {
-        return QingxuQuoteSnapshot(text: text, source: value.from, updatedAt: .now)
+        return TempoQuoteSnapshot(text: text, source: value.from, updatedAt: .now)
       }
     }
-    return QingxuQuoteSnapshot(text: "向着光亮那方", source: "Tempo", updatedAt: .now)
+    return TempoQuoteSnapshot(text: "向着光亮那方", source: "Tempo", updatedAt: .now)
   }
 }
 
 @MainActor
 final class TodayAmbientStore: ObservableObject {
-  @Published private(set) var weather: QingxuWeatherSnapshot?
-  @Published private(set) var quote: QingxuQuoteSnapshot?
+  @Published private(set) var weather: TempoWeatherSnapshot?
+  @Published private(set) var quote: TempoQuoteSnapshot?
   @Published private(set) var isLoading = false
   @Published private(set) var message: String?
 
@@ -176,19 +176,19 @@ final class TodayAmbientStore: ObservableObject {
   private let quoteCacheKey = "qingxu.ambient.quote-cache.v1"
 
   init() {
-    weather = cached(QingxuWeatherSnapshot.self, key: weatherCacheKey)
-    quote = cached(QingxuQuoteSnapshot.self, key: quoteCacheKey)
+    weather = cached(TempoWeatherSnapshot.self, key: weatherCacheKey)
+    quote = cached(TempoQuoteSnapshot.self, key: quoteCacheKey)
   }
 
   func load(force: Bool = false) async {
-    let preferences = QingxuAmbientPreferencesStore.load()
+    let preferences = TempoAmbientPreferencesStore.load()
     isLoading = true
     message = nil
     defer { isLoading = false }
 
     if preferences.quoteEnabled, force || quoteNeedsRefresh {
       do {
-        let value = try await QingxuQuoteClient().fetch()
+        let value = try await TempoQuoteClient().fetch()
         quote = value
         cache(value, key: quoteCacheKey)
       } catch {
@@ -200,7 +200,7 @@ final class TodayAmbientStore: ObservableObject {
 
     if preferences.weatherConfigured, force || weatherNeedsRefresh {
       do {
-        let value = try await QingxuWeatherClient().fetch(preferences: preferences)
+        let value = try await TempoWeatherClient().fetch(preferences: preferences)
         weather = value
         cache(value, key: weatherCacheKey)
       } catch {
@@ -223,7 +223,7 @@ final class TodayAmbientStore: ObservableObject {
 
   private func cached<T: Decodable>(_ type: T.Type, key: String) -> T? {
     let data = UserDefaults.standard.data(forKey: key)
-      ?? UserDefaults(suiteName: QingxuAmbientPreferencesStore.appGroup)?.data(forKey: key)
+      ?? UserDefaults(suiteName: TempoAmbientPreferencesStore.appGroup)?.data(forKey: key)
     guard let data else { return nil }
     return try? JSONDecoder().decode(type, from: data)
   }
@@ -231,7 +231,7 @@ final class TodayAmbientStore: ObservableObject {
   private func cache<T: Encodable>(_ value: T, key: String) {
     guard let data = try? JSONEncoder().encode(value) else { return }
     UserDefaults.standard.set(data, forKey: key)
-    UserDefaults(suiteName: QingxuAmbientPreferencesStore.appGroup)?.set(data, forKey: key)
+    UserDefaults(suiteName: TempoAmbientPreferencesStore.appGroup)?.set(data, forKey: key)
     WidgetCenter.shared.reloadAllTimelines()
   }
 }

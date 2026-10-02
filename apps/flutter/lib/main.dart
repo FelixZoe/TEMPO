@@ -38,12 +38,12 @@ Future<void> main() async {
   final controller = TaskController();
   NativeNavigationBridge.attach(controller);
   runApp(
-    QingxuApp(controller: controller, initialization: controller.initialize()),
+    TempoApp(controller: controller, initialization: controller.initialize()),
   );
 }
 
-class QingxuApp extends StatefulWidget {
-  const QingxuApp({
+class TempoApp extends StatefulWidget {
+  const TempoApp({
     required this.controller,
     required this.initialization,
     this.themeModeStorage,
@@ -55,10 +55,10 @@ class QingxuApp extends StatefulWidget {
   final ThemeModeStorageBase? themeModeStorage;
 
   @override
-  State<QingxuApp> createState() => _QingxuAppState();
+  State<TempoApp> createState() => _TempoAppState();
 }
 
-class _QingxuAppState extends State<QingxuApp> {
+class _TempoAppState extends State<TempoApp> {
   late final ThemeModeStorageBase _themeModeStorage;
   ThemeMode _themeMode = ThemeMode.system;
 
@@ -106,8 +106,8 @@ class _QingxuAppState extends State<QingxuApp> {
       theme: _buildTheme(Brightness.light, touch),
       darkTheme: _buildTheme(Brightness.dark, touch),
       themeMode: _themeMode,
-      themeAnimationDuration: QingxuMotion.emphasized,
-      themeAnimationCurve: QingxuMotion.curve,
+      themeAnimationDuration: TempoMotion.emphasized,
+      themeAnimationCurve: TempoMotion.curve,
       builder: (context, child) {
         final dark = Theme.of(context).brightness == Brightness.dark;
         final foruiTheme = dark
@@ -123,8 +123,8 @@ class _QingxuAppState extends State<QingxuApp> {
       home: FutureBuilder<void>(
         future: widget.initialization,
         builder: (context, snapshot) => AnimatedSwitcher(
-          duration: QingxuMotion.standard,
-          switchInCurve: QingxuMotion.curve,
+          duration: TempoMotion.standard,
+          switchInCurve: TempoMotion.curve,
           child: snapshot.connectionState == ConnectionState.done
               ? snapshot.hasError
                     ? _StartupError(error: snapshot.error)
@@ -143,7 +143,7 @@ class _QingxuAppState extends State<QingxuApp> {
 
 ThemeData _buildTheme(Brightness brightness, bool touch) {
   final dark = brightness == Brightness.dark;
-  final palette = dark ? QingxuPalette.dark : QingxuPalette.light;
+  final palette = dark ? TempoPalette.dark : TempoPalette.light;
   final (fontFamily, fontFallback) = _platformFonts();
   final base = ThemeData(useMaterial3: true, brightness: brightness);
   final textTheme = base.textTheme.apply(
@@ -287,7 +287,7 @@ class _StartupView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final windows = !kIsWeb && defaultTargetPlatform == TargetPlatform.windows;
     return Scaffold(
       backgroundColor: windows ? Colors.transparent : null,
@@ -327,7 +327,7 @@ class _StartupError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return Scaffold(
       body: Center(
         child: Padding(

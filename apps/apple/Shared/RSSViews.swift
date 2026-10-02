@@ -86,7 +86,7 @@ struct RSSScreen: View {
         .padding(.bottom, 110)
       }
       .scrollIndicators(.visible)
-      .qingxuScreen()
+      .tempoScreen()
       .navigationTitle("")
       .navigationBarTitleDisplayMode(.inline)
       .toolbarBackground(.hidden, for: .navigationBar)
@@ -285,10 +285,10 @@ private struct RSSFolderStrip: View {
     } label: {
       Label(title, systemImage: id == nil ? "square.grid.2x2" : "folder.fill")
         .font(.caption.weight(.semibold))
-        .foregroundStyle(selection == id ? QingxuPalette.accent : QingxuPalette.quiet)
+        .foregroundStyle(selection == id ? TempoPalette.accent : TempoPalette.quiet)
         .padding(.horizontal, 12)
         .frame(height: 34)
-        .background(selection == id ? QingxuPalette.selected : QingxuPalette.surface, in: Capsule())
+        .background(selection == id ? TempoPalette.selected : TempoPalette.surface, in: Capsule())
     }
     .buttonStyle(.plain)
   }
@@ -327,14 +327,14 @@ private struct RSSFeedStrip: View {
         if unread > 0 {
           Text("\(unread)")
             .font(.caption2.bold())
-            .foregroundStyle(selected ? QingxuPalette.onAccent : QingxuPalette.accent)
+            .foregroundStyle(selected ? TempoPalette.onAccent : TempoPalette.accent)
         }
       }
       .font(.subheadline.weight(selected ? .semibold : .medium))
-      .foregroundStyle(selected ? QingxuPalette.onAccent : QingxuPalette.ink)
+      .foregroundStyle(selected ? TempoPalette.onAccent : TempoPalette.ink)
       .padding(.horizontal, 12)
       .frame(height: 40)
-      .background(selected ? QingxuPalette.accent : QingxuPalette.surface, in: Capsule())
+      .background(selected ? TempoPalette.accent : TempoPalette.surface, in: Capsule())
     }
     .buttonStyle(.plain)
   }
@@ -406,28 +406,28 @@ private struct RSSContentState: View {
             Button { toggleStarred(article) } label: {
               Label(article.isStarred ? "取消收藏" : "收藏", systemImage: article.isStarred ? "star.slash" : "star")
             }
-            .tint(QingxuPalette.warning)
+            .tint(TempoPalette.warning)
           }
           .swipeActions(edge: .trailing, allowsFullSwipe: true) {
             Button { toggleRead(article) } label: {
               Label(article.isRead ? "标为未读" : "标为已读", systemImage: article.isRead ? "envelope.badge" : "checkmark")
             }
-            .tint(QingxuPalette.accent)
+            .tint(TempoPalette.accent)
           }
 
           Divider()
-            .overlay(QingxuPalette.separator)
+            .overlay(TempoPalette.separator)
             .padding(.leading, 50)
         }
       }
       .padding(.horizontal, 16)
       .background(
-        QingxuPalette.surface,
+        TempoPalette.surface,
         in: RoundedRectangle(cornerRadius: 24, style: .continuous)
       )
       .overlay {
         RoundedRectangle(cornerRadius: 24, style: .continuous)
-          .stroke(QingxuPalette.separator.opacity(0.55), lineWidth: 0.5)
+          .stroke(TempoPalette.separator.opacity(0.55), lineWidth: 0.5)
       }
       .padding(.horizontal, 16)
     }
@@ -440,13 +440,13 @@ private struct RSSArticleLine: View {
   var body: some View {
     HStack(alignment: .top, spacing: 12) {
       RSSSourceIcon(urlString: nil, size: 28)
-        .foregroundStyle(article.isRead ? QingxuPalette.faint : QingxuPalette.ink)
+        .foregroundStyle(article.isRead ? TempoPalette.faint : TempoPalette.ink)
         .overlay(alignment: .topTrailing) {
           if !article.isRead {
             Circle()
-              .fill(QingxuPalette.accent)
+              .fill(TempoPalette.accent)
               .frame(width: 7, height: 7)
-              .overlay(Circle().stroke(QingxuPalette.surface, lineWidth: 1.5))
+              .overlay(Circle().stroke(TempoPalette.surface, lineWidth: 1.5))
               .offset(x: 2, y: -2)
           }
         }
@@ -454,20 +454,20 @@ private struct RSSArticleLine: View {
       VStack(alignment: .leading, spacing: 6) {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
           Text(article.title)
-            .font(article.isRead ? QingxuType.body : QingxuType.body.weight(.semibold))
-            .foregroundStyle(QingxuPalette.ink)
+            .font(article.isRead ? TempoType.body : TempoType.body.weight(.semibold))
+            .foregroundStyle(TempoPalette.ink)
             .lineLimit(3)
           Spacer(minLength: 4)
           if article.isStarred {
             Image(systemName: "star.fill")
               .font(.caption)
-              .foregroundStyle(QingxuPalette.warning)
+              .foregroundStyle(TempoPalette.warning)
           }
         }
         if !article.summary.isEmpty {
           Text(article.summary)
             .font(.subheadline)
-            .foregroundStyle(QingxuPalette.quiet)
+            .foregroundStyle(TempoPalette.quiet)
             .lineLimit(2)
         }
         HStack(spacing: 6) {
@@ -482,7 +482,7 @@ private struct RSSArticleLine: View {
           }
         }
         .font(.caption)
-        .foregroundStyle(QingxuPalette.faint)
+        .foregroundStyle(TempoPalette.faint)
       }
     }
     .padding(.vertical, 15)
@@ -497,19 +497,19 @@ private struct RSSWelcome: View {
     VStack(spacing: 14) {
       Image(systemName: "newspaper")
         .font(.system(size: 48, weight: .light))
-        .foregroundStyle(QingxuPalette.accent)
+        .foregroundStyle(TempoPalette.accent)
       Text("建立自己的阅读流")
         .font(.title3.weight(.semibold))
       Text("添加 RSS、Atom 地址或网站首页，Tempo会自动寻找订阅源。")
         .font(.subheadline)
-        .foregroundStyle(QingxuPalette.quiet)
+        .foregroundStyle(TempoPalette.quiet)
         .multilineTextAlignment(.center)
       Button("添加第一个订阅", action: add)
         .font(.subheadline.weight(.semibold))
-        .foregroundStyle(QingxuPalette.onAccent)
+        .foregroundStyle(TempoPalette.onAccent)
         .padding(.horizontal, 18)
         .frame(height: 42)
-        .background(QingxuPalette.accent, in: Capsule())
+        .background(TempoPalette.accent, in: Capsule())
     }
     .frame(maxWidth: .infinity)
     .padding(.horizontal, 32)
@@ -529,12 +529,12 @@ private struct RSSEmptyArticles: View {
       } else {
         Image(systemName: searchText.isEmpty ? "checkmark.circle" : "magnifyingglass")
           .font(.system(size: 38, weight: .light))
-          .foregroundStyle(QingxuPalette.accent)
+          .foregroundStyle(TempoPalette.accent)
       }
       Text(title).font(.headline)
       Text(detail)
         .font(.subheadline)
-        .foregroundStyle(QingxuPalette.quiet)
+        .foregroundStyle(TempoPalette.quiet)
     }
     .frame(maxWidth: .infinity)
     .padding(.top, 110)
@@ -617,8 +617,8 @@ private struct RSSReaderView: View {
       } else {
         ScrollView {
           Text(readerText)
-            .font(QingxuType.body)
-            .foregroundStyle(QingxuPalette.ink)
+            .font(TempoType.body)
+            .foregroundStyle(TempoPalette.ink)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(22)
         }
@@ -634,7 +634,7 @@ private struct RSSReaderView: View {
           .transition(.opacity)
       }
     }
-    .qingxuScreen()
+    .tempoScreen()
     .navigationTitle(article.feedTitle)
     .navigationBarTitleDisplayMode(.inline)
     .onAppear { openArticle(article) }
@@ -717,17 +717,17 @@ private struct RSSReaderView: View {
           VStack(alignment: .leading, spacing: 14) {
             Text(article.title)
               .font(.headline)
-              .foregroundStyle(QingxuPalette.quiet)
+              .foregroundStyle(TempoPalette.quiet)
             Text(aiSummary ?? "")
-              .font(QingxuType.body)
-              .foregroundStyle(QingxuPalette.ink)
+              .font(TempoType.body)
+              .foregroundStyle(TempoPalette.ink)
               .lineSpacing(5)
               .textSelection(.enabled)
           }
           .frame(maxWidth: .infinity, alignment: .leading)
           .padding(22)
         }
-        .qingxuScreen()
+        .tempoScreen()
         .navigationTitle("AI 摘要")
         .navigationBarTitleDisplayMode(.inline)
       }
@@ -796,7 +796,7 @@ private struct RSSReaderView: View {
   @MainActor
   private func translateWithAI() async {
     do {
-      translatedSegments = try await QingxuAIClient().translate(
+      translatedSegments = try await TempoAIClient().translate(
         segments: translationSourceSegments,
         settings: appStore.syncSettings,
         aiSettings: appStore.aiSettings
@@ -817,7 +817,7 @@ private struct RSSReaderView: View {
     isSummarizing = true
     defer { isSummarizing = false }
     do {
-      aiSummary = try await QingxuAIClient().summarize(
+      aiSummary = try await TempoAIClient().summarize(
         title: pageTitle.isEmpty ? article.title : pageTitle,
         content: readerText,
         settings: appStore.syncSettings,
@@ -947,7 +947,7 @@ private struct RSSWebArticleView: UIViewRepresentable {
       let script = """
       (() => ({
         title: document.title || '',
-        text: (window.__qingxuReaderRoot || document.querySelector('article, main, [role="main"]') || document.body)?.innerText || ''
+        text: (window.__tempoReaderRoot || document.querySelector('article, main, [role="main"]') || document.body)?.innerText || ''
       }))()
       """
       webView.evaluateJavaScript(script) { [weak self] result, _ in
@@ -971,7 +971,7 @@ private struct RSSWebArticleView: UIViewRepresentable {
       translationRequestInFlight = requestID
       let script = """
       (() => {
-        const root = window.__qingxuReaderRoot || document.querySelector('article, main, [role="main"]') || document.body;
+        const root = window.__tempoReaderRoot || document.querySelector('article, main, [role="main"]') || document.body;
         if (!root) return [];
         const rejected = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEXTAREA', 'CODE', 'PRE', 'SVG']);
         const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
@@ -987,13 +987,13 @@ private struct RSSWebArticleView: UIViewRepresentable {
         });
         const nodes = [];
         while (walker.nextNode() && nodes.length < 220) nodes.push(walker.currentNode);
-        window.__qingxuTranslationNodes = nodes;
-        window.__qingxuOriginalTexts = nodes.map(node => node.nodeValue || '');
-        window.__qingxuTranslationWhitespace = window.__qingxuOriginalTexts.map(raw => ({
+        window.__tempoTranslationNodes = nodes;
+        window.__tempoOriginalTexts = nodes.map(node => node.nodeValue || '');
+        window.__tempoTranslationWhitespace = window.__tempoOriginalTexts.map(raw => ({
           leading: (raw.match(/^\\s*/) || [''])[0],
           trailing: (raw.match(/\\s*$/) || [''])[0]
         }));
-        return window.__qingxuOriginalTexts.map(raw => raw.trim());
+        return window.__tempoOriginalTexts.map(raw => raw.trim());
       })()
       """
       webView.evaluateJavaScript(script) { [weak self] result, _ in
@@ -1020,8 +1020,8 @@ private struct RSSWebArticleView: UIViewRepresentable {
       if parent.showsOriginal {
         script = """
         (() => {
-          const nodes = window.__qingxuTranslationNodes || [];
-          const originals = window.__qingxuOriginalTexts || [];
+          const nodes = window.__tempoTranslationNodes || [];
+          const originals = window.__tempoOriginalTexts || [];
           nodes.forEach((node, index) => { if (originals[index] != null) node.nodeValue = originals[index]; });
         })()
         """
@@ -1029,8 +1029,8 @@ private struct RSSWebArticleView: UIViewRepresentable {
         script = """
         (() => {
           const translated = \(json);
-          const nodes = window.__qingxuTranslationNodes || [];
-          const whitespace = window.__qingxuTranslationWhitespace || [];
+          const nodes = window.__tempoTranslationNodes || [];
+          const whitespace = window.__tempoTranslationWhitespace || [];
           nodes.forEach((node, index) => {
             if (translated[index] == null) return;
             const spacing = whitespace[index] || { leading: '', trailing: '' };
@@ -1062,7 +1062,7 @@ private struct RSSWebArticleView: UIViewRepresentable {
     let root = candidates
       .map(selector => document.querySelector(selector))
       .find(element => element && (element.innerText || '').trim().length > 240) || document.body;
-    window.__qingxuReaderRoot = root;
+    window.__tempoReaderRoot = root;
 
     let currentRoot = root;
     let rootMarker = currentRoot;
@@ -1089,13 +1089,13 @@ private struct RSSWebArticleView: UIViewRepresentable {
       element.style.setProperty('display', 'none', 'important');
     });
 
-    if (!document.getElementById('qingxu-reader-style')) {
+    if (!document.getElementById('tempo-reader-style')) {
       const style = document.createElement('style');
-      style.id = 'qingxu-reader-style';
+      style.id = 'tempo-reader-style';
       style.textContent = `
         html, body { overflow-x: hidden !important; }
         body { margin: 0 !important; padding: 0 !important; background: #fbfaf7 !important; color: #161817 !important; }
-        #qingxu-reader-root {
+        #tempo-reader-root {
           box-sizing: border-box !important; width: min(100%, 760px) !important;
           max-width: 760px !important; margin: 0 auto !important; padding: 24px 20px 80px !important;
           font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif !important;
@@ -1117,7 +1117,7 @@ private struct RSSWebArticleView: UIViewRepresentable {
       `;
       document.head.appendChild(style);
     }
-    root.id = 'qingxu-reader-root';
+    root.id = 'tempo-reader-root';
     return true;
   })()
   """
@@ -1196,13 +1196,13 @@ private struct RSSAddSheet: View {
         Section {
           Text("可以填写 RSS、Atom 地址，也可以直接填写网站首页。")
             .font(.footnote)
-            .foregroundStyle(QingxuPalette.quiet)
+            .foregroundStyle(TempoPalette.quiet)
         }
         if let errorMessage {
-          Section { Text(errorMessage).foregroundStyle(QingxuPalette.danger) }
+          Section { Text(errorMessage).foregroundStyle(TempoPalette.danger) }
         }
       }
-      .qingxuScreen()
+      .tempoScreen()
       .navigationTitle("添加 RSS")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
@@ -1243,14 +1243,14 @@ private struct RSSSubscriptionManager: View {
             VStack(alignment: .leading, spacing: 4) {
               Text(subscription.title).font(.body.weight(.medium))
               if let folder = store.folders.first(where: { $0.id == subscription.folderID }) {
-                Text(folder.title).font(.caption).foregroundStyle(QingxuPalette.accent)
+                Text(folder.title).font(.caption).foregroundStyle(TempoPalette.accent)
               } else {
-                Text(subscription.feedURL).font(.caption).foregroundStyle(QingxuPalette.quiet).lineLimit(1)
+                Text(subscription.feedURL).font(.caption).foregroundStyle(TempoPalette.quiet).lineLimit(1)
               }
             }
             Spacer()
             if subscription.lastError != nil {
-              Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(QingxuPalette.warning)
+              Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(TempoPalette.warning)
             }
           }
         }
@@ -1261,7 +1261,7 @@ private struct RSSSubscriptionManager: View {
         }
       }
     }
-    .qingxuScreen()
+    .tempoScreen()
     .navigationTitle("管理订阅")
     .navigationBarTitleDisplayMode(.inline)
   }
@@ -1322,12 +1322,12 @@ private struct RSSSubscriptionSettings: View {
             Text(subscription.lastFetchedAt?.formatted(date: .abbreviated, time: .shortened) ?? "尚未更新")
           }
           if let error = subscription.lastError {
-            Text(error).foregroundStyle(QingxuPalette.danger)
+            Text(error).foregroundStyle(TempoPalette.danger)
           }
         }
       }
     }
-    .qingxuScreen()
+    .tempoScreen()
     .navigationTitle(subscription?.title ?? "订阅设置")
     .navigationBarTitleDisplayMode(.inline)
     .onAppear {
@@ -1372,7 +1372,7 @@ private struct RSSFolderManager: View {
             Label(folder.title, systemImage: "folder.fill")
             Spacer()
             Text("\(store.subscriptions.lazy.filter { $0.folderID == folder.id }.count)")
-              .foregroundStyle(QingxuPalette.quiet)
+              .foregroundStyle(TempoPalette.quiet)
           }
           .swipeActions {
             Button(role: .destructive) { store.deleteFolder(folder) } label: {
@@ -1382,7 +1382,7 @@ private struct RSSFolderManager: View {
         }
       }
     }
-    .qingxuScreen()
+    .tempoScreen()
     .navigationTitle("来源分类")
     .navigationBarTitleDisplayMode(.inline)
   }
@@ -1412,14 +1412,14 @@ private struct RSSPreferencesView: View {
         }
         .disabled(syncing)
         if !syncMessage.isEmpty {
-          Text(syncMessage).font(.footnote).foregroundStyle(QingxuPalette.quiet)
+          Text(syncMessage).font(.footnote).foregroundStyle(TempoPalette.quiet)
         }
         Text("同步订阅、分类、已读、收藏和阅读进度；文章正文只保存在本机。")
           .font(.footnote)
-          .foregroundStyle(QingxuPalette.quiet)
+          .foregroundStyle(TempoPalette.quiet)
       }
     }
-    .qingxuScreen()
+    .tempoScreen()
     .navigationTitle("阅读与缓存")
     .navigationBarTitleDisplayMode(.inline)
   }

@@ -2,7 +2,7 @@ import ActivityKit
 import Foundation
 
 @available(iOS 16.1, *)
-struct QingxuPomodoroAttributes: ActivityAttributes {
+struct TempoPomodoroAttributes: ActivityAttributes {
   struct ContentState: Codable, Hashable {
     var mode: String
     var status: String

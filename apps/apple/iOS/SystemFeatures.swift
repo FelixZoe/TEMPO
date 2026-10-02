@@ -39,12 +39,12 @@ enum SystemFeatures {
   }
 
   @available(iOS 16.2, *)
-  private static func content(_ pomodoro: PomodoroState) -> ActivityContent<QingxuPomodoroAttributes.ContentState> {
+  private static func content(_ pomodoro: PomodoroState) -> ActivityContent<TempoPomodoroAttributes.ContentState> {
     let countUpDisplayStart = pomodoro.startedAt?.addingTimeInterval(
       TimeInterval(-pomodoro.remainingSeconds)
     )
     return ActivityContent(
-      state: QingxuPomodoroAttributes.ContentState(
+      state: TempoPomodoroAttributes.ContentState(
         mode: pomodoro.mode.rawValue,
         status: pomodoro.status.rawValue,
         timerDirection: pomodoro.timerDirection.rawValue,
@@ -89,7 +89,7 @@ enum SystemFeatures {
       if pomodoro.status == .running {
         _ = await startOrUpdateLiveActivity(pomodoro)
       } else {
-        for activity in Activity<QingxuPomodoroAttributes>.activities {
+        for activity in Activity<TempoPomodoroAttributes>.activities {
           await activity.end(content(pomodoro), dismissalPolicy: .immediate)
         }
         setLiveActivityStatus("番茄钟尚未开始")
@@ -99,7 +99,7 @@ enum SystemFeatures {
 
   @available(iOS 16.2, *)
   private static func startOrUpdateLiveActivity(_ pomodoro: PomodoroState) async -> String {
-    let activities = Activity<QingxuPomodoroAttributes>.activities
+    let activities = Activity<TempoPomodoroAttributes>.activities
     if let activity = activities.first {
       await activity.update(content(pomodoro))
       for duplicate in activities.dropFirst() {
@@ -119,7 +119,7 @@ enum SystemFeatures {
 
     do {
       let activity = try Activity.request(
-        attributes: QingxuPomodoroAttributes(title: "Tempo专注"),
+        attributes: TempoPomodoroAttributes(title: "Tempo专注"),
         content: content(pomodoro),
         pushType: nil
       )
@@ -136,7 +136,7 @@ enum SystemFeatures {
 
   static func restartLiveActivity(for pomodoro: PomodoroState) async -> String {
     guard #available(iOS 16.2, *) else { return "需要 iOS 16.2 或更高版本" }
-    for activity in Activity<QingxuPomodoroAttributes>.activities {
+    for activity in Activity<TempoPomodoroAttributes>.activities {
       await activity.end(content(pomodoro), dismissalPolicy: .immediate)
     }
     guard pomodoro.status == .running else {

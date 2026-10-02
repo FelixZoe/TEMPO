@@ -45,7 +45,7 @@ class _WindowsWidgetShellState extends State<WindowsWidgetShell>
     windowManager.addListener(this);
     tray.trayManager.addListener(this);
     unawaited(_initializeTray());
-    if (Platform.environment['QINGXU_PREVIEW_EXPANDED'] == '1') {
+    if (Platform.environment['TEMPO_PREVIEW_EXPANDED'] == '1') {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await _setAnchoredSize(_expandedSize);
         if (mounted) setState(() => _expanded = true);
@@ -325,7 +325,7 @@ class _TodayPanelState extends State<_TodayPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final visible = widget.tasks
         .take(_adding ? widget.maxTasks - 1 : widget.maxTasks)
         .toList();
@@ -432,7 +432,7 @@ class _TodayTaskRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(10),
@@ -489,7 +489,7 @@ class _QuickAddRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return SizedBox(
       height: 35,
       child: TextField(
@@ -527,7 +527,7 @@ class _SyncDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final (color, label) = switch (activity) {
       SyncActivity.success => (palette.success, '同步完成'),
       SyncActivity.syncing || SyncActivity.testing => (palette.accent, '正在同步'),
@@ -538,7 +538,7 @@ class _SyncDot extends StatelessWidget {
     return Tooltip(
       message: label,
       child: AnimatedContainer(
-        duration: QingxuMotion.quick,
+        duration: TempoMotion.quick,
         width: 6,
         height: 6,
         decoration: BoxDecoration(color: color, shape: BoxShape.circle),
@@ -564,7 +564,7 @@ class _HoverDrop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final dark = Theme.of(context).brightness == Brightness.dark;
     final state = controller.pomodoro;
     final remaining = controller.pomodoroRemainingSeconds;
@@ -762,7 +762,7 @@ class _HoverButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return IconButton(
       tooltip: tooltip,
       visualDensity: VisualDensity.compact,
@@ -833,7 +833,7 @@ class _FrostedSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final dark = Theme.of(context).brightness == Brightness.dark;
     final borderRadius = BorderRadius.circular(radius);
     return ClipRRect(

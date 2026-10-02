@@ -12,7 +12,12 @@ import { StatusBar } from 'expo-status-bar';
 
 import { tempoNative, type TempoBootstrap } from './native/TempoNative';
 
-export default function App() {
+type RuntimeProps = {
+  route?: TempoBootstrap['route'];
+  locale?: string;
+};
+
+export default function App(props: RuntimeProps) {
   const systemScheme = useColorScheme();
   const { width, height } = useWindowDimensions();
   const [bootstrap, setBootstrap] = useState<TempoBootstrap>();
@@ -20,7 +25,13 @@ export default function App() {
   useEffect(() => {
     let active = true;
     tempoNative.bootstrap().then((value) => {
-      if (active) setBootstrap(value);
+      if (active) {
+        setBootstrap({
+          ...value,
+          route: props.route ?? value.route,
+          locale: props.locale ?? value.locale,
+        });
+      }
     });
     const unsubscribe = tempoNative.subscribe((value) => {
       if (active) setBootstrap(value);
@@ -29,7 +40,7 @@ export default function App() {
       active = false;
       unsubscribe();
     };
-  }, []);
+  }, [props.locale, props.route]);
 
   const dark = bootstrap?.colorScheme === 'dark' || (!bootstrap && systemScheme === 'dark');
   const palette = dark ? darkPalette : lightPalette;
@@ -41,13 +52,13 @@ export default function App() {
       <View style={[styles.content, landscape && styles.landscapeContent]}>
         {bootstrap ? (
           <View style={[styles.runtimePanel, landscape && styles.landscapePanel]}>
-            <Text style={[styles.eyebrow, { color: palette.secondary }]}>TEMPO CONTENT RUNTIME</Text>
-            <Text style={[styles.title, { color: palette.primary }]}>OTA 层已就绪</Text>
+            <Text style={[styles.eyebrow, { color: palette.secondary }]}>TEMPO · OTA CONTENT</Text>
+            <Text style={[styles.title, { color: palette.primary }]}>内容层已接入</Text>
             <Text style={[styles.body, { color: palette.secondary }]}>
-              当前路由：{routeName(bootstrap.route)}。原生导航、搜索与液态玻璃按钮继续由 SwiftUI
-              提供，页面内容将从这里逐步迁移。
+              当前路由：{routeName(bootstrap.route)}。这个页面的 TypeScript、布局、样式和图片可通过
+              Expo OTA 更新；底部导航、搜索、系统权限、小组件和灵动岛仍由原生层负责。
             </Text>
-            <Text style={[styles.meta, { color: palette.tertiary }]}>数据修订 {bootstrap.revision}</Text>
+            <Text style={[styles.meta, { color: palette.tertiary }]}>数据修订 {bootstrap.revision} · {bootstrap.locale}</Text>
           </View>
         ) : (
           <ActivityIndicator color={palette.primary} />

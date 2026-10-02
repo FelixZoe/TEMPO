@@ -31,8 +31,8 @@
 
 适合个人设备调试：
 
-1. 在 macOS 上用 Xcode 打开 `apps/apple/QingxuApple.xcodeproj`。
-2. 为 `QingxuiOS` 和 `QingxuWidgets` 选择同一个 Team。
+1. 按 [Apple 客户端说明](../apps/apple/README.md) 先生成 Expo Brownfield 包和 `apps/apple/TempoApple.xcodeproj`。
+2. 在 Xcode 中为 `TempoiOS` 和 `TempoWidgets` 选择同一个 Team。
 3. 确认两个 Bundle ID 和 App Group 未被改成随机值。
 4. 选择真机运行，或 Archive 后导出适合自己账号的安装包。
 
@@ -116,6 +116,8 @@ codesign -d --entitlements :- tempo-ipa-check/Payload/TEMPO.app/PlugIns/TEMPOWid
 ```
 
 主应用和扩展的 entitlements 中都应出现 `group.one.darker.qingxu`。
+
+如果应用内显示“App Group 签名未授权”，含义是源码虽然声明了该组，但当前安装包的描述文件或重签过程没有保留这项 entitlement。此时主应用仍可能正常打开，但任务小组件、锁屏组件和灵动岛无法读取主应用写入的实时数据。修复点在签名材料和重签流程，不是把代码中的 App Group 改名。
 
 ## 密钥安全
 

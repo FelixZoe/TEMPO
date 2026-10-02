@@ -154,12 +154,16 @@ flutter run -d windows
 
 ```bash
 brew install xcodegen
-cd apps/apple
+cd apps/ios-runtime
+npm ci
+npm run prebuild:ios
+npm run build:brownfield:ios
+cd ../apple
 xcodegen generate
-open QingxuApple.xcodeproj
+open TempoApple.xcodeproj
 ```
 
-选择 `QingxuiOS` 或 `QingxumacOS` scheme。真机运行需要在本地配置自己的签名身份和描述文件。
+选择 `TempoiOS` 或 `TempomacOS` scheme。真机运行需要在本地配置自己的签名身份和描述文件。Apple 客户端保持原生系统表面，同时把可热更新内容作为 Expo Brownfield Swift Package 嵌入；OTA 不会替换原生权限、Widget 或灵动岛代码。
 
 ### 同步服务
 

@@ -2,14 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:qingxu/models/sync_settings.dart';
-import 'package:qingxu/models/pomodoro_state.dart';
-import 'package:qingxu/models/task_item.dart';
-import 'package:qingxu/services/secure_token_storage_base.dart';
-import 'package:qingxu/services/sync_client_base.dart';
-import 'package:qingxu/services/sync_settings_storage_base.dart';
-import 'package:qingxu/services/task_storage_stub.dart';
-import 'package:qingxu/state/task_controller.dart';
+import 'package:tempo/models/sync_settings.dart';
+import 'package:tempo/models/pomodoro_state.dart';
+import 'package:tempo/models/task_item.dart';
+import 'package:tempo/services/secure_token_storage_base.dart';
+import 'package:tempo/services/sync_client_base.dart';
+import 'package:tempo/services/sync_settings_storage_base.dart';
+import 'package:tempo/services/task_storage_stub.dart';
+import 'package:tempo/state/task_controller.dart';
 
 void main() {
   const configured = SyncSettings(

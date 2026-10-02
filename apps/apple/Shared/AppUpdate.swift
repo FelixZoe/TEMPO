@@ -1,7 +1,7 @@
 import Combine
 import Foundation
 
-struct QingxuRelease: Decodable, Identifiable, Equatable {
+struct TempoRelease: Decodable, Identifiable, Equatable {
   struct Asset: Decodable, Equatable, Identifiable {
     let name: String
     let browserDownloadURL: URL
@@ -41,7 +41,7 @@ final class AppUpdateChecker: ObservableObject {
     case idle
     case checking
     case current
-    case available(QingxuRelease)
+    case available(TempoRelease)
     case failed(String)
   }
 
@@ -59,7 +59,7 @@ final class AppUpdateChecker: ObservableObject {
   }
 
   @discardableResult
-  func check(force: Bool = false) async -> QingxuRelease? {
+  func check(force: Bool = false) async -> TempoRelease? {
     if case .checking = state { return availableRelease }
     if hasChecked, !force { return availableRelease }
 
@@ -76,7 +76,7 @@ final class AppUpdateChecker: ObservableObject {
       guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
         throw UpdateError.invalidResponse
       }
-      let release = try JSONDecoder().decode(QingxuRelease.self, from: data)
+      let release = try JSONDecoder().decode(TempoRelease.self, from: data)
       hasChecked = true
       if Self.isNewer(release.version, than: currentVersion) {
         state = .available(release)
@@ -92,7 +92,7 @@ final class AppUpdateChecker: ObservableObject {
     }
   }
 
-  var availableRelease: QingxuRelease? {
+  var availableRelease: TempoRelease? {
     guard case .available(let release) = state else { return nil }
     return release
   }

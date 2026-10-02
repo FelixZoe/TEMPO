@@ -83,7 +83,7 @@ class _PomodoroPageState extends State<PomodoroPage> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final state = widget.controller.pomodoro;
     final remainingSeconds = widget.controller.pomodoroRemainingSeconds;
     final remaining = Duration(seconds: remainingSeconds);
@@ -97,12 +97,12 @@ class _PomodoroPageState extends State<PomodoroPage> {
       PomodoroMode.longBreak => isRunning ? '充分休息' : '完成一轮',
     };
 
-    if (qingxuIsDesktop) {
+    if (tempoIsDesktop) {
       return ColoredBox(
         color: palette.canvas,
         child: Column(
           children: [
-            QingxuPageHeader(
+            TempoPageHeader(
               title: '番茄钟',
               subtitle: isRunning ? '计时状态正自动同步到其他设备' : '为眼前这一件事留出完整时间',
               trailing: _SyncDot(
@@ -116,7 +116,7 @@ class _PomodoroPageState extends State<PomodoroPage> {
                   child: Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(
-                        maxWidth: QingxuLayout.contentMaxWidth,
+                        maxWidth: TempoLayout.contentMaxWidth,
                       ),
                       child: Column(
                         children: [
@@ -220,7 +220,7 @@ class _PomodoroPageState extends State<PomodoroPage> {
       color: palette.canvas,
       child: Column(
         children: [
-          QingxuPageHeader(
+          TempoPageHeader(
             title: '番茄钟',
             subtitle: isRunning ? '计时状态正自动同步到其他设备' : '一次只专注眼前这一件事',
             leading: widget.onMenu == null
@@ -250,9 +250,9 @@ class _PomodoroPageState extends State<PomodoroPage> {
                 final compactHeight = constraints.maxHeight < 620;
                 return SingleChildScrollView(
                   padding: EdgeInsets.fromLTRB(
-                    QingxuLayout.gutterFor(constraints.maxWidth),
+                    TempoLayout.gutterFor(constraints.maxWidth),
                     compactHeight ? 4 : 18,
-                    QingxuLayout.gutterFor(constraints.maxWidth),
+                    TempoLayout.gutterFor(constraints.maxWidth),
                     28,
                   ),
                   child: Center(
@@ -320,7 +320,7 @@ class _ModePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return Material(
       color: palette.surface,
       shape: RoundedRectangleBorder(
@@ -393,7 +393,7 @@ class _DurationSettingsSheetState extends State<_DurationSettingsSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return SafeArea(
       top: false,
       child: Align(
@@ -536,7 +536,7 @@ class _DurationStepper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
         color: palette.surface,
@@ -610,10 +610,10 @@ class _ModeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return AnimatedContainer(
-      duration: QingxuMotion.standard,
-      curve: QingxuMotion.curve,
+      duration: TempoMotion.standard,
+      curve: TempoMotion.curve,
       decoration: BoxDecoration(
         color: selected ? palette.accentSoft : Colors.transparent,
         borderRadius: BorderRadius.circular(10),
@@ -654,10 +654,10 @@ class _FocusDial extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return TweenAnimationBuilder<double>(
       tween: Tween(end: progress),
-      duration: QingxuMotion.standard,
+      duration: TempoMotion.standard,
       curve: Curves.linear,
       builder: (context, animatedProgress, _) => SizedBox.square(
         dimension: size,
@@ -685,7 +685,7 @@ class _FocusDial extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 AnimatedSwitcher(
-                  duration: QingxuMotion.standard,
+                  duration: TempoMotion.standard,
                   child: Row(
                     key: ValueKey('$label-$active'),
                     mainAxisSize: MainAxisSize.min,
@@ -790,7 +790,7 @@ class _FocusActions extends StatelessWidget {
         key: const ValueKey('pomodoro-toggle'),
         onPressed: onToggle,
         icon: AnimatedSwitcher(
-          duration: QingxuMotion.quick,
+          duration: TempoMotion.quick,
           child: Icon(
             isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded,
             key: ValueKey(isRunning),
@@ -816,7 +816,7 @@ class _SessionSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final visibleGoal = goal.clamp(1, 8);
     return Column(
       children: [
@@ -825,7 +825,7 @@ class _SessionSummary extends StatelessWidget {
           children: [
             for (var index = 0; index < visibleGoal; index++) ...[
               AnimatedContainer(
-                duration: QingxuMotion.standard,
+                duration: TempoMotion.standard,
                 width: index < completed.clamp(0, visibleGoal) ? 26 : 8,
                 height: 8,
                 decoration: BoxDecoration(
@@ -858,7 +858,7 @@ class _FocusHeatmap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final now = DateTime.now();
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -915,7 +915,7 @@ class _FocusHeatmap extends StatelessWidget {
     );
   }
 
-  Widget _heatCell(QingxuPalette palette, DateTime date) {
+  Widget _heatCell(TempoPalette palette, DateTime date) {
     final seconds = records.where((record) {
       final ended = record.endedAt.toLocal();
       return ended.year == date.year && ended.month == date.month && ended.day == date.day;
@@ -942,7 +942,7 @@ class _SyncDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return Tooltip(
       message: active ? '多端同步已配置' : '尚未配置同步',
       child: Container(

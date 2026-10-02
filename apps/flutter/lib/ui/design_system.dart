@@ -1,15 +1,15 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-bool get qingxuIsDesktop =>
+bool get tempoIsDesktop =>
     !kIsWeb &&
     (defaultTargetPlatform == TargetPlatform.windows ||
         defaultTargetPlatform == TargetPlatform.macOS ||
         defaultTargetPlatform == TargetPlatform.linux);
 
 @immutable
-class QingxuPalette extends ThemeExtension<QingxuPalette> {
-  const QingxuPalette({
+class TempoPalette extends ThemeExtension<TempoPalette> {
+  const TempoPalette({
     required this.accent,
     required this.accentStrong,
     required this.accentSoft,
@@ -27,7 +27,7 @@ class QingxuPalette extends ThemeExtension<QingxuPalette> {
   });
 
   // Cool porcelain and slate blue: quiet enough for long desktop sessions.
-  static const light = QingxuPalette(
+  static const light = TempoPalette(
     accent: Color(0xFF5278A5),
     accentStrong: Color(0xFF315A89),
     accentSoft: Color(0xFFE2EAF3),
@@ -45,7 +45,7 @@ class QingxuPalette extends ThemeExtension<QingxuPalette> {
   );
 
   // Deep blue graphite with no green cast and no pure-black slabs.
-  static const dark = QingxuPalette(
+  static const dark = TempoPalette(
     accent: Color(0xFF87A9CF),
     accentStrong: Color(0xFFAEC7E2),
     accentSoft: Color(0xFF203249),
@@ -62,8 +62,8 @@ class QingxuPalette extends ThemeExtension<QingxuPalette> {
     info: Color(0xFF87A9CF),
   );
 
-  static QingxuPalette of(BuildContext context) =>
-      Theme.of(context).extension<QingxuPalette>() ?? light;
+  static TempoPalette of(BuildContext context) =>
+      Theme.of(context).extension<TempoPalette>() ?? light;
 
   final Color accent;
   final Color accentStrong;
@@ -81,7 +81,7 @@ class QingxuPalette extends ThemeExtension<QingxuPalette> {
   final Color info;
 
   @override
-  QingxuPalette copyWith({
+  TempoPalette copyWith({
     Color? accent,
     Color? accentStrong,
     Color? accentSoft,
@@ -96,7 +96,7 @@ class QingxuPalette extends ThemeExtension<QingxuPalette> {
     Color? success,
     Color? danger,
     Color? info,
-  }) => QingxuPalette(
+  }) => TempoPalette(
     accent: accent ?? this.accent,
     accentStrong: accentStrong ?? this.accentStrong,
     accentSoft: accentSoft ?? this.accentSoft,
@@ -114,10 +114,10 @@ class QingxuPalette extends ThemeExtension<QingxuPalette> {
   );
 
   @override
-  QingxuPalette lerp(covariant QingxuPalette? other, double t) {
+  TempoPalette lerp(covariant TempoPalette? other, double t) {
     if (other == null) return this;
     Color mix(Color first, Color second) => Color.lerp(first, second, t)!;
-    return QingxuPalette(
+    return TempoPalette(
       accent: mix(accent, other.accent),
       accentStrong: mix(accentStrong, other.accentStrong),
       accentSoft: mix(accentSoft, other.accentSoft),
@@ -136,14 +136,14 @@ class QingxuPalette extends ThemeExtension<QingxuPalette> {
   }
 }
 
-abstract final class QingxuMotion {
+abstract final class TempoMotion {
   static const quick = Duration(milliseconds: 140);
   static const standard = Duration(milliseconds: 220);
   static const emphasized = Duration(milliseconds: 360);
   static const curve = Curves.easeOutCubic;
 }
 
-abstract final class QingxuLayout {
+abstract final class TempoLayout {
   static const mobileGutter = 20.0;
   static const desktopGutter = 48.0;
   static const contentMaxWidth = 840.0;
@@ -153,8 +153,8 @@ abstract final class QingxuLayout {
       width < 700 ? mobileGutter : desktopGutter;
 }
 
-class QingxuPageHeader extends StatelessWidget {
-  const QingxuPageHeader({
+class TempoPageHeader extends StatelessWidget {
+  const TempoPageHeader({
     required this.title,
     required this.subtitle,
     this.leading,
@@ -170,9 +170,9 @@ class QingxuPageHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
-      final palette = QingxuPalette.of(context);
-      final gutter = QingxuLayout.gutterFor(constraints.maxWidth);
-      final desktop = qingxuIsDesktop && constraints.maxWidth >= 760;
+      final palette = TempoPalette.of(context);
+      final gutter = TempoLayout.gutterFor(constraints.maxWidth);
+      final desktop = tempoIsDesktop && constraints.maxWidth >= 760;
       final android =
           !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
       return Padding(
@@ -226,11 +226,11 @@ class QingxuPageHeader extends StatelessWidget {
   );
 }
 
-class QingxuSurface extends StatelessWidget {
-  const QingxuSurface({
+class TempoSurface extends StatelessWidget {
+  const TempoSurface({
     required this.child,
     this.padding = EdgeInsets.zero,
-    this.radius = QingxuLayout.sectionRadius,
+    this.radius = TempoLayout.sectionRadius,
     super.key,
   });
 
@@ -240,7 +240,7 @@ class QingxuSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final dark = Theme.of(context).brightness == Brightness.dark;
     final android =
         !kIsWeb && defaultTargetPlatform == TargetPlatform.android;

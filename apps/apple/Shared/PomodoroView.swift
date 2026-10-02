@@ -13,7 +13,7 @@ struct PomodoroScreen: View {
   @Environment(\.openURL) private var openURL
   @State private var presentedSheet: PomodoroSheet?
   @State private var selectedTaskID: String?
-  @AppStorage(QingxuPreferenceKey.completionSound) private var completionSoundEnabled = false
+  @AppStorage(TempoPreferenceKey.completionSound) private var completionSoundEnabled = false
 
   private var selectedTask: TaskItem? {
     store.todayTasks.first { $0.id == selectedTaskID }
@@ -55,20 +55,20 @@ struct PomodoroScreen: View {
               .lineLimit(1)
             Image(systemName: "chevron.right")
               .font(.caption.weight(.semibold))
-              .foregroundStyle(QingxuPalette.quiet)
+              .foregroundStyle(TempoPalette.quiet)
           }
-          .foregroundStyle(QingxuPalette.ink)
+          .foregroundStyle(TempoPalette.ink)
         }
         .buttonStyle(.plain)
         .padding(.bottom, 28)
 
         ZStack {
           Circle()
-            .stroke(QingxuPalette.separator.opacity(0.72), lineWidth: 6)
+            .stroke(TempoPalette.separator.opacity(0.72), lineWidth: 6)
           Circle()
             .trim(from: 0, to: min(1, max(0, progress)))
             .stroke(
-              QingxuPalette.actionGradient,
+              TempoPalette.actionGradient,
               style: StrokeStyle(lineWidth: 6, lineCap: .round)
             )
             .rotationEffect(.degrees(-90))
@@ -78,7 +78,7 @@ struct PomodoroScreen: View {
           if store.pomodoro.status == .paused {
             Text("已暂停")
               .font(.subheadline)
-              .foregroundStyle(QingxuPalette.quiet)
+              .foregroundStyle(TempoPalette.quiet)
               .offset(y: 48)
           }
         }
@@ -96,8 +96,8 @@ struct PomodoroScreen: View {
             Text("开始")
               .font(.headline)
               .frame(width: 148, height: 54)
-              .foregroundStyle(QingxuPalette.onAccent)
-              .background(QingxuPalette.actionGradient, in: Capsule())
+              .foregroundStyle(TempoPalette.onAccent)
+              .background(TempoPalette.actionGradient, in: Capsule())
           }
           .buttonStyle(.plain)
         } else {
@@ -105,10 +105,10 @@ struct PomodoroScreen: View {
             Button { completionSoundEnabled.toggle() } label: {
               Image(systemName: completionSoundEnabled ? "speaker.wave.2" : "speaker.slash")
                 .font(.system(size: 20, weight: .medium))
-                .foregroundStyle(QingxuPalette.quiet)
+                .foregroundStyle(TempoPalette.quiet)
                 .frame(width: 52, height: 52)
-                .background(QingxuPalette.surface, in: Circle())
-                .overlay(Circle().stroke(QingxuPalette.separator, lineWidth: 1))
+                .background(TempoPalette.surface, in: Circle())
+                .overlay(Circle().stroke(TempoPalette.separator, lineWidth: 1))
             }
             .buttonStyle(.plain)
             .accessibilityLabel(completionSoundEnabled ? "关闭结束提示音" : "开启结束提示音")
@@ -116,9 +116,9 @@ struct PomodoroScreen: View {
             Button(action: store.togglePomodoro) {
               Image(systemName: store.pomodoro.status == .running ? "pause.fill" : "play.fill")
                 .font(.system(size: 26, weight: .semibold))
-                .foregroundStyle(QingxuPalette.onAccent)
+                .foregroundStyle(TempoPalette.onAccent)
                 .frame(width: 72, height: 72)
-                .background(QingxuPalette.actionGradient, in: Circle())
+                .background(TempoPalette.actionGradient, in: Circle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel(store.pomodoro.status == .running ? "暂停" : "继续")
@@ -126,10 +126,10 @@ struct PomodoroScreen: View {
             Button(action: store.stopPomodoro) {
               Image(systemName: "stop.fill")
                 .font(.system(size: 19, weight: .semibold))
-                .foregroundStyle(QingxuPalette.quiet)
+                .foregroundStyle(TempoPalette.quiet)
                 .frame(width: 52, height: 52)
-                .background(QingxuPalette.surface, in: Circle())
-                .overlay(Circle().stroke(QingxuPalette.separator, lineWidth: 1))
+                .background(TempoPalette.surface, in: Circle())
+                .overlay(Circle().stroke(TempoPalette.separator, lineWidth: 1))
             }
             .buttonStyle(.plain)
             .accessibilityLabel("停止并记录")
@@ -140,7 +140,7 @@ struct PomodoroScreen: View {
           Button(action: store.resetPomodoro) {
             Image(systemName: "arrow.counterclockwise")
               .frame(width: 48, height: 48)
-              .background(QingxuPalette.surface, in: Circle())
+              .background(TempoPalette.surface, in: Circle())
           }
           .buttonStyle(.plain)
           .accessibilityLabel("重置")
@@ -149,15 +149,15 @@ struct PomodoroScreen: View {
             Text(store.pomodoro.status == .running ? "暂停" : "开始")
               .font(.headline)
               .frame(width: 148, height: 52)
-              .foregroundStyle(QingxuPalette.onAccent)
-              .background(QingxuPalette.actionGradient, in: Capsule())
+              .foregroundStyle(TempoPalette.onAccent)
+              .background(TempoPalette.actionGradient, in: Capsule())
           }
           .buttonStyle(.plain)
 
           Button { presentedSheet = .task } label: {
             Image(systemName: selectedTask == nil ? "checklist" : "checkmark.circle.fill")
               .frame(width: 48, height: 48)
-              .background(QingxuPalette.surface, in: Circle())
+              .background(TempoPalette.surface, in: Circle())
           }
           .buttonStyle(.plain)
           .accessibilityLabel("选择专注任务")
@@ -168,8 +168,8 @@ struct PomodoroScreen: View {
         }
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)
-      .background(QingxuPalette.canvasGradient.ignoresSafeArea())
-      .tint(QingxuPalette.accent)
+      .background(TempoPalette.canvasGradient.ignoresSafeArea())
+      .tint(TempoPalette.accent)
       #if os(iOS)
       .navigationTitle("")
       .navigationBarTitleDisplayMode(.inline)
@@ -308,7 +308,7 @@ private struct FocusStatisticsSheet: View {
         .padding(.horizontal, 20)
         .padding(.bottom, 36)
       }
-      .qingxuScreen()
+      .tempoScreen()
       .navigationTitle("专注统计")
       #if os(iOS)
       .navigationBarTitleDisplayMode(.inline)
@@ -344,11 +344,11 @@ private struct FocusStatisticsSheet: View {
   private var recentRecords: some View {
     VStack(alignment: .leading, spacing: 14) {
       HStack {
-        Text("专注记录").font(QingxuType.sectionTitle)
+        Text("专注记录").font(TempoType.sectionTitle)
         Spacer()
         Text("最近 \(min(records.count, 6)) 次")
-          .font(QingxuType.metadata)
-          .foregroundStyle(QingxuPalette.quiet)
+          .font(TempoType.metadata)
+          .foregroundStyle(TempoPalette.quiet)
       }
       if records.isEmpty {
         FocusEmptyStat(message: "完成一次专注后，这里会留下记录")
@@ -356,18 +356,18 @@ private struct FocusStatisticsSheet: View {
         ForEach(Array(records.prefix(6))) { record in
           HStack(spacing: 12) {
             Image(systemName: record.completed ? "checkmark.circle.fill" : "circle.lefthalf.filled")
-              .foregroundStyle(QingxuPalette.ink)
+              .foregroundStyle(TempoPalette.ink)
             VStack(alignment: .leading, spacing: 3) {
               Text(record.endedAt.formatted(date: .abbreviated, time: .omitted))
                 .font(.subheadline.weight(.medium))
               Text(record.startedAt.formatted(date: .omitted, time: .shortened) + " – " + record.endedAt.formatted(date: .omitted, time: .shortened))
-                .font(QingxuType.metadata)
-                .foregroundStyle(QingxuPalette.quiet)
+                .font(TempoType.metadata)
+                .foregroundStyle(TempoPalette.quiet)
             }
             Spacer()
             Text(durationText(record.durationSeconds))
               .font(.subheadline.monospacedDigit())
-              .foregroundStyle(QingxuPalette.quiet)
+              .foregroundStyle(TempoPalette.quiet)
           }
         }
       }
@@ -377,7 +377,7 @@ private struct FocusStatisticsSheet: View {
 
   private var trendSection: some View {
     VStack(alignment: .leading, spacing: 16) {
-      Text("专注趋势").font(QingxuType.sectionTitle)
+      Text("专注趋势").font(TempoType.sectionTitle)
       Picker("统计范围", selection: $range) {
         ForEach(FocusStatisticsRange.allCases) { item in
           Text(item.title).tag(item)
@@ -398,11 +398,11 @@ private struct FocusStatisticsSheet: View {
   private var heatmapSection: some View {
     VStack(alignment: .leading, spacing: 16) {
       HStack {
-        Text("年度专注").font(QingxuType.sectionTitle)
+        Text("年度专注").font(TempoType.sectionTitle)
         Spacer()
         Text("过去 52 周")
-          .font(QingxuType.metadata)
-          .foregroundStyle(QingxuPalette.quiet)
+          .font(TempoType.metadata)
+          .foregroundStyle(TempoPalette.quiet)
       }
       if records.isEmpty {
         FocusEmptyStat(message: "暂无年度数据")
@@ -418,7 +418,7 @@ private struct FocusStatisticsSheet: View {
           Text("多")
         }
         .font(.caption2)
-        .foregroundStyle(QingxuPalette.quiet)
+        .foregroundStyle(TempoPalette.quiet)
         .frame(maxWidth: .infinity, alignment: .trailing)
       }
     }
@@ -467,10 +467,10 @@ private struct FocusMetricCard: View {
     VStack(alignment: .leading, spacing: 14) {
       Text(title)
         .font(.subheadline.weight(.medium))
-        .foregroundStyle(QingxuPalette.quiet)
+        .foregroundStyle(TempoPalette.quiet)
       Text(value)
         .font(.system(size: 28, weight: .semibold, design: .rounded).monospacedDigit())
-        .foregroundStyle(QingxuPalette.accent)
+        .foregroundStyle(TempoPalette.accent)
     }
     .frame(maxWidth: .infinity, alignment: .leading)
     .focusStatCard()
@@ -482,7 +482,7 @@ private struct FocusEmptyStat: View {
   var body: some View {
     Text(message)
       .font(.subheadline)
-      .foregroundStyle(QingxuPalette.quiet)
+      .foregroundStyle(TempoPalette.quiet)
       .frame(maxWidth: .infinity, minHeight: 72)
   }
 }
@@ -496,7 +496,7 @@ private struct FocusBarChart: View {
       HStack(alignment: .bottom, spacing: values.count > 40 ? 2 : 7) {
         ForEach(Array(values.enumerated()), id: \.offset) { _, value in
           Capsule()
-            .fill(value > 0 ? QingxuPalette.accent : QingxuPalette.accent.opacity(0.10))
+            .fill(value > 0 ? TempoPalette.accent : TempoPalette.accent.opacity(0.10))
             .frame(height: max(4, proxy.size.height * value / peak))
         }
       }
@@ -548,11 +548,11 @@ private struct FocusHeatmap: View {
 
   static func legendColor(level: Int) -> Color {
     switch level {
-    case 1: QingxuPalette.accent.opacity(0.22)
-    case 2: QingxuPalette.accent.opacity(0.42)
-    case 3: QingxuPalette.accent.opacity(0.68)
-    case 4: QingxuPalette.accent
-    default: QingxuPalette.accent.opacity(0.08)
+    case 1: TempoPalette.accent.opacity(0.22)
+    case 2: TempoPalette.accent.opacity(0.42)
+    case 3: TempoPalette.accent.opacity(0.68)
+    case 4: TempoPalette.accent
+    default: TempoPalette.accent.opacity(0.08)
     }
   }
 }
@@ -561,7 +561,7 @@ private extension View {
   func focusStatCard() -> some View {
     self
       .padding(18)
-      .background(QingxuPalette.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+      .background(TempoPalette.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
   }
 }
 
@@ -583,7 +583,7 @@ private struct PomodoroTaskPicker: View {
             if selection == nil { Image(systemName: "checkmark") }
           }
         }
-        .foregroundStyle(QingxuPalette.ink)
+        .foregroundStyle(TempoPalette.ink)
 
         ForEach(store.todayTasks) { task in
           Button {
@@ -594,14 +594,14 @@ private struct PomodoroTaskPicker: View {
               Text(task.title).lineLimit(1)
               Spacer()
               if selection == task.id {
-                Image(systemName: "checkmark").foregroundStyle(QingxuPalette.accent)
+                Image(systemName: "checkmark").foregroundStyle(TempoPalette.accent)
               }
             }
           }
-          .foregroundStyle(QingxuPalette.ink)
+          .foregroundStyle(TempoPalette.ink)
         }
       }
-      .qingxuScreen()
+      .tempoScreen()
       .navigationTitle("选择任务")
       #if os(iOS)
       .navigationBarTitleDisplayMode(.inline)
@@ -619,7 +619,7 @@ private struct PomodoroTaskPicker: View {
             Text("今天没有任务")
               .font(.subheadline.weight(.medium))
           }
-          .foregroundStyle(QingxuPalette.quiet)
+          .foregroundStyle(TempoPalette.quiet)
             .allowsHitTesting(false)
         }
       }
@@ -655,10 +655,10 @@ private struct DurationSettingsSheet: View {
           Stepper("完成 \(dailyFocusGoal) 个番茄", value: $dailyFocusGoal, in: 1...24)
           Text("目标和完成进度会同步到安卓，并显示在灵动岛与专注统计中。")
             .font(.footnote)
-            .foregroundStyle(QingxuPalette.quiet)
+            .foregroundStyle(TempoPalette.quiet)
         }
       }
-      .qingxuScreen()
+      .tempoScreen()
       .navigationTitle("自定义时长")
       #if os(iOS)
       .navigationBarTitleDisplayMode(.inline)

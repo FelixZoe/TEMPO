@@ -5,7 +5,7 @@ import UIKit
 
 private extension View {
   @ViewBuilder
-  func qingxuSettingsDestination() -> some View {
+  func tempoSettingsDestination() -> some View {
     #if os(iOS)
     background {
       SettingsTabBarTransitionBridge()
@@ -142,7 +142,7 @@ struct SettingsScreen: View {
       ScrollView {
         LazyVStack(spacing: 24) {
           SettingsHomeGroup(title: "工作台") {
-            NavigationLink { FeatureModulesSettingsView().qingxuSettingsDestination() } label: {
+            NavigationLink { FeatureModulesSettingsView().tempoSettingsDestination() } label: {
               SettingsHomeRow(
                 symbol: "rectangle.3.group",
                 title: "导航与模块",
@@ -152,7 +152,7 @@ struct SettingsScreen: View {
             }
             SettingsDivider()
             #if os(iOS)
-            NavigationLink { NotificationAndFeedbackSettingsView().qingxuSettingsDestination() } label: {
+            NavigationLink { NotificationAndFeedbackSettingsView().tempoSettingsDestination() } label: {
               SettingsHomeRow(
                 symbol: "bell.badge",
                 title: "声音与提醒",
@@ -162,7 +162,7 @@ struct SettingsScreen: View {
             }
             SettingsDivider()
             #endif
-            NavigationLink { CalendarPreferencesView().qingxuSettingsDestination() } label: {
+            NavigationLink { CalendarPreferencesView().tempoSettingsDestination() } label: {
               SettingsHomeRow(
                 symbol: "calendar",
                 title: "日历与日期",
@@ -173,7 +173,7 @@ struct SettingsScreen: View {
           }
 
           SettingsHomeGroup(title: "服务") {
-            NavigationLink { SyncSettingsView().environmentObject(store).qingxuSettingsDestination() } label: {
+            NavigationLink { SyncSettingsView().environmentObject(store).tempoSettingsDestination() } label: {
               SettingsHomeRow(
                 symbol: "arrow.triangle.2.circlepath",
                 title: "自托管同步",
@@ -182,7 +182,7 @@ struct SettingsScreen: View {
               )
             }
             SettingsDivider()
-            NavigationLink { AmbientSettingsView().qingxuSettingsDestination() } label: {
+            NavigationLink { AmbientSettingsView().tempoSettingsDestination() } label: {
               SettingsHomeRow(
                 symbol: "cloud.sun",
                 title: "天气与每日一句",
@@ -191,7 +191,7 @@ struct SettingsScreen: View {
               )
             }
             SettingsDivider()
-            NavigationLink { AISettingsView().environmentObject(store).qingxuSettingsDestination() } label: {
+            NavigationLink { AISettingsView().environmentObject(store).tempoSettingsDestination() } label: {
               SettingsHomeRow(
                 symbol: "sparkles",
                 title: "AI 助手",
@@ -201,7 +201,7 @@ struct SettingsScreen: View {
             }
             #if os(iOS)
             SettingsDivider()
-            NavigationLink { AppUpdateSettingsView().environmentObject(updateChecker).qingxuSettingsDestination() } label: {
+            NavigationLink { AppUpdateSettingsView().environmentObject(updateChecker).tempoSettingsDestination() } label: {
               SettingsHomeRow(
                 symbol: "arrow.down.circle",
                 title: "软件更新",
@@ -228,7 +228,7 @@ struct SettingsScreen: View {
         .padding(.top, 14)
         .padding(.bottom, 108)
       }
-      .qingxuScreen()
+      .tempoScreen()
       .navigationTitle("设置")
       #if os(iOS)
       .navigationBarTitleDisplayMode(.inline)
@@ -262,7 +262,7 @@ struct SettingsScreen: View {
   }
 
   private var ambientDetail: String {
-    let preferences = QingxuAmbientPreferencesStore.load()
+    let preferences = TempoAmbientPreferencesStore.load()
     if preferences.weatherConfigured { return preferences.cityName.isEmpty ? "已配置" : preferences.cityName }
     return preferences.quoteEnabled ? "每日一句已开启" : "未配置"
   }
@@ -281,14 +281,14 @@ private struct SettingsHomeGroup<Content: View>: View {
     VStack(alignment: .leading, spacing: 10) {
       Text(title)
         .font(.caption.weight(.semibold))
-        .foregroundStyle(QingxuPalette.quiet)
+        .foregroundStyle(TempoPalette.quiet)
         .padding(.leading, 10)
 
       VStack(spacing: 0) { content }
-        .background(QingxuPalette.surface, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .background(TempoPalette.surface, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
         .overlay {
           RoundedRectangle(cornerRadius: 24, style: .continuous)
-            .stroke(QingxuPalette.separator.opacity(0.34), lineWidth: 0.6)
+            .stroke(TempoPalette.separator.opacity(0.34), lineWidth: 0.6)
         }
     }
   }
@@ -299,7 +299,7 @@ private struct SettingsHomeRow: View {
   let title: String
   let value: String
   var accessorySymbol = "chevron.right"
-  var iconTint = QingxuPalette.accent
+  var iconTint = TempoPalette.accent
 
   var body: some View {
     HStack(spacing: 14) {
@@ -315,7 +315,7 @@ private struct SettingsHomeRow: View {
 
       Text(title)
         .font(.body.weight(.medium))
-        .foregroundStyle(QingxuPalette.ink)
+        .foregroundStyle(TempoPalette.ink)
         .lineLimit(1)
 
       Spacer(minLength: 10)
@@ -323,13 +323,13 @@ private struct SettingsHomeRow: View {
       if !value.isEmpty {
         Text(value)
           .font(.subheadline)
-          .foregroundStyle(QingxuPalette.quiet)
+          .foregroundStyle(TempoPalette.quiet)
           .lineLimit(1)
       }
 
       Image(systemName: accessorySymbol)
         .font(.caption.weight(.semibold))
-        .foregroundStyle(QingxuPalette.faint)
+        .foregroundStyle(TempoPalette.faint)
     }
     .padding(.horizontal, 16)
     .frame(minHeight: 66)
@@ -350,51 +350,51 @@ private struct AppUpdateSettingsView: View {
             VStack(alignment: .leading, spacing: 5) {
               Text("Tempo").font(.title2.weight(.semibold))
               Text("v\(updateChecker.currentVersion) · 构建 \(updateChecker.currentBuild)")
-                .font(.subheadline).foregroundStyle(QingxuPalette.quiet)
+                .font(.subheadline).foregroundStyle(TempoPalette.quiet)
             }
             Spacer()
             Image(systemName: "checkmark.seal")
-              .font(.title2).foregroundStyle(QingxuPalette.accent)
+              .font(.title2).foregroundStyle(TempoPalette.accent)
           }
           updateStatus
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(QingxuPalette.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .background(TempoPalette.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
 
         if let release = updateChecker.availableRelease {
           VStack(alignment: .leading, spacing: 12) {
             Text("v\(release.version) 更新内容").font(.headline)
             if !release.body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
               Text(release.body)
-                .font(.subheadline).foregroundStyle(QingxuPalette.quiet)
+                .font(.subheadline).foregroundStyle(TempoPalette.quiet)
                 .textSelection(.enabled)
             }
           }
           .padding(20)
           .frame(maxWidth: .infinity, alignment: .leading)
-          .background(QingxuPalette.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+          .background(TempoPalette.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
         }
 
         Button { Task { await checkAndOpenIfNeeded() } } label: {
           HStack(spacing: 10) {
-            if isChecking { ProgressView().tint(QingxuPalette.onAccent) }
+            if isChecking { ProgressView().tint(TempoPalette.onAccent) }
             Text(updateChecker.availableRelease == nil ? "检查更新" : "下载并覆盖安装")
               .font(.body.weight(.semibold))
           }
-          .foregroundStyle(QingxuPalette.onAccent)
+          .foregroundStyle(TempoPalette.onAccent)
           .frame(maxWidth: .infinity).frame(height: 52)
-          .background(QingxuPalette.accent, in: Capsule())
+          .background(TempoPalette.accent, in: Capsule())
         }
         .buttonStyle(.plain).disabled(isChecking)
 
         Text("覆盖安装需保持应用标识与签名身份一致。下载后直接用同一 Apple ID 或证书重新签名安装，任务和本机设置会保留。")
-          .font(.footnote).foregroundStyle(QingxuPalette.quiet)
+          .font(.footnote).foregroundStyle(TempoPalette.quiet)
           .frame(maxWidth: .infinity, alignment: .leading)
       }
       .padding(18).padding(.bottom, 80)
     }
-    .qingxuScreen()
+    .tempoScreen()
     .navigationTitle("软件更新")
     .navigationBarTitleDisplayMode(.inline)
     .task { await updateChecker.check() }
@@ -409,13 +409,13 @@ private struct AppUpdateSettingsView: View {
       Label("正在连接 GitHub", systemImage: "network")
     case .current:
       Label("当前已经是最新版本", systemImage: "checkmark.circle.fill")
-        .foregroundStyle(QingxuPalette.success)
+        .foregroundStyle(TempoPalette.success)
     case .available(let release):
       Label("发现新版本 v\(release.version)", systemImage: "arrow.down.circle.fill")
-        .foregroundStyle(QingxuPalette.accent)
+        .foregroundStyle(TempoPalette.accent)
     case .failed(let message):
       Label(message, systemImage: "exclamationmark.triangle.fill")
-        .foregroundStyle(QingxuPalette.danger)
+        .foregroundStyle(TempoPalette.danger)
     }
   }
 
@@ -426,7 +426,7 @@ private struct AppUpdateSettingsView: View {
 
   @MainActor
   private func checkAndOpenIfNeeded() async {
-    let release: QingxuRelease?
+    let release: TempoRelease?
     if let available = updateChecker.availableRelease {
       release = available
     } else {
@@ -451,14 +451,14 @@ private struct SettingsGroup<Content: View>: View {
     VStack(alignment: .leading, spacing: 9) {
       Text(title)
         .font(.subheadline.weight(.semibold))
-        .foregroundStyle(QingxuPalette.quiet)
+        .foregroundStyle(TempoPalette.quiet)
         .padding(.leading, 7)
 
       VStack(spacing: 0) { content }
-        .background(QingxuPalette.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .background(TempoPalette.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
         .overlay {
           RoundedRectangle(cornerRadius: 22, style: .continuous)
-            .stroke(QingxuPalette.separator.opacity(0.65), lineWidth: 0.6)
+            .stroke(TempoPalette.separator.opacity(0.65), lineWidth: 0.6)
         }
     }
   }
@@ -466,7 +466,7 @@ private struct SettingsGroup<Content: View>: View {
 
 private struct SettingsDivider: View {
   var body: some View {
-    Divider().overlay(QingxuPalette.separator).padding(.leading, 64)
+    Divider().overlay(TempoPalette.separator).padding(.leading, 64)
   }
 }
 
@@ -483,11 +483,11 @@ private struct SettingsDestinationRow: View {
       VStack(alignment: .leading, spacing: 3) {
         Text(title)
           .font(.body.weight(.medium))
-          .foregroundStyle(QingxuPalette.ink)
+          .foregroundStyle(TempoPalette.ink)
         if !detail.isEmpty {
           Text(detail)
             .font(.caption)
-            .foregroundStyle(QingxuPalette.quiet)
+            .foregroundStyle(TempoPalette.quiet)
             .lineLimit(1)
         }
       }
@@ -506,9 +506,9 @@ private struct SettingsValueRow: View {
 
   var body: some View {
     HStack {
-      Text(title).foregroundStyle(QingxuPalette.ink)
+      Text(title).foregroundStyle(TempoPalette.ink)
       Spacer()
-      Text(value).foregroundStyle(QingxuPalette.quiet).monospacedDigit()
+      Text(value).foregroundStyle(TempoPalette.quiet).monospacedDigit()
     }
     .padding(.horizontal, 18)
     .frame(minHeight: 54)
@@ -526,11 +526,11 @@ private struct PreferenceToggleRow: View {
     HStack(spacing: 14) {
       SettingsRowGlyph(symbol: symbol)
       VStack(alignment: .leading, spacing: 3) {
-        Text(title).font(.body.weight(.medium)).foregroundStyle(QingxuPalette.ink)
-        Text(detail).font(.caption).foregroundStyle(QingxuPalette.quiet)
+        Text(title).font(.body.weight(.medium)).foregroundStyle(TempoPalette.ink)
+        Text(detail).font(.caption).foregroundStyle(TempoPalette.quiet)
       }
       Spacer(minLength: 8)
-      Toggle("", isOn: $isOn).labelsHidden().tint(QingxuPalette.accent)
+      Toggle("", isOn: $isOn).labelsHidden().tint(TempoPalette.accent)
     }
     .padding(.horizontal, 16)
     .frame(minHeight: 72)
@@ -544,14 +544,14 @@ private struct SettingsRowGlyph: View {
     Image(systemName: symbol)
       .resizable()
       .scaledToFit()
-    .foregroundStyle(QingxuPalette.ink)
+    .foregroundStyle(TempoPalette.ink)
     .frame(width: 22, height: 22)
     .frame(width: 36, height: 36)
   }
 }
 
 private struct FeatureModulesSettingsView: View {
-  @AppStorage(QingxuPreferenceKey.moduleOrder) private var moduleOrder = QingxuModuleOrder.defaultValue
+  @AppStorage(TempoPreferenceKey.moduleOrder) private var moduleOrder = TempoModuleOrder.defaultValue
   @State private var orderedTabs = AppTab.allCases
   #if os(iOS)
   @State private var editMode = EditMode.active
@@ -565,7 +565,7 @@ private struct FeatureModulesSettingsView: View {
             SettingsRowGlyph(symbol: tab.symbol)
             VStack(alignment: .leading, spacing: 3) {
               Text(tab.title).font(.body.weight(.medium))
-              Text(moduleDetail(tab)).font(.caption).foregroundStyle(QingxuPalette.quiet)
+              Text(moduleDetail(tab)).font(.caption).foregroundStyle(TempoPalette.quiet)
             }
           }
           .padding(.vertical, 5)
@@ -577,7 +577,7 @@ private struct FeatureModulesSettingsView: View {
         Text("收集箱、今天、番茄钟、RSS 与设置始终作为五个独立入口显示，不会合并到“更多”页面。")
       }
     }
-    .qingxuScreen()
+    .tempoScreen()
     .navigationTitle("导航顺序")
     .onAppear(perform: reloadOrder)
     .onDisappear(perform: persistOrder)
@@ -592,11 +592,11 @@ private struct FeatureModulesSettingsView: View {
   }
 
   private func reloadOrder() {
-    orderedTabs = QingxuModuleOrder.decode(moduleOrder)
+    orderedTabs = TempoModuleOrder.decode(moduleOrder)
   }
 
   private func persistOrder() {
-    let normalizedValue = QingxuModuleOrder.encode(orderedTabs)
+    let normalizedValue = TempoModuleOrder.encode(orderedTabs)
     if moduleOrder != normalizedValue {
       moduleOrder = normalizedValue
     }
@@ -615,10 +615,10 @@ private struct FeatureModulesSettingsView: View {
 
 #if os(iOS)
 private struct NotificationAndFeedbackSettingsView: View {
-  @AppStorage(QingxuPreferenceKey.haptics) private var hapticsEnabled = true
-  @AppStorage(QingxuPreferenceKey.completionSound) private var completionSoundEnabled = false
-  @AppStorage(QingxuPreferenceKey.dailyReminder) private var dailyReminderEnabled = false
-  @AppStorage(QingxuPreferenceKey.dailyReminderMinutes) private var reminderMinutes = 9 * 60
+  @AppStorage(TempoPreferenceKey.haptics) private var hapticsEnabled = true
+  @AppStorage(TempoPreferenceKey.completionSound) private var completionSoundEnabled = false
+  @AppStorage(TempoPreferenceKey.dailyReminder) private var dailyReminderEnabled = false
+  @AppStorage(TempoPreferenceKey.dailyReminderMinutes) private var reminderMinutes = 9 * 60
   @State private var reminderMessage = ""
 
   var body: some View {
@@ -627,20 +627,20 @@ private struct NotificationAndFeedbackSettingsView: View {
         SettingsGroup(title: "完成反馈") {
           PreferenceToggleRow(
             symbol: "hand.tap.fill", title: "完成任务时触感", detail: "勾选任务时给出轻柔反馈",
-            tint: QingxuPalette.accent, isOn: $hapticsEnabled
+            tint: TempoPalette.accent, isOn: $hapticsEnabled
           )
           SettingsDivider()
           PreferenceToggleRow(
             symbol: "speaker.wave.2.fill", title: "完成提示音", detail: "完成任务时播放简短声音",
-            tint: QingxuPalette.success, isOn: $completionSoundEnabled
+            tint: TempoPalette.success, isOn: $completionSoundEnabled
           )
 
           Button {
-            QingxuFeedback.taskCompletion(haptics: hapticsEnabled, sound: completionSoundEnabled)
+            TempoFeedback.taskCompletion(haptics: hapticsEnabled, sound: completionSoundEnabled)
           } label: {
             Text("测试完成反馈")
               .font(.subheadline.weight(.semibold))
-              .foregroundStyle(QingxuPalette.accent)
+              .foregroundStyle(TempoPalette.accent)
               .frame(maxWidth: .infinity)
               .frame(height: 48)
           }
@@ -650,7 +650,7 @@ private struct NotificationAndFeedbackSettingsView: View {
         SettingsGroup(title: "每日提醒") {
           PreferenceToggleRow(
             symbol: "bell.badge.fill", title: "提醒查看今日任务", detail: "每天一次，不会持续打扰",
-            tint: QingxuPalette.warning,
+            tint: TempoPalette.warning,
             isOn: Binding(
               get: { dailyReminderEnabled },
               set: { value in
@@ -672,7 +672,7 @@ private struct NotificationAndFeedbackSettingsView: View {
         if !reminderMessage.isEmpty {
           Text(reminderMessage)
             .font(.footnote)
-            .foregroundStyle(QingxuPalette.quiet)
+            .foregroundStyle(TempoPalette.quiet)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 7)
         }
@@ -680,7 +680,7 @@ private struct NotificationAndFeedbackSettingsView: View {
       .padding(18)
       .padding(.bottom, 80)
     }
-    .qingxuScreen()
+    .tempoScreen()
     .navigationTitle("声音、提醒与触感")
     .navigationBarTitleDisplayMode(.inline)
   }
@@ -705,7 +705,7 @@ private struct NotificationAndFeedbackSettingsView: View {
   private func updateReminder() {
     Task {
       do {
-        let enabled = try await QingxuDailyReminder.update(
+        let enabled = try await TempoDailyReminder.update(
           enabled: dailyReminderEnabled,
           minutesAfterMidnight: reminderMinutes
         )
@@ -725,9 +725,9 @@ private struct NotificationAndFeedbackSettingsView: View {
 #endif
 
 private struct CalendarPreferencesView: View {
-  @AppStorage(QingxuPreferenceKey.weekStartsMonday) private var weekStartsMonday = true
-  @AppStorage(QingxuPreferenceKey.showFestivals) private var showFestivals = true
-  @AppStorage(QingxuPreferenceKey.showTaskIndicators) private var showTaskIndicators = true
+  @AppStorage(TempoPreferenceKey.weekStartsMonday) private var weekStartsMonday = true
+  @AppStorage(TempoPreferenceKey.showFestivals) private var showFestivals = true
+  @AppStorage(TempoPreferenceKey.showTaskIndicators) private var showTaskIndicators = true
 
   var body: some View {
     ScrollView {
@@ -735,30 +735,30 @@ private struct CalendarPreferencesView: View {
         SettingsGroup(title: "星期") {
           PreferenceToggleRow(
             symbol: "calendar", title: "星期一作为一周开始", detail: weekStartsMonday ? "当前从星期一开始" : "当前从星期日开始",
-            tint: QingxuPalette.accent, isOn: $weekStartsMonday
+            tint: TempoPalette.accent, isOn: $weekStartsMonday
           )
         }
         SettingsGroup(title: "日历内容") {
           PreferenceToggleRow(
             symbol: "sparkles", title: "显示节日", detail: "在日期下方显示常用节日",
-            tint: QingxuPalette.success, isOn: $showFestivals
+            tint: TempoPalette.success, isOn: $showFestivals
           )
           SettingsDivider()
           PreferenceToggleRow(
             symbol: "circle.fill", title: "显示任务标记", detail: "有任务的日期显示小圆点",
-            tint: QingxuPalette.warning, isOn: $showTaskIndicators
+            tint: TempoPalette.warning, isOn: $showTaskIndicators
           )
         }
         Text("节日数据随应用提供，不需要连接第三方接口，也不会读取你的系统日历。")
           .font(.footnote)
-          .foregroundStyle(QingxuPalette.quiet)
+          .foregroundStyle(TempoPalette.quiet)
           .frame(maxWidth: .infinity, alignment: .leading)
           .padding(.horizontal, 7)
       }
       .padding(18)
       .padding(.bottom, 80)
     }
-    .qingxuScreen()
+    .tempoScreen()
     .navigationTitle("日期与日历")
     #if os(iOS)
     .navigationBarTitleDisplayMode(.inline)
@@ -784,10 +784,10 @@ struct SyncSettingsView: View {
               .fill(statusColor).frame(width: 9, height: 9)
           }
           Text("保存后会立即拉取远端数据，并持续监听其他设备的变化。")
-            .font(.subheadline).foregroundStyle(QingxuPalette.quiet)
+            .font(.subheadline).foregroundStyle(TempoPalette.quiet)
         }
         .padding(20).frame(maxWidth: .infinity, alignment: .leading)
-        .background(QingxuPalette.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .background(TempoPalette.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
 
         SettingsGroup(title: "连接信息") {
           AmbientFieldRow(title: "服务器") {
@@ -812,39 +812,39 @@ struct SyncSettingsView: View {
           SettingsDivider()
           PreferenceToggleRow(
             symbol: "bolt.horizontal.circle", title: "实时同步",
-            detail: "保持长连接，并在网络恢复后自动补传", tint: QingxuPalette.accent,
+            detail: "保持长连接，并在网络恢复后自动补传", tint: TempoPalette.accent,
             isOn: $draft.autoSync
           )
         }
 
         Button { Task { await connectSaveAndSync() } } label: {
           HStack(spacing: 10) {
-            if testing { ProgressView().tint(QingxuPalette.onAccent) }
+            if testing { ProgressView().tint(TempoPalette.onAccent) }
             Text(testing ? "正在验证并同步…" : "验证、保存并立即同步")
               .font(.body.weight(.semibold))
           }
-          .foregroundStyle(QingxuPalette.onAccent)
+          .foregroundStyle(TempoPalette.onAccent)
           .frame(maxWidth: .infinity).frame(height: 52)
-          .background(QingxuPalette.accent, in: Capsule())
+          .background(TempoPalette.accent, in: Capsule())
         }
         .buttonStyle(.plain)
         .disabled(testing || draft.validationMessage != nil)
 
         if let message {
-          Text(message).font(.footnote).foregroundStyle(message.contains("成功") ? QingxuPalette.success : QingxuPalette.danger)
+          Text(message).font(.footnote).foregroundStyle(message.contains("成功") ? TempoPalette.success : TempoPalette.danger)
             .frame(maxWidth: .infinity, alignment: .leading)
         } else if case .failed(let error) = store.syncPhase {
-          Text(error).font(.footnote).foregroundStyle(QingxuPalette.danger)
+          Text(error).font(.footnote).foregroundStyle(TempoPalette.danger)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
 
         Text("只填写服务器根地址，不要添加 /v1/sync。密钥仅存放在系统钥匙串；重装后重新填写同一地址和密钥，即会从服务器恢复任务与番茄钟状态。")
-          .font(.footnote).foregroundStyle(QingxuPalette.quiet)
+          .font(.footnote).foregroundStyle(TempoPalette.quiet)
           .frame(maxWidth: .infinity, alignment: .leading)
       }
       .padding(18).padding(.bottom, 80)
     }
-    .qingxuScreen()
+    .tempoScreen()
     .navigationTitle("自托管同步")
     .onAppear { draft = store.syncSettings }
   }
@@ -866,21 +866,21 @@ struct SyncSettingsView: View {
 
   private var statusColor: Color {
     switch store.syncPhase {
-    case .synced: QingxuPalette.success
-    case .syncing: QingxuPalette.accent
-    case .failed: QingxuPalette.danger
-    case .localOnly: QingxuPalette.faint
+    case .synced: TempoPalette.success
+    case .syncing: TempoPalette.accent
+    case .failed: TempoPalette.danger
+    case .localOnly: TempoPalette.faint
     }
   }
 }
 
 private struct AmbientSettingsView: View {
-  @State private var preferences = QingxuAmbientPreferencesStore.load()
+  @State private var preferences = TempoAmbientPreferencesStore.load()
   @State private var apiKey = SecureWeatherAPIKey.read()
   @State private var testing = false
   @State private var message = ""
-  @State private var preview: QingxuWeatherSnapshot?
-  @State private var quotePreview: QingxuQuoteSnapshot?
+  @State private var preview: TempoWeatherSnapshot?
+  @State private var quotePreview: TempoQuoteSnapshot?
 
   var body: some View {
     ScrollView {
@@ -888,12 +888,12 @@ private struct AmbientSettingsView: View {
         SettingsGroup(title: "收集箱顶部") {
           PreferenceToggleRow(
             symbol: "quote.opening", title: "每日一句", detail: "每天更新一次，轻点收集箱顶部可手动刷新",
-            tint: QingxuPalette.accent, isOn: $preferences.quoteEnabled
+            tint: TempoPalette.accent, isOn: $preferences.quoteEnabled
           )
           SettingsDivider()
           PreferenceToggleRow(
             symbol: "cloud.sun.fill", title: "天气", detail: "使用自己的和风天气开发凭据",
-            tint: QingxuPalette.accent, isOn: $preferences.weatherEnabled
+            tint: TempoPalette.accent, isOn: $preferences.weatherEnabled
           )
         }
 
@@ -935,14 +935,14 @@ private struct AmbientSettingsView: View {
             Task { await testWeather() }
           } label: {
             HStack(spacing: 10) {
-              if testing { ProgressView().tint(QingxuPalette.onAccent) }
+              if testing { ProgressView().tint(TempoPalette.onAccent) }
               Text(testing ? "正在连接…" : "测试天气连接")
                 .font(.body.weight(.semibold))
             }
-            .foregroundStyle(QingxuPalette.onAccent)
+            .foregroundStyle(TempoPalette.onAccent)
             .frame(maxWidth: .infinity)
             .frame(height: 52)
-            .background(QingxuPalette.actionGradient, in: Capsule())
+            .background(TempoPalette.actionGradient, in: Capsule())
           }
           .buttonStyle(.plain)
           .disabled(testing)
@@ -957,21 +957,21 @@ private struct AmbientSettingsView: View {
         if !message.isEmpty {
           Text(message)
             .font(.footnote)
-            .foregroundStyle(QingxuPalette.quiet)
+            .foregroundStyle(TempoPalette.quiet)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 7)
         }
 
         Text("和风天气需要在控制台创建项目并填写专属 API Host 与 Key。Location ID 默认是北京；每日一句由 Hitokoto 提供，不需要密钥。密钥只保存在系统钥匙串中。")
           .font(.footnote)
-          .foregroundStyle(QingxuPalette.quiet)
+          .foregroundStyle(TempoPalette.quiet)
           .frame(maxWidth: .infinity, alignment: .leading)
           .padding(.horizontal, 7)
       }
       .padding(18)
       .padding(.bottom, 80)
     }
-    .qingxuScreen()
+    .tempoScreen()
     .navigationTitle("天气与每日一句")
     #if os(iOS)
     .navigationBarTitleDisplayMode(.inline)
@@ -983,7 +983,7 @@ private struct AmbientSettingsView: View {
     }
     .task {
       if preferences.quoteEnabled {
-        quotePreview = try? await QingxuQuoteClient().fetch()
+        quotePreview = try? await TempoQuoteClient().fetch()
       }
     }
   }
@@ -991,7 +991,7 @@ private struct AmbientSettingsView: View {
   private func save() {
     do {
       try SecureWeatherAPIKey.write(apiKey)
-      try QingxuAmbientPreferencesStore.save(preferences)
+      try TempoAmbientPreferencesStore.save(preferences)
       message = "设置已保存，收集箱顶部会自动刷新。"
     } catch {
       message = "保存失败：\(error.localizedDescription)"
@@ -1003,7 +1003,7 @@ private struct AmbientSettingsView: View {
     testing = true
     defer { testing = false }
     do {
-      preview = try await QingxuWeatherClient().fetch(preferences: preferences, apiKey: apiKey)
+      preview = try await TempoWeatherClient().fetch(preferences: preferences, apiKey: apiKey)
       message = "连接成功：\(preview?.cityName ?? "") \(preview?.temperature ?? "")° \(preview?.text ?? "")"
     } catch {
       message = error.localizedDescription
@@ -1022,10 +1022,10 @@ private struct AmbientFieldRow<Content: View>: View {
 
   var body: some View {
     HStack(spacing: 16) {
-      Text(title).foregroundStyle(QingxuPalette.ink)
+      Text(title).foregroundStyle(TempoPalette.ink)
       Spacer(minLength: 12)
       content
-        .foregroundStyle(QingxuPalette.quiet)
+        .foregroundStyle(TempoPalette.quiet)
         .frame(maxWidth: 210)
     }
     .padding(.horizontal, 18)
@@ -1034,8 +1034,8 @@ private struct AmbientFieldRow<Content: View>: View {
 }
 
 private struct AmbientPreviewCard: View {
-  let weather: QingxuWeatherSnapshot?
-  let quote: QingxuQuoteSnapshot?
+  let weather: TempoWeatherSnapshot?
+  let quote: TempoQuoteSnapshot?
 
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
@@ -1050,18 +1050,18 @@ private struct AmbientPreviewCard: View {
       if let quote {
         Text("“\(quote.text)”")
           .font(.subheadline)
-          .foregroundStyle(QingxuPalette.ink)
+          .foregroundStyle(TempoPalette.ink)
         Text("— \(quote.source)")
           .font(.caption)
-          .foregroundStyle(QingxuPalette.quiet)
+          .foregroundStyle(TempoPalette.quiet)
       }
     }
     .padding(18)
     .frame(maxWidth: .infinity, alignment: .leading)
-    .background(QingxuPalette.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+    .background(TempoPalette.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
     .overlay {
       RoundedRectangle(cornerRadius: 22, style: .continuous)
-        .stroke(QingxuPalette.separator.opacity(0.65), lineWidth: 0.6)
+        .stroke(TempoPalette.separator.opacity(0.65), lineWidth: 0.6)
     }
   }
 }
@@ -1090,13 +1090,13 @@ struct AISettingsView: View {
 
         Button { Task { await testAndSave() } } label: {
           HStack(spacing: 10) {
-            if testing { ProgressView().tint(QingxuPalette.onAccent) }
+            if testing { ProgressView().tint(TempoPalette.onAccent) }
             Text(testing ? "正在测试…" : "测试并保存")
               .font(.body.weight(.semibold))
           }
-          .foregroundStyle(QingxuPalette.onAccent)
+          .foregroundStyle(TempoPalette.onAccent)
           .frame(maxWidth: .infinity).frame(height: 52)
-          .background(QingxuPalette.accent, in: Capsule())
+          .background(TempoPalette.accent, in: Capsule())
         }
         .buttonStyle(.plain)
         .disabled(testing || draft.validationMessage(syncSettings: store.syncSettings) != nil)
@@ -1104,20 +1104,20 @@ struct AISettingsView: View {
         if let message {
           Text(message)
             .font(.footnote)
-            .foregroundStyle(message.hasPrefix("连接成功") ? QingxuPalette.success : QingxuPalette.danger)
+            .foregroundStyle(message.hasPrefix("连接成功") ? TempoPalette.success : TempoPalette.danger)
             .frame(maxWidth: .infinity, alignment: .leading)
         } else if let validation = draft.validationMessage(syncSettings: store.syncSettings) {
-          Text(validation).font(.footnote).foregroundStyle(QingxuPalette.quiet)
+          Text(validation).font(.footnote).foregroundStyle(TempoPalette.quiet)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
 
         Text("服务商地址、模型和 RSS 摘要提示词均已内置。通常只需选择服务并填写 API 密钥；只有自定义兼容服务需要额外填写接口和模型。密钥只保存在本机钥匙串。")
-          .font(.footnote).foregroundStyle(QingxuPalette.quiet)
+          .font(.footnote).foregroundStyle(TempoPalette.quiet)
           .frame(maxWidth: .infinity, alignment: .leading)
       }
       .padding(18).padding(.bottom, 80)
     }
-    .qingxuScreen()
+    .tempoScreen()
     .navigationTitle("AI 助手")
     #if os(iOS)
     .navigationBarTitleDisplayMode(.inline)
@@ -1135,7 +1135,7 @@ struct AISettingsView: View {
       SettingsValueRow(title: "服务器", value: store.syncSettings.isConfigured ? store.syncSettings.normalizedServerURL : "未配置")
       SettingsDivider()
       NavigationLink { SyncSettingsView().environmentObject(store) } label: {
-        SettingsDestinationRow(symbol: "arrow.clockwise", title: "同步服务器", detail: "AI 请求由自托管服务处理", tint: QingxuPalette.accent)
+        SettingsDestinationRow(symbol: "arrow.clockwise", title: "同步服务器", detail: "AI 请求由自托管服务处理", tint: TempoPalette.accent)
       }
     case .openAI, .deepSeek:
       AmbientFieldRow(title: "API 密钥") {

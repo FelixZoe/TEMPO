@@ -81,7 +81,7 @@ class _AndroidUpdateSheetState extends State<_AndroidUpdateSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     final info = _info;
     return Material(
       color: palette.surfaceRaised,

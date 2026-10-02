@@ -1,5 +1,6 @@
 import ActivityKit
 import SwiftUI
+import TempoRuntime
 import UIKit
 
 struct DeveloperToolsView: View {
@@ -12,6 +13,7 @@ struct DeveloperToolsView: View {
   @State private var syncing = false
   @State private var syncMessage: String?
   @State private var systemSnapshot = TempoSystemDiagnosticSnapshot.capture()
+  @State private var showingOTARuntime = false
 
   var body: some View {
     GeometryReader { proxy in
@@ -31,14 +33,14 @@ struct DeveloperToolsView: View {
               .font(.body.weight(.semibold))
               .frame(maxWidth: .infinity)
               .frame(height: 50)
-              .background(QingxuPalette.ink, in: Capsule())
-              .foregroundStyle(QingxuPalette.background)
+              .background(TempoPalette.ink, in: Capsule())
+              .foregroundStyle(TempoPalette.background)
           }
           .buttonStyle(.plain)
 
           Text("开发者工具不会显示或导出同步密钥、AI 密钥和天气密钥。新增原生依赖、权限、小组件或灵动岛能力仍需要重新构建 IPA。")
             .font(.footnote)
-            .foregroundStyle(QingxuPalette.quiet)
+            .foregroundStyle(TempoPalette.quiet)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 4)
         }
@@ -48,9 +50,12 @@ struct DeveloperToolsView: View {
         .frame(maxWidth: 980)
         .frame(maxWidth: .infinity)
       }
-      .qingxuScreen()
+      .tempoScreen()
     }
     .task { systemSnapshot = .capture() }
+    .fullScreenCover(isPresented: $showingOTARuntime) {
+      TempoRuntimeScreen(route: .today)
+    }
   }
 
   private var header: some View {
@@ -59,7 +64,7 @@ struct DeveloperToolsView: View {
         Image(systemName: "xmark")
           .font(.body.weight(.semibold))
           .frame(width: 42, height: 42)
-          .background(QingxuPalette.elevatedSurface, in: Circle())
+          .background(TempoPalette.elevatedSurface, in: Circle())
       }
       .buttonStyle(.plain)
       .accessibilityLabel("关闭开发者工具")
@@ -67,10 +72,10 @@ struct DeveloperToolsView: View {
       VStack(alignment: .leading, spacing: 3) {
         Text("开发者工具")
           .font(.title2.weight(.semibold))
-          .foregroundStyle(QingxuPalette.ink)
+          .foregroundStyle(TempoPalette.ink)
         Text("OTA、同步与系统能力诊断")
           .font(.caption)
-          .foregroundStyle(QingxuPalette.quiet)
+          .foregroundStyle(TempoPalette.quiet)
       }
 
       Spacer()
@@ -85,7 +90,7 @@ struct DeveloperToolsView: View {
           : "arrow.up.left.and.arrow.down.right")
           .font(.body.weight(.semibold))
           .frame(width: 42, height: 42)
-          .background(QingxuPalette.elevatedSurface, in: Circle())
+          .background(TempoPalette.elevatedSurface, in: Circle())
       }
       .buttonStyle(.plain)
       .accessibilityLabel(selectedDetent == .large ? "缩小面板" : "全屏显示")
@@ -103,14 +108,14 @@ struct DeveloperToolsView: View {
       DeveloperMetricRow(
         title: "原生容器",
         value: ota.isNativeRuntimeInstalled ? "已接入" : "尚未接入",
-        valueColor: ota.isNativeRuntimeInstalled ? QingxuPalette.success : QingxuPalette.warning
+        valueColor: ota.isNativeRuntimeInstalled ? TempoPalette.success : TempoPalette.warning
       )
       DeveloperMetricRow(title: "云端状态", value: ota.state.title, valueColor: ota.state.color)
 
       if let detail = ota.detail {
         Text(detail)
           .font(.footnote)
-          .foregroundStyle(QingxuPalette.quiet)
+          .foregroundStyle(TempoPalette.quiet)
           .frame(maxWidth: .infinity, alignment: .leading)
       }
 
@@ -134,13 +139,21 @@ struct DeveloperToolsView: View {
         .accessibilityLabel("打开 Expo 控制台")
       }
 
+      Button {
+        showingOTARuntime = true
+      } label: {
+        Label("打开 OTA 内容层", systemImage: "rectangle.on.rectangle")
+          .frame(maxWidth: .infinity)
+      }
+      .buttonStyle(.bordered)
+
       if !ota.isNativeRuntimeInstalled {
         Label(
           "当前 IPA 只能检查云端兼容清单，不能下载并切换 OTA 包。首次接入 Expo 容器后，后续兼容更新才可免重装。",
           systemImage: "info.circle"
         )
         .font(.footnote)
-        .foregroundStyle(QingxuPalette.quiet)
+        .foregroundStyle(TempoPalette.quiet)
       }
     }
   }
@@ -158,14 +171,14 @@ struct DeveloperToolsView: View {
       DeveloperMetricRow(
         title: "待上传修改",
         value: String(snapshot.pendingChangeCount),
-        valueColor: snapshot.pendingChangeCount == 0 ? QingxuPalette.success : QingxuPalette.warning
+        valueColor: snapshot.pendingChangeCount == 0 ? TempoPalette.success : TempoPalette.warning
       )
       DeveloperMetricRow(title: "实时同步", value: snapshot.autoSyncEnabled ? "开启" : "关闭")
 
       if let syncMessage {
         Text(syncMessage)
           .font(.footnote)
-          .foregroundStyle(syncMessage.contains("成功") ? QingxuPalette.success : QingxuPalette.danger)
+          .foregroundStyle(syncMessage.contains("成功") ? TempoPalette.success : TempoPalette.danger)
           .frame(maxWidth: .infinity, alignment: .leading)
       }
 
@@ -188,8 +201,21 @@ struct DeveloperToolsView: View {
       symbol: "checkmark.shield"
     ) {
       DeveloperStatusRow(title: "Widget 扩展", available: systemSnapshot.widgetExtensionEmbedded)
-      DeveloperStatusRow(title: "App Group", available: systemSnapshot.appGroupAvailable)
+      DeveloperStatusRow(
+        title: "App Group 共享数据",
+        available: systemSnapshot.appGroupAvailable,
+        unavailableTitle: "签名未授权"
+      )
       DeveloperStatusRow(title: "灵动岛与实时活动", available: systemSnapshot.liveActivitiesEnabled)
+
+      if !systemSnapshot.appGroupAvailable {
+        Label(
+          "代码已声明 group.one.darker.qingxu；当前签名描述文件没有保留这项权限，主应用、小组件与灵动岛因此无法共享实时状态。",
+          systemImage: "signature"
+        )
+        .font(.footnote)
+        .foregroundStyle(TempoPalette.quiet)
+      }
 
       Button {
         systemSnapshot = .capture()
@@ -232,10 +258,10 @@ struct DeveloperToolsView: View {
 
   private func syncColor(_ phase: SyncPhase) -> Color {
     switch phase {
-    case .synced: QingxuPalette.success
-    case .syncing: QingxuPalette.accent
-    case .failed: QingxuPalette.danger
-    case .localOnly: QingxuPalette.quiet
+    case .synced: TempoPalette.success
+    case .syncing: TempoPalette.accent
+    case .failed: TempoPalette.danger
+    case .localOnly: TempoPalette.quiet
     }
   }
 
@@ -288,11 +314,11 @@ private struct DeveloperToolCard<Content: View>: View {
         Image(systemName: symbol)
           .font(.body.weight(.semibold))
           .frame(width: 36, height: 36)
-          .background(QingxuPalette.elevatedSurface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+          .background(TempoPalette.elevatedSurface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
 
         VStack(alignment: .leading, spacing: 2) {
           Text(title).font(.headline)
-          Text(subtitle).font(.caption).foregroundStyle(QingxuPalette.quiet)
+          Text(subtitle).font(.caption).foregroundStyle(TempoPalette.quiet)
         }
       }
 
@@ -301,10 +327,10 @@ private struct DeveloperToolCard<Content: View>: View {
     }
     .padding(18)
     .frame(maxWidth: .infinity, alignment: .leading)
-    .background(QingxuPalette.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+    .background(TempoPalette.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
     .overlay {
       RoundedRectangle(cornerRadius: 22, style: .continuous)
-        .stroke(QingxuPalette.separator.opacity(0.45), lineWidth: 0.5)
+        .stroke(TempoPalette.separator.opacity(0.45), lineWidth: 0.5)
     }
   }
 }
@@ -312,11 +338,11 @@ private struct DeveloperToolCard<Content: View>: View {
 private struct DeveloperMetricRow: View {
   let title: String
   let value: String
-  var valueColor = QingxuPalette.quiet
+  var valueColor = TempoPalette.quiet
 
   var body: some View {
     HStack(alignment: .firstTextBaseline, spacing: 12) {
-      Text(title).foregroundStyle(QingxuPalette.ink)
+      Text(title).foregroundStyle(TempoPalette.ink)
       Spacer(minLength: 12)
       Text(value)
         .font(.subheadline.monospacedDigit())
@@ -330,16 +356,17 @@ private struct DeveloperMetricRow: View {
 private struct DeveloperStatusRow: View {
   let title: String
   let available: Bool
+  var unavailableTitle = "不可用"
 
   var body: some View {
     HStack(spacing: 10) {
       Text(title)
       Spacer()
       Image(systemName: available ? "checkmark.circle.fill" : "xmark.circle.fill")
-        .foregroundStyle(available ? QingxuPalette.success : QingxuPalette.danger)
-      Text(available ? "可用" : "不可用")
+        .foregroundStyle(available ? TempoPalette.success : TempoPalette.danger)
+      Text(available ? "可用" : unavailableTitle)
         .font(.subheadline)
-        .foregroundStyle(QingxuPalette.quiet)
+        .foregroundStyle(TempoPalette.quiet)
     }
   }
 }
@@ -365,10 +392,10 @@ private final class TempoOTAInspector: ObservableObject {
 
     var color: Color {
       switch self {
-      case .reachable: QingxuPalette.success
-      case .failed: QingxuPalette.danger
-      case .checking: QingxuPalette.accent
-      case .idle, .noUpdate: QingxuPalette.quiet
+      case .reachable: TempoPalette.success
+      case .failed: TempoPalette.danger
+      case .checking: TempoPalette.accent
+      case .idle, .noUpdate: TempoPalette.quiet
       }
     }
   }
@@ -382,7 +409,8 @@ private final class TempoOTAInspector: ObservableObject {
 
   init(bundle: Bundle = .main) {
     runtimeVersion = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0"
-    isNativeRuntimeInstalled = NSClassFromString("EXUpdatesAppController") != nil
+    _ = ReactNativeHostManager.shared
+    isNativeRuntimeInstalled = true
   }
 
   func check() async {

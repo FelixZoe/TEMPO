@@ -134,13 +134,13 @@ final class RSSStore: ObservableObject {
   private var pendingCloudSync: Task<Void, Never>?
 
   init() {
-    subscriptions = QingxuFiles.load(
+    subscriptions = TempoFiles.load(
       [RSSSubscription].self,
       name: "rss-subscriptions.json"
     ) ?? []
-    articles = QingxuFiles.load([RSSArticle].self, name: "rss-articles.json") ?? []
-    folders = QingxuFiles.load([RSSFolder].self, name: "rss-folders.json") ?? []
-    if let snapshot = QingxuFiles.load(RSSSyncState.self, name: "rss-sync-state.json") {
+    articles = TempoFiles.load([RSSArticle].self, name: "rss-articles.json") ?? []
+    folders = TempoFiles.load([RSSFolder].self, name: "rss-folders.json") ?? []
+    if let snapshot = TempoFiles.load(RSSSyncState.self, name: "rss-sync-state.json") {
       syncStateUpdatedAt = snapshot.updatedAt
       syncedArticleStates = Dictionary(uniqueKeysWithValues: snapshot.articleStates.map { ($0.id, $0) })
       if subscriptions.isEmpty { subscriptions = snapshot.subscriptions }
@@ -154,7 +154,7 @@ final class RSSStore: ObservableObject {
   var unreadCount: Int { articles.lazy.filter { !$0.isRead }.count }
 
   var cacheSizeBytes: Int {
-    (try? QingxuCoding.encoder.encode(articles).count) ?? 0
+    (try? TempoCoding.encoder.encode(articles).count) ?? 0
   }
 
   func unreadCount(for feedID: String?) -> Int {
@@ -431,7 +431,7 @@ final class RSSStore: ObservableObject {
 
   @discardableResult
   func syncNow() async -> Bool {
-    var settings = QingxuFiles.load(SyncSettings.self, name: "sync.json") ?? SyncSettings()
+    var settings = TempoFiles.load(SyncSettings.self, name: "sync.json") ?? SyncSettings()
     settings.token = SecureSyncToken.read()
     guard settings.autoSync, settings.isConfigured else { return false }
     do {
@@ -504,16 +504,16 @@ final class RSSStore: ObservableObject {
   }
 
   private func persist() {
-    try? QingxuFiles.save(subscriptions, name: "rss-subscriptions.json")
-    try? QingxuFiles.save(articles, name: "rss-articles.json")
-    try? QingxuFiles.save(folders, name: "rss-folders.json")
+    try? TempoFiles.save(subscriptions, name: "rss-subscriptions.json")
+    try? TempoFiles.save(articles, name: "rss-articles.json")
+    try? TempoFiles.save(folders, name: "rss-folders.json")
   }
 
   private func cloudStateChanged() {
     syncStateUpdatedAt = .now
     let snapshot = makeSyncState()
     syncedArticleStates = Dictionary(uniqueKeysWithValues: snapshot.articleStates.map { ($0.id, $0) })
-    try? QingxuFiles.save(snapshot, name: "rss-sync-state.json")
+    try? TempoFiles.save(snapshot, name: "rss-sync-state.json")
     pendingCloudSync?.cancel()
     pendingCloudSync = Task { [weak self] in
       try? await Task.sleep(for: .milliseconds(180))
@@ -557,7 +557,7 @@ final class RSSStore: ObservableObject {
     syncStateUpdatedAt = remote.updatedAt
     applySyncedArticleStates()
     persist()
-    try? QingxuFiles.save(makeSyncState(), name: "rss-sync-state.json")
+    try? TempoFiles.save(makeSyncState(), name: "rss-sync-state.json")
   }
 
   private func applySyncedArticleStates() {
@@ -850,7 +850,7 @@ private enum RSSDateParser {
   }
 }
 
-#if os(iOS) && QINGXU_LEGACY_RSS_UI
+#if os(iOS) && TEMPO_LEGACY_RSS_UI
 private enum RSSRoute: String, Identifiable {
   case addSubscription
 
@@ -947,7 +947,7 @@ struct RSSScreen: View {
       }
       .listStyle(.plain)
       .environment(\.defaultMinListRowHeight, 1)
-      .qingxuScreen()
+      .tempoScreen()
       .navigationTitle("RSS")
       .navigationBarTitleDisplayMode(.large)
       .refreshable { await store.refresh() }
@@ -999,7 +999,7 @@ struct RSSScreen: View {
         if case .failed(let message) = store.phase {
           Text(message)
             .font(.footnote)
-            .foregroundStyle(QingxuPalette.danger)
+            .foregroundStyle(TempoPalette.danger)
             .padding(.horizontal, 14)
             .frame(minHeight: 38)
             .background(.regularMaterial, in: Capsule())
@@ -1063,19 +1063,19 @@ private struct RSSSourceStrip: View {
             .padding(.horizontal, 6)
             .frame(minHeight: 18)
             .background(
-              isSelected ? QingxuPalette.onAccent.opacity(0.2) : QingxuPalette.selected,
+              isSelected ? TempoPalette.onAccent.opacity(0.2) : TempoPalette.selected,
               in: Capsule()
             )
         }
       }
       .font(.subheadline.weight(isSelected ? .semibold : .medium))
-      .foregroundStyle(isSelected ? QingxuPalette.onAccent : QingxuPalette.ink)
+      .foregroundStyle(isSelected ? TempoPalette.onAccent : TempoPalette.ink)
       .padding(.horizontal, 13)
       .frame(height: 36)
-      .background(isSelected ? QingxuPalette.accent : QingxuPalette.surface, in: Capsule())
+      .background(isSelected ? TempoPalette.accent : TempoPalette.surface, in: Capsule())
       .overlay {
         if !isSelected {
-          Capsule().stroke(QingxuPalette.separator.opacity(0.7), lineWidth: 0.5)
+          Capsule().stroke(TempoPalette.separator.opacity(0.7), lineWidth: 0.5)
         }
       }
     }
@@ -1091,16 +1091,16 @@ private struct RSSSourceHeader: View {
     HStack(spacing: 8) {
       Text(group.subscription.title)
         .font(.subheadline.weight(.semibold))
-        .foregroundStyle(QingxuPalette.ink)
+        .foregroundStyle(TempoPalette.ink)
         .lineLimit(1)
       Text("\(group.articles.count)")
         .font(.caption.weight(.medium))
-        .foregroundStyle(QingxuPalette.quiet)
+        .foregroundStyle(TempoPalette.quiet)
       Spacer()
       if group.unreadCount > 0 {
         Text("\(group.unreadCount) 未读")
           .font(.caption)
-          .foregroundStyle(QingxuPalette.accent)
+          .foregroundStyle(TempoPalette.accent)
       }
     }
     .textCase(nil)
@@ -1120,7 +1120,7 @@ private struct RSSNoArticlesState: View {
       Text("下拉刷新后再看看")
         .font(.subheadline)
     }
-    .foregroundStyle(QingxuPalette.quiet)
+    .foregroundStyle(TempoPalette.quiet)
     .frame(maxWidth: .infinity)
     .padding(.top, 100)
   }
@@ -1135,7 +1135,7 @@ private struct RSSInAppBrowser: UIViewControllerRepresentable {
     configuration.barCollapsingEnabled = true
     let controller = SFSafariViewController(url: url, configuration: configuration)
     controller.dismissButtonStyle = .close
-    controller.preferredControlTintColor = UIColor(QingxuPalette.accent)
+    controller.preferredControlTintColor = UIColor(TempoPalette.accent)
     return controller
   }
 
@@ -1149,20 +1149,20 @@ private struct RSSArticleRow: View {
   var body: some View {
     HStack(alignment: .top, spacing: 12) {
       Circle()
-        .fill(article.isRead ? Color.clear : QingxuPalette.accent)
+        .fill(article.isRead ? Color.clear : TempoPalette.accent)
         .frame(width: 7, height: 7)
         .padding(.top, 8)
 
       VStack(alignment: .leading, spacing: 7) {
         Text(article.title)
           .font(.body.weight(article.isRead ? .regular : .semibold))
-          .foregroundStyle(QingxuPalette.ink)
+          .foregroundStyle(TempoPalette.ink)
           .lineLimit(3)
 
         if !article.summary.isEmpty {
           Text(article.summary)
             .font(.subheadline)
-            .foregroundStyle(QingxuPalette.quiet)
+            .foregroundStyle(TempoPalette.quiet)
             .lineLimit(2)
         }
 
@@ -1176,7 +1176,7 @@ private struct RSSArticleRow: View {
           }
         }
         .font(.caption)
-        .foregroundStyle(QingxuPalette.quiet)
+        .foregroundStyle(TempoPalette.quiet)
       }
       Spacer(minLength: 0)
     }
@@ -1192,20 +1192,20 @@ private struct RSSEmptyState: View {
     VStack(spacing: 16) {
       Image(systemName: "dot.radiowaves.left.and.right")
         .font(.system(size: 52, weight: .light))
-        .foregroundStyle(QingxuPalette.accent)
+        .foregroundStyle(TempoPalette.accent)
       Text("还没有 RSS 订阅")
         .font(.title3.weight(.semibold))
-        .foregroundStyle(QingxuPalette.ink)
+        .foregroundStyle(TempoPalette.ink)
       Text("添加 RSS、Atom 地址或包含订阅链接的网站")
         .font(.subheadline)
-        .foregroundStyle(QingxuPalette.quiet)
+        .foregroundStyle(TempoPalette.quiet)
         .multilineTextAlignment(.center)
       Button("添加第一个订阅", action: add)
         .font(.subheadline.weight(.semibold))
-        .foregroundStyle(QingxuPalette.onAccent)
+        .foregroundStyle(TempoPalette.onAccent)
         .padding(.horizontal, 18)
         .frame(height: 42)
-        .background(QingxuPalette.accent, in: Capsule())
+        .background(TempoPalette.accent, in: Capsule())
     }
     .frame(maxWidth: .infinity)
     .padding(.horizontal, 28)
@@ -1233,13 +1233,13 @@ private struct RSSAddSubscriptionSheet: View {
         Section {
           Text("可以填写 RSS、Atom 地址，也可以填写包含订阅链接的网站首页。")
             .font(.footnote)
-            .foregroundStyle(QingxuPalette.quiet)
+            .foregroundStyle(TempoPalette.quiet)
         }
         if let errorMessage {
-          Section { Text(errorMessage).foregroundStyle(QingxuPalette.danger) }
+          Section { Text(errorMessage).foregroundStyle(TempoPalette.danger) }
         }
       }
-      .qingxuScreen()
+      .tempoScreen()
       .navigationTitle("添加 RSS")
       #if os(iOS)
       .navigationBarTitleDisplayMode(.inline)
@@ -1281,14 +1281,14 @@ private struct RSSSubscriptionsView: View {
   var body: some View {
     List {
       if store.subscriptions.isEmpty {
-        Text("还没有订阅").foregroundStyle(QingxuPalette.quiet)
+        Text("还没有订阅").foregroundStyle(TempoPalette.quiet)
       } else {
         ForEach(store.subscriptions) { subscription in
           VStack(alignment: .leading, spacing: 4) {
             Text(subscription.title).font(.body.weight(.medium))
             Text(subscription.feedURL)
               .font(.caption)
-              .foregroundStyle(QingxuPalette.quiet)
+              .foregroundStyle(TempoPalette.quiet)
               .lineLimit(1)
           }
           .swipeActions {
@@ -1299,7 +1299,7 @@ private struct RSSSubscriptionsView: View {
         }
       }
     }
-    .qingxuScreen()
+    .tempoScreen()
     .navigationTitle("订阅管理")
     .toolbar {
       if store.unreadCount > 0 {

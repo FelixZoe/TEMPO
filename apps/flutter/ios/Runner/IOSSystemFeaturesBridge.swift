@@ -82,7 +82,7 @@ final class IOSSystemFeaturesBridge {
     WidgetCenter.shared.reloadAllTimelines()
 
     guard #available(iOS 16.2, *) else { return }
-    let state = QingxuPomodoroAttributes.ContentState(
+    let state = TempoPomodoroAttributes.ContentState(
       mode: mode,
       status: status,
       timerDirection: timerDirection,
@@ -138,8 +138,8 @@ final class IOSSystemFeaturesBridge {
 
   @available(iOS 16.2, *)
   @MainActor
-  private func updateLiveActivity(_ state: QingxuPomodoroAttributes.ContentState) async {
-    let activities = Activity<QingxuPomodoroAttributes>.activities
+  private func updateLiveActivity(_ state: TempoPomodoroAttributes.ContentState) async {
+    let activities = Activity<TempoPomodoroAttributes>.activities
     let isActivelyRunning = state.status == "running" && (
       state.timerDirection == "countUp" || (state.endsAt ?? .distantPast) > Date()
     )
@@ -154,7 +154,7 @@ final class IOSSystemFeaturesBridge {
       } else {
         do {
           _ = try Activity.request(
-            attributes: QingxuPomodoroAttributes(title: "Tempo专注"),
+            attributes: TempoPomodoroAttributes(title: "Tempo专注"),
             content: content,
             pushType: nil
           )

@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:qingxu/models/sync_settings.dart';
-import 'package:qingxu/models/pomodoro_state.dart';
-import 'package:qingxu/models/task_item.dart';
-import 'package:qingxu/services/sync_client_io.dart';
+import 'package:tempo/models/sync_settings.dart';
+import 'package:tempo/models/pomodoro_state.dart';
+import 'package:tempo/models/task_item.dart';
+import 'package:tempo/services/sync_client_io.dart';
 
 void main() {
   const token =

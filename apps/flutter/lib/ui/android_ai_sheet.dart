@@ -83,7 +83,7 @@ class _AndroidAISheetState extends State<_AndroidAISheet> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return _SheetFrame(
       child: Padding(
         padding: EdgeInsets.fromLTRB(
@@ -251,7 +251,7 @@ class _AISettingsSheetState extends State<_AISettingsSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return _SheetFrame(
       child: Padding(
         padding: EdgeInsets.fromLTRB(
@@ -358,7 +358,7 @@ class _WeatherSettingsSheetState extends State<_WeatherSettingsSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return _SheetFrame(
       child: Padding(
         padding: EdgeInsets.fromLTRB(22, 8, 22, MediaQuery.viewInsetsOf(context).bottom + 22),
@@ -410,7 +410,7 @@ class _SheetFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = QingxuPalette.of(context);
+    final palette = TempoPalette.of(context);
     return Material(
       color: palette.surfaceRaised,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),

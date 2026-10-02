@@ -1,7 +1,7 @@
 import Flutter
 import UIKit
 
-enum QingxuTab: String, CaseIterable, Hashable {
+enum TempoTab: String, CaseIterable, Hashable {
   case inbox
   case today
   case pomodoro
@@ -26,7 +26,7 @@ enum QingxuTab: String, CaseIterable, Hashable {
   }
 }
 
-enum QingxuThemeMode: String {
+enum TempoThemeMode: String {
   case system
   case light
   case dark
@@ -34,9 +34,9 @@ enum QingxuThemeMode: String {
 
 final class NativeNavigationBridge {
   private var channel: FlutterMethodChannel?
-  private weak var tabBarController: QingxuTabBarController?
-  private var selectedTab = QingxuTab.today
-  private var themeMode = QingxuThemeMode.system
+  private weak var tabBarController: TempoTabBarController?
+  private var selectedTab = TempoTab.today
+  private var themeMode = TempoThemeMode.system
 
   func connect(to messenger: FlutterBinaryMessenger) {
     let channel = FlutterMethodChannel(
@@ -48,7 +48,7 @@ final class NativeNavigationBridge {
       case "setSelectedTab":
         guard
           let rawValue = call.arguments as? String,
-          let tab = QingxuTab(rawValue: rawValue)
+          let tab = TempoTab(rawValue: rawValue)
         else {
           result(
             FlutterError(
@@ -67,7 +67,7 @@ final class NativeNavigationBridge {
       case "setThemeMode":
         guard
           let rawValue = call.arguments as? String,
-          let mode = QingxuThemeMode(rawValue: rawValue)
+          let mode = TempoThemeMode(rawValue: rawValue)
         else {
           result(
             FlutterError(
@@ -90,13 +90,13 @@ final class NativeNavigationBridge {
     self.channel = channel
   }
 
-  func install(tabBarController: QingxuTabBarController) {
+  func install(tabBarController: TempoTabBarController) {
     self.tabBarController = tabBarController
     tabBarController.select(selectedTab)
     tabBarController.applyThemeMode(themeMode)
   }
 
-  func userSelected(_ tab: QingxuTab) {
+  func userSelected(_ tab: TempoTab) {
     selectedTab = tab
     channel?.invokeMethod("selectTab", arguments: tab.rawValue)
   }

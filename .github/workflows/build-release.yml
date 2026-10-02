@@ -242,7 +242,7 @@ jobs:
             Select-Object Name, Length, VersionInfo
 
           if (-not [string]::IsNullOrWhiteSpace($env:WINDOWS_SIGNING_CERTIFICATE)) {
-            $certificate = Join-Path $env:RUNNER_TEMP "qingxu-signing.pfx"
+            $certificate = Join-Path $env:RUNNER_TEMP "tempo-signing.pfx"
             [IO.File]::WriteAllBytes(
               $certificate,
               [Convert]::FromBase64String($env:WINDOWS_SIGNING_CERTIFICATE)
@@ -269,14 +269,14 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           New-Item -ItemType Directory -Force artifacts | Out-Null
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DMyAppVersion=$env:APP_VERSION" scripts\windows\Qingxu.iss
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DMyAppVersion=$env:APP_VERSION" scripts\windows\Tempo.iss
       - name: Sign installer when a trusted certificate is configured
         if: env.WINDOWS_SIGNING_CERTIFICATE != ''
         shell: pwsh
         working-directory: ${{ github.workspace }}
         run: |
           $ErrorActionPreference = "Stop"
-          $certificate = Join-Path $env:RUNNER_TEMP "qingxu-signing.pfx"
+          $certificate = Join-Path $env:RUNNER_TEMP "tempo-signing.pfx"
           [IO.File]::WriteAllBytes(
             $certificate,
             [Convert]::FromBase64String($env:WINDOWS_SIGNING_CERTIFICATE)
@@ -303,8 +303,42 @@ jobs:
             TEMPO-${{ needs.version.outputs.version }}-Windows-Portable.zip
             artifacts/TEMPO-${{ needs.version.outputs.version }}-Windows-Setup.exe
 
-  apple-ios:
+  apple-runtime:
     needs: version
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: apps/ios-runtime
+    env:
+      TEMPO_APP_VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/ios-runtime/package-lock.json
+      - run: npm ci
+      - name: Generate native OTA runtime
+        env:
+          CI: "1"
+        run: npm run prebuild:ios
+      - name: Build isolated Swift Package
+        run: npm run build:brownfield:ios
+      - name: Verify runtime package
+        run: test -f artifacts/TempoRuntimePackage-release/Package.swift
+      - uses: actions/upload-artifact@v7
+        with:
+          name: tempo-native-runtime-${{ github.run_id }}
+          path: apps/ios-runtime/artifacts/TempoRuntimePackage-release
+          if-no-files-found: error
+          retention-days: 1
+
+  apple-ios:
+    needs: [version, apple-runtime]
     runs-on: macos-15
     defaults:
       run:
@@ -314,6 +348,10 @@ jobs:
       BUILD_NUMBER: ${{ needs.version.outputs.build_number }}
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v7
+        with:
+          name: tempo-native-runtime-${{ github.run_id }}
+          path: apps/ios-runtime/artifacts/TempoRuntimePackage-release
       - uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest-stable
@@ -330,14 +368,14 @@ jobs:
           set -euo pipefail
           grep -q 'PRODUCT_BUNDLE_IDENTIFIER: one.darker.qingxu$' project.yml
           grep -q 'PRODUCT_BUNDLE_IDENTIFIER: one.darker.qingxu.widgets$' project.yml
-          grep -q 'group.one.darker.qingxu' Configuration/QingxuiOS.entitlements
-          grep -q 'group.one.darker.qingxu' Configuration/QingxuWidgets.entitlements
+          grep -q 'group.one.darker.qingxu' Configuration/TempoiOS.entitlements
+          grep -q 'group.one.darker.qingxu' Configuration/TempoWidgets.entitlements
       - name: Build unsigned native iOS app
         run: |
           set -euo pipefail
           xcodebuild \
-            -project QingxuApple.xcodeproj \
-            -scheme QingxuiOS \
+            -project TempoApple.xcodeproj \
+            -scheme TempoiOS \
             -configuration Release \
             -sdk iphoneos \
             -destination 'generic/platform=iOS' \
@@ -482,7 +520,7 @@ jobs:
             apps/android/tempo-android-update.json
 
   apple-macos:
-    needs: version
+    needs: [version, apple-runtime]
     runs-on: macos-15
     defaults:
       run:
@@ -492,6 +530,10 @@ jobs:
       BUILD_NUMBER: ${{ needs.version.outputs.build_number }}
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v7
+        with:
+          name: tempo-native-runtime-${{ github.run_id }}
+          path: apps/ios-runtime/artifacts/TempoRuntimePackage-release
       - uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest-stable
@@ -505,8 +547,8 @@ jobs:
         run: |
           set -euo pipefail
           xcodebuild \
-            -project QingxuApple.xcodeproj \
-            -scheme QingxumacOS \
+            -project TempoApple.xcodeproj \
+            -scheme TempomacOS \
             -configuration Release \
             -destination 'platform=macOS' \
             -derivedDataPath build/DerivedData \
@@ -629,11 +671,11 @@ jobs:
           sed -i -E "s/^version:.*/version: ${APP_VERSION}+${BUILD_NUMBER}/" apps/android/pubspec.yaml
           sed -i -E "s/^([[:space:]]*)MARKETING_VERSION:.*/\1MARKETING_VERSION: \"${APP_VERSION}\"/" apps/apple/project.yml
           sed -i -E "s/^([[:space:]]*)CURRENT_PROJECT_VERSION:.*/\1CURRENT_PROJECT_VERSION: \"${BUILD_NUMBER}\"/" apps/apple/project.yml
-          sed -i -E "s/^([[:space:]]*)#define MyAppVersion .*/\1#define MyAppVersion \"${APP_VERSION}\"/" scripts/windows/Qingxu.iss
+          sed -i -E "s/^([[:space:]]*)#define MyAppVersion .*/\1#define MyAppVersion \"${APP_VERSION}\"/" scripts/windows/Tempo.iss
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add apps/flutter/pubspec.yaml apps/android/pubspec.yaml apps/apple/project.yml scripts/windows/Qingxu.iss
+          git add apps/flutter/pubspec.yaml apps/android/pubspec.yaml apps/apple/project.yml scripts/windows/Tempo.iss
           if git diff --cached --quiet; then
             echo "Version metadata is already current."
           else

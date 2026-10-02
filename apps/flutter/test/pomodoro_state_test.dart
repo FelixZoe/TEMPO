@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:qingxu/models/pomodoro_state.dart';
+import 'package:tempo/models/pomodoro_state.dart';
 
 void main() {
   test('fresh state uses an old timestamp so remote state wins first sync', () {

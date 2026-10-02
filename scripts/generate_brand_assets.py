@@ -86,10 +86,10 @@ def generate(repo: Path, font_path: Path) -> None:
 
     mark_set = (
         repo
-        / "apps/flutter/ios/Runner/Assets.xcassets/QingxuLaunchMark.imageset"
+        / "apps/flutter/ios/Runner/Assets.xcassets/TempoLaunchMark.imageset"
     )
     for scale, size in (("1x", 160), ("2x", 320), ("3x", 480)):
-        save_resized(transparent_mark, mark_set / f"QingxuLaunchMark@{scale}.png", size)
+        save_resized(transparent_mark, mark_set / f"TempoLaunchMark@{scale}.png", size)
 
     icon_path = repo / "apps/flutter/windows/runner/resources/app_icon.ico"
     icon_path.parent.mkdir(parents=True, exist_ok=True)

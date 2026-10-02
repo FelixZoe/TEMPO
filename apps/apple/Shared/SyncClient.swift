@@ -63,12 +63,12 @@ struct SyncClient {
     var request = try makeRequest(path: "/v1/sync", settings: settings, authenticated: true)
     request.httpMethod = "POST"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-    request.httpBody = try QingxuCoding.encoder.encode(
+    request.httpBody = try TempoCoding.encoder.encode(
       SyncEnvelope(deviceId: settings.deviceName, tasks: tasks, pomodoro: pomodoro, rss: rss)
     )
     let data = try await perform(request)
     do {
-      return try QingxuCoding.decoder.decode(SyncResponse.self, from: data)
+      return try TempoCoding.decoder.decode(SyncResponse.self, from: data)
     } catch {
       throw SyncClientError.invalidResponse
     }
@@ -87,7 +87,7 @@ struct SyncClient {
     )
     let data = try await perform(request)
     do {
-      return try QingxuCoding.decoder.decode(SyncChange.self, from: data)
+      return try TempoCoding.decoder.decode(SyncChange.self, from: data)
     } catch {
       throw SyncClientError.invalidResponse
     }

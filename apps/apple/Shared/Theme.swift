@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum QingxuPalette {
+enum TempoPalette {
   #if os(iOS)
   static let background = Color(uiColor: .systemBackground)
   static let secondaryBackground = Color(uiColor: .secondarySystemBackground)
@@ -20,7 +20,10 @@ enum QingxuPalette {
   static let faint = Color(nsColor: .tertiaryLabelColor)
   static let separator = Color(nsColor: .separatorColor)
   #endif
-  static let accent = Color.accentColor
+  static let accent = Color.adaptive(
+    lightHex: 0x3268E8,
+    darkHex: 0x7EA7FF
+  )
   static let onAccent = Color.white
   static let selected = Color.adaptive(
     lightHex: 0xE9EFFD,
@@ -56,7 +59,7 @@ enum QingxuPalette {
   )
 }
 
-enum QingxuType {
+enum TempoType {
   static let screenTitle = Font.largeTitle.weight(.bold)
   static let sectionTitle = Font.title3.weight(.semibold)
   static let rowTitle = Font.body.weight(.semibold)
@@ -107,20 +110,20 @@ private extension NSColor {
 }
 #endif
 
-private struct QingxuScreenBackground: ViewModifier {
+private struct TempoScreenBackground: ViewModifier {
   func body(content: Content) -> some View {
     content
       .scrollContentBackground(.hidden)
-      .background(QingxuPalette.canvasGradient.ignoresSafeArea())
-      .tint(QingxuPalette.accent)
+      .background(TempoPalette.canvasGradient.ignoresSafeArea())
+      .tint(TempoPalette.accent)
   }
 }
 
 extension View {
-  func qingxuScreen() -> some View { modifier(QingxuScreenBackground()) }
+  func tempoScreen() -> some View { modifier(TempoScreenBackground()) }
 
   @ViewBuilder
-  func qingxuFloatingSurface() -> some View {
+  func tempoFloatingSurface() -> some View {
     #if os(iOS)
     if #available(iOS 26.0, *) {
       self.glassEffect(.regular.interactive(), in: .circle)

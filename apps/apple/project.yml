@@ -1,4 +1,4 @@
-name: QingxuApple
+name: TempoApple
 options:
   minimumXcodeGenVersion: 2.42.0
   deploymentTarget:
@@ -12,39 +12,44 @@ settings:
     CURRENT_PROJECT_VERSION: "140"
     CLANG_ENABLE_MODULES: YES
     ENABLE_USER_SCRIPT_SANDBOXING: YES
+packages:
+  TempoRuntimePackage:
+    path: ../ios-runtime/artifacts/TempoRuntimePackage-release
 targets:
-  QingxuiOS:
+  TempoiOS:
     type: application
     platform: iOS
     sources:
       - path: Shared
       - path: iOS
-      - path: ../flutter/ios/Shared/QingxuPomodoroAttributes.swift
+      - path: ../flutter/ios/Shared/TempoPomodoroAttributes.swift
       - path: ../flutter/ios/Runner/Assets.xcassets
         buildPhase: resources
     dependencies:
-      - target: QingxuWidgets
+      - target: TempoWidgets
         embed: true
+      - package: TempoRuntimePackage
+        product: TempoRuntimePackage-release
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: one.darker.qingxu
         PRODUCT_NAME: TEMPO
         INFOPLIST_KEY_CFBundleDisplayName: Tempo
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        CODE_SIGN_ENTITLEMENTS: Configuration/QingxuiOS.entitlements
+        CODE_SIGN_ENTITLEMENTS: Configuration/TempoiOS.entitlements
         CODE_SIGN_STYLE: Manual
         DEVELOPMENT_TEAM: "$(IOS_DEVELOPMENT_TEAM)"
         PROVISIONING_PROFILE_SPECIFIER: "$(IOS_MAIN_PROFILE_SPECIFIER)"
         SUPPORTS_MACCATALYST: NO
         TARGETED_DEVICE_FAMILY: "1,2"
     info:
-      path: Generated/QingxuiOS-Info.plist
+      path: Generated/TempoiOS-Info.plist
       properties:
         CFBundleDisplayName: Tempo
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         UILaunchScreen:
-          UIColorName: QingxuLaunchBackground
+          UIColorName: TempoLaunchBackground
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
         CFBundleURLTypes:
@@ -65,24 +70,24 @@ targets:
           - UIInterfaceOrientationPortraitUpsideDown
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
-  QingxuWidgets:
+  TempoWidgets:
     type: app-extension
     platform: iOS
     sources:
-      - path: ../flutter/ios/QingxuWidgets/QingxuWidgets.swift
-      - path: ../flutter/ios/Shared/QingxuPomodoroAttributes.swift
+      - path: ../flutter/ios/TempoWidgets/TempoWidgets.swift
+      - path: ../flutter/ios/Shared/TempoPomodoroAttributes.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: one.darker.qingxu.widgets
         PRODUCT_NAME: TEMPOWidgets
-        CODE_SIGN_ENTITLEMENTS: Configuration/QingxuWidgets.entitlements
+        CODE_SIGN_ENTITLEMENTS: Configuration/TempoWidgets.entitlements
         CODE_SIGN_STYLE: Manual
         DEVELOPMENT_TEAM: "$(IOS_DEVELOPMENT_TEAM)"
         PROVISIONING_PROFILE_SPECIFIER: "$(IOS_WIDGET_PROFILE_SPECIFIER)"
         SKIP_INSTALL: YES
         TARGETED_DEVICE_FAMILY: "1,2"
     info:
-      path: Configuration/QingxuWidgets-Info.plist
+      path: Configuration/TempoWidgets-Info.plist
       properties:
         CFBundleDisplayName: Tempo小组件
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
@@ -90,7 +95,7 @@ targets:
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
         NSSupportsLiveActivities: true
-  QingxumacOS:
+  TempomacOS:
     type: application
     platform: macOS
     sources:
@@ -99,17 +104,17 @@ targets:
       - path: ../flutter/macos/Runner/Assets.xcassets
         buildPhase: resources
     dependencies:
-      - target: QingxumacOSWidgets
+      - target: TempomacOSWidgets
         embed: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: one.darker.qingxu
         PRODUCT_NAME: TEMPO
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        CODE_SIGN_ENTITLEMENTS: Configuration/QingxumacOS.entitlements
+        CODE_SIGN_ENTITLEMENTS: Configuration/TempomacOS.entitlements
         ENABLE_HARDENED_RUNTIME: YES
     info:
-      path: Generated/QingxumacOS-Info.plist
+      path: Generated/TempomacOS-Info.plist
       properties:
         CFBundleDisplayName: Tempo
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
@@ -118,7 +123,7 @@ targets:
         CFBundleURLTypes:
           - CFBundleURLName: one.darker.qingxu
             CFBundleURLSchemes: [tempo, qingxu]
-  QingxumacOSWidgets:
+  TempomacOSWidgets:
     type: app-extension
     platform: macOS
     sources:
@@ -127,11 +132,11 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: one.darker.qingxu.macos.widgets
         PRODUCT_NAME: TEMPOWidgets
-        CODE_SIGN_ENTITLEMENTS: Configuration/QingxumacOSWidgets.entitlements
+        CODE_SIGN_ENTITLEMENTS: Configuration/TempomacOSWidgets.entitlements
         APPLICATION_EXTENSION_API_ONLY: YES
         SKIP_INSTALL: YES
     info:
-      path: Generated/QingxumacOSWidgets-Info.plist
+      path: Generated/TempomacOSWidgets-Info.plist
       properties:
         CFBundleDisplayName: Tempo桌面小组件
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
