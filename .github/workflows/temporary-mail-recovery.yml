@@ -50,6 +50,29 @@ jobs:
           test -f "$archive"
           mkdir -p "$bundle"
           python3 -m zipfile -e "$archive" "$bundle"
+          python3 - "$bundle" "$archive" <<'PY'
+          from pathlib import Path
+          from zipfile import ZIP_DEFLATED, ZipFile
+          import os
+          import sys
+
+          bundle = Path(sys.argv[1])
+          archive = Path(sys.argv[2])
+
+          for item in list(bundle.iterdir()):
+              if "\\" not in item.name:
+                  continue
+              target = bundle.joinpath(*item.name.split("\\"))
+              target.parent.mkdir(parents=True, exist_ok=True)
+              item.replace(target)
+
+          fixed = archive.with_suffix(".fixed.zip")
+          with ZipFile(fixed, "w", ZIP_DEFLATED) as output:
+              for item in sorted(bundle.rglob("*")):
+                  if item.is_file():
+                      output.write(item, item.relative_to(bundle).as_posix())
+          os.replace(fixed, archive)
+          PY
           find "$bundle" -maxdepth 2 -type f | head -20
           test -f "$bundle/assets/index-D7itIaoV.js"
 
