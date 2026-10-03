@@ -1,0 +1,123 @@
+name: Temporary mail DNS export
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure SSH
+        env:
+          DEPLOY_SSH_KEY_BASE64: ${{ secrets.DEPLOY_SSH_KEY_BASE64 }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          install -m 700 -d ~/.ssh
+          printf '%s' "$DEPLOY_SSH_KEY_BASE64" | base64 --decode > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Export generated DNS zone
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          ssh_opts=(
+            -i "$HOME/.ssh/id_ed25519"
+            -o IdentitiesOnly=yes
+            -o PreferredAuthentications=publickey
+            -o PasswordAuthentication=no
+            -o KbdInteractiveAuthentication=no
+            -o BatchMode=yes
+            -o ConnectTimeout=30
+            -o ConnectionAttempts=5
+            -o ServerAliveInterval=10
+            -o ServerAliveCountMax=3
+          )
+
+          ssh "${ssh_opts[@]}" "ubuntu@$DEPLOY_HOST" 'sudo bash -s' <<'REMOTE'
+          set -euo pipefail
+          original=$(docker ps -a --filter name=1Panel-stalwart-mail --format '{{.Names}}' | head -n1)
+          test -n "$original"
+          image=$(docker inspect "$original" --format '{{.Config.Image}}')
+          network=$(docker inspect "$original" --format '{{range $name, $net := .NetworkSettings.Networks}}{{$name}}{{end}}')
+          audit=stalwart-dns-export
+          recovery_password=$(openssl rand -hex 32)
+          work=/tmp/tempo-mail-dns-export
+          rm -rf "$work"
+          install -d -m 755 "$work"
+
+          cleanup() {
+            set +e
+            docker rm -f "$audit" >/dev/null 2>&1
+            if [ "$(docker inspect "$original" --format '{{.State.Running}}' 2>/dev/null)" != true ]; then
+              docker start "$original" >/dev/null 2>&1
+            fi
+            for attempt in $(seq 1 30); do
+              curl --fail --silent --max-time 4 http://127.0.0.1:18080/admin/ >/dev/null 2>&1 && break
+              sleep 1
+            done
+          }
+          trap cleanup EXIT
+
+          docker stop "$original" >/dev/null
+          docker rm -f "$audit" >/dev/null 2>&1 || true
+          docker run -d --name "$audit" \
+            --network "$network" \
+            -e STALWART_RECOVERY_MODE=1 \
+            -e "STALWART_RECOVERY_ADMIN=recovery:$recovery_password" \
+            -v /opt/stalwart/config:/etc/stalwart \
+            -v /opt/stalwart/data:/var/lib/stalwart \
+            "$image" --config /etc/stalwart/config.json >/dev/null
+
+          cli() {
+            docker run --rm --network "$network" \
+              -e STALWART_URL=http://stalwart-dns-export:8080 \
+              -e STALWART_USER=recovery \
+              -e STALWART_PASSWORD="$recovery_password" \
+              ghcr.io/stalwartlabs/cli:latest "$@"
+          }
+          for attempt in $(seq 1 30); do
+            cli describe >/dev/null 2>&1 && break
+            sleep 1
+          done
+          cli query Domain --fields id,name --json > "$work/domains.ndjson"
+          domain_id=$(python3 - "$work/domains.ndjson" <<'PY'
+          import json, sys
+          for line in open(sys.argv[1], encoding='utf-8'):
+              item = json.loads(line)
+              if item.get('name') == 'darker.one':
+                  print(item['id'])
+                  break
+          PY
+          )
+          test -n "$domain_id"
+          cli get Domain "$domain_id" --fields dnsZoneFile --json > "$work/domain-zone.json"
+          python3 - "$work/domain-zone.json" "$work/darker.one.zone" <<'PY'
+          import json, sys
+          payload = json.load(open(sys.argv[1], encoding='utf-8'))
+          zone = payload.get('dnsZoneFile')
+          if not isinstance(zone, str) or not zone.strip():
+              raise SystemExit('Stalwart returned an empty dnsZoneFile')
+          open(sys.argv[2], 'w', encoding='utf-8').write(zone.rstrip() + '\n')
+          PY
+          chown -R ubuntu:ubuntu "$work"
+          cleanup
+          trap - EXIT
+          REMOTE
+
+          scp "${ssh_opts[@]}" -r "ubuntu@$DEPLOY_HOST:/tmp/tempo-mail-dns-export/." artifacts/
+          ssh "${ssh_opts[@]}" "ubuntu@$DEPLOY_HOST" 'sudo rm -rf /tmp/tempo-mail-dns-export'
+          test -s artifacts/darker.one.zone
+
+      - name: Upload DNS zone artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: darker-one-dns-zone
+          path: artifacts/darker.one.zone
+          retention-days: 1
