@@ -38,16 +38,19 @@ jobs:
             -o ServerAliveInterval=10
             -o ServerAliveCountMax=3
           )
-          ssh "${ssh_opts[@]}" "ubuntu@$DEPLOY_HOST" 'sudo bash -s' <<'REMOTE'
+          ssh "${ssh_opts[@]}" "ubuntu@$DEPLOY_HOST" 'sudo bash -x -s' <<'REMOTE'
           set -euo pipefail
           site=/opt/1panel/www/sites/mail.darker.one
           archive="$site/index/stalwart-webui-zh-v1.zip"
           bundle="$site/index/stalwart-webui-zh-v1"
           conf="$site/proxy/root.conf"
 
+          id
+          ls -l "$archive"
           test -f "$archive"
           mkdir -p "$bundle"
           python3 -m zipfile -e "$archive" "$bundle"
+          find "$bundle" -maxdepth 2 -type f | head -20
           test -f "$bundle/assets/index-D7itIaoV.js"
 
           python3 - "$conf" <<'PY'
