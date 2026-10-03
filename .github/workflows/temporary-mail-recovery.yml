@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 jobs:
-  recover:
+  inspect:
     runs-on: ubuntu-latest
     steps:
       - name: Configure SSH
@@ -21,7 +21,7 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
 
-      - name: Recover mail and publish Chinese WebUI assets
+      - name: Inspect Stalwart deployment without changing it
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
         run: |
@@ -38,101 +38,23 @@ jobs:
             -o ServerAliveInterval=10
             -o ServerAliveCountMax=3
           )
-          ssh "${ssh_opts[@]}" "ubuntu@$DEPLOY_HOST" 'sudo bash -x -s' <<'REMOTE'
+          ssh "${ssh_opts[@]}" "ubuntu@$DEPLOY_HOST" 'sudo bash -s' <<'REMOTE'
           set -euo pipefail
-          site=/opt/1panel/www/sites/mail.darker.one
-          archive="$site/index/stalwart-webui-zh-v1.zip"
-          bundle="$site/index/stalwart-webui-zh-v1"
-          conf="$site/proxy/root.conf"
-
-          id
-          ls -l "$archive"
-          test -f "$archive"
-          mkdir -p "$bundle"
-          python3 -m zipfile -e "$archive" "$bundle"
-          python3 - "$bundle" "$archive" <<'PY'
-          from pathlib import Path
-          from zipfile import ZIP_DEFLATED, ZipFile
-          import os
-          import sys
-
-          bundle = Path(sys.argv[1])
-          archive = Path(sys.argv[2])
-
-          for item in list(bundle.iterdir()):
-              if "\\" not in item.name:
-                  continue
-              target = bundle.joinpath(*item.name.split("\\"))
-              target.parent.mkdir(parents=True, exist_ok=True)
-              item.replace(target)
-
-          fixed = archive.with_suffix(".fixed.zip")
-          with ZipFile(fixed, "w", ZIP_DEFLATED) as output:
-              for item in sorted(bundle.rglob("*")):
-                  if item.is_file():
-                      output.write(item, item.relative_to(bundle).as_posix())
-          os.replace(fixed, archive)
-          PY
-          find "$bundle" -maxdepth 2 -type f | head -20
-          test -f "$bundle/assets/index-D7itIaoV.js"
-
-          python3 - "$conf" <<'PY'
-          from pathlib import Path
-          import sys
-
-          path = Path(sys.argv[1])
-          source = path.read_text()
-          marker = "# Custom Chinese Stalwart WebUI assets"
-          block = '''# Custom Chinese Stalwart WebUI assets
-          location ^~ /admin/assets/ {
-              alias /www/sites/mail.darker.one/index/stalwart-webui-zh-v1/assets/;
-              add_header Cache-Control "public, max-age=3600";
-          }
-          location ^~ /account/assets/ {
-              alias /www/sites/mail.darker.one/index/stalwart-webui-zh-v1/assets/;
-              add_header Cache-Control "public, max-age=3600";
-          }
-          location = /admin/favicon.ico {
-              alias /www/sites/mail.darker.one/index/stalwart-webui-zh-v1/favicon.ico;
-          }
-          location = /account/favicon.ico {
-              alias /www/sites/mail.darker.one/index/stalwart-webui-zh-v1/favicon.ico;
-          }
-          '''
-          if marker not in source:
-              needle = "location ^~ / {"
-              if needle not in source:
-                  raise SystemExit("mail reverse-proxy location not found")
-              source = source.replace(needle, block + needle, 1)
-              path.write_text(source)
-          PY
-
           stalwart=$(docker ps -a --filter name=stalwart --format '{{.Names}}' | head -n1)
           test -n "$stalwart"
-          docker restart "$stalwart"
-
-          openresty=$(docker ps --filter name=openresty --format '{{.Names}}' | head -n1)
-          test -n "$openresty"
-          docker exec "$openresty" nginx -t
-          docker exec "$openresty" nginx -s reload
-
-          for attempt in $(seq 1 20); do
-            if curl --fail --silent --show-error --max-time 5 \
-              http://127.0.0.1:18080/admin/ >/dev/null; then
-              break
-            fi
-            if [ "$attempt" -eq 20 ]; then
-              docker logs --tail 80 "$stalwart"
-              exit 1
-            fi
-            sleep 2
-          done
-
-          curl --fail --silent --show-error --max-time 10 \
-            https://mail.darker.one/admin/assets/index-D7itIaoV.js \
-            | head -c 32
-          echo
-          curl --fail --silent --show-error --max-time 10 \
-            https://mail.darker.one/admin/ >/dev/null
-          docker ps --filter name=stalwart --format 'stalwart={{.Status}}'
+          echo "CONTAINER=$stalwart"
+          docker inspect "$stalwart" --format 'IMAGE={{.Config.Image}}'
+          docker inspect "$stalwart" --format 'ENTRYPOINT={{json .Config.Entrypoint}} CMD={{json .Config.Cmd}}'
+          docker inspect "$stalwart" --format 'COMPOSE_PROJECT={{index .Config.Labels "com.docker.compose.project"}}'
+          docker inspect "$stalwart" --format 'COMPOSE_FILES={{index .Config.Labels "com.docker.compose.project.config_files"}}'
+          docker inspect "$stalwart" --format 'WORKDIR={{index .Config.Labels "com.docker.compose.project.working_dir"}}'
+          docker inspect "$stalwart" --format '{{range .Mounts}}MOUNT type={{.Type}} src={{.Source}} dst={{.Destination}} rw={{.RW}}{{println}}{{end}}'
+          docker inspect "$stalwart" --format '{{range $name, $net := .NetworkSettings.Networks}}NETWORK {{$name}} ip={{$net.IPAddress}} gateway={{$net.Gateway}}{{println}}{{end}}'
+          docker inspect "$stalwart" --format '{{range .Config.Env}}{{println .}}{{end}}' | sed 's/=.*$/=<redacted>/'
+          docker exec "$stalwart" sh -lc '
+            command -v stalwart || true
+            command -v stalwart-cli || true
+            find /opt /etc -maxdepth 4 -type f \( -name "config.json" -o -name "*.toml" -o -name "docker-compose.yml" \) 2>/dev/null | head -40
+          '
+          docker logs --tail 30 "$stalwart" 2>&1 | grep -E 'Blocked IP|Server started|version' || true
           REMOTE
