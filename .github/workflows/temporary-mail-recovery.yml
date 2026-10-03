@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 jobs:
-  inspect:
+  recover:
     runs-on: ubuntu-latest
     steps:
       - name: Configure SSH
@@ -21,7 +21,7 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
 
-      - name: Inspect Stalwart deployment without changing it
+      - name: Remove reverse-proxy auto-ban and allow the gateway
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
         run: |
@@ -40,21 +40,102 @@ jobs:
           )
           ssh "${ssh_opts[@]}" "ubuntu@$DEPLOY_HOST" 'sudo bash -s' <<'REMOTE'
           set -euo pipefail
-          stalwart=$(docker ps -a --filter name=stalwart --format '{{.Names}}' | head -n1)
-          test -n "$stalwart"
-          echo "CONTAINER=$stalwart"
-          docker inspect "$stalwart" --format 'IMAGE={{.Config.Image}}'
-          docker inspect "$stalwart" --format 'ENTRYPOINT={{json .Config.Entrypoint}} CMD={{json .Config.Cmd}}'
-          docker inspect "$stalwart" --format 'COMPOSE_PROJECT={{index .Config.Labels "com.docker.compose.project"}}'
-          docker inspect "$stalwart" --format 'COMPOSE_FILES={{index .Config.Labels "com.docker.compose.project.config_files"}}'
-          docker inspect "$stalwart" --format 'WORKDIR={{index .Config.Labels "com.docker.compose.project.working_dir"}}'
-          docker inspect "$stalwart" --format '{{range .Mounts}}MOUNT type={{.Type}} src={{.Source}} dst={{.Destination}} rw={{.RW}}{{println}}{{end}}'
-          docker inspect "$stalwart" --format '{{range $name, $net := .NetworkSettings.Networks}}NETWORK {{$name}} ip={{$net.IPAddress}} gateway={{$net.Gateway}}{{println}}{{end}}'
-          docker inspect "$stalwart" --format '{{range .Config.Env}}{{println .}}{{end}}' | sed 's/=.*$/=<redacted>/'
-          docker exec "$stalwart" sh -lc '
-            command -v stalwart || true
-            command -v stalwart-cli || true
-            find /opt /etc -maxdepth 4 -type f \( -name "config.json" -o -name "*.toml" -o -name "docker-compose.yml" \) 2>/dev/null | head -40
-          '
-          docker logs --tail 30 "$stalwart" 2>&1 | grep -E 'Blocked IP|Server started|version' || true
+          original=$(docker ps -a --filter name=stalwart --format '{{.Names}}' | grep -v '^stalwart-recovery$' | head -n1)
+          test -n "$original"
+          image=$(docker inspect "$original" --format '{{.Config.Image}}')
+          network=$(docker inspect "$original" --format '{{range $name, $net := .NetworkSettings.Networks}}{{$name}}{{end}}')
+          gateway=$(docker inspect "$original" --format '{{range $name, $net := .NetworkSettings.Networks}}{{$net.Gateway}}{{end}}')
+          test -n "$network"
+          test -n "$gateway"
+
+          recovery=stalwart-recovery
+          recovery_password=$(openssl rand -hex 32)
+          original_was_running=false
+          if [ "$(docker inspect "$original" --format '{{.State.Running}}')" = true ]; then
+            original_was_running=true
+          fi
+
+          cleanup() {
+            docker rm -f "$recovery" >/dev/null 2>&1 || true
+            if [ "$original_was_running" = true ] && [ "$(docker inspect "$original" --format '{{.State.Running}}' 2>/dev/null || true)" != true ]; then
+              docker start "$original" >/dev/null
+            fi
+          }
+          trap cleanup EXIT
+
+          docker stop "$original" >/dev/null
+          docker rm -f "$recovery" >/dev/null 2>&1 || true
+          docker run -d --name "$recovery" \
+            --network "$network" \
+            -e STALWART_RECOVERY_MODE=1 \
+            -e "STALWART_RECOVERY_ADMIN=recovery:$recovery_password" \
+            -v /opt/stalwart/config:/etc/stalwart \
+            -v /opt/stalwart/data:/var/lib/stalwart \
+            "$image" --config /etc/stalwart/config.json >/dev/null
+
+          cli() {
+            docker run --rm --network "$network" \
+              -e STALWART_URL=http://stalwart-recovery:8080 \
+              -e STALWART_USER=recovery \
+              -e STALWART_PASSWORD="$recovery_password" \
+              ghcr.io/stalwartlabs/cli:latest "$@"
+          }
+
+          ready=false
+          for attempt in $(seq 1 15); do
+            if cli query BlockedIp --limit 1 --fields id --json >/dev/null 2>&1; then
+              ready=true
+              break
+            fi
+            sleep 2
+          done
+          test "$ready" = true
+
+          blocked=$(cli query BlockedIp --where "address=$gateway" --fields id,address --json 2>/dev/null || true)
+          blocked_ids=$(printf '%s\n' "$blocked" | python3 -c 'import json,sys; [print(item["id"]) for line in sys.stdin if line.strip() for item in [json.loads(line)] if isinstance(item,dict) and item.get("id")]')
+          if [ -n "$blocked_ids" ]; then
+            printf '%s\n' "$blocked_ids" | cli delete BlockedIp --stdin >/dev/null
+            echo "Removed the reverse-proxy gateway from BlockedIp."
+          else
+            echo "The reverse-proxy gateway was not present in BlockedIp."
+          fi
+
+          allowed=$(cli query AllowedIp --where "address=$gateway/32" --fields id,address --json 2>/dev/null || true)
+          if ! printf '%s\n' "$allowed" | grep -Fq "$gateway/32"; then
+            cli create AllowedIp \
+              --field "address=$gateway/32" \
+              --field 'reason=1Panel reverse proxy gateway' >/dev/null
+            echo "Added the reverse-proxy gateway to AllowedIp."
+          else
+            echo "The reverse-proxy gateway is already present in AllowedIp."
+          fi
+
+          docker rm -f "$recovery" >/dev/null
+          docker start "$original" >/dev/null
+
+          healthy=false
+          for attempt in $(seq 1 6); do
+            if curl --fail --silent --show-error --max-time 10 https://mail.darker.one/admin/ >/dev/null; then
+              healthy=true
+              break
+            fi
+            sleep 5
+          done
+          test "$healthy" = true
+
+          if docker logs --since 2m "$original" 2>&1 | grep -F "remoteIp = $gateway" | grep -Fq 'Blocked IP address'; then
+            echo "The gateway was blocked again after restart." >&2
+            exit 1
+          fi
+
+          asset=/opt/1panel/www/sites/mail.darker.one/index/stalwart-webui-zh-v1/assets/index-D7itIaoV.js
+          test -s "$asset"
+          content_type=$(curl --fail --silent --show-error --head --max-time 10 \
+            https://mail.darker.one/admin/assets/index-D7itIaoV.js | tr -d '\r' | awk -F': ' 'tolower($1)=="content-type" {print tolower($2)}' | tail -n1)
+          case "$content_type" in
+            *javascript*) ;;
+            *) echo "Unexpected asset content type: $content_type" >&2; exit 1 ;;
+          esac
+
+          echo "Stalwart admin and the Chinese WebUI asset are reachable."
           REMOTE
