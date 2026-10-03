@@ -103,7 +103,11 @@ jobs:
           blocked=$(cli query BlockedIp --where "address=$gateway" --fields id,address --json 2>/dev/null || true)
           blocked_ids=$(printf '%s\n' "$blocked" | python3 -c 'import json,sys; [print(item["id"]) for line in sys.stdin if line.strip() for item in [json.loads(line)] if isinstance(item,dict) and item.get("id")]')
           if [ -n "$blocked_ids" ]; then
-            printf '%s\n' "$blocked_ids" | cli delete BlockedIp --stdin >/dev/null
+            printf '%s\n' "$blocked_ids" | docker run --rm -i --network "$network" \
+              -e STALWART_URL=http://stalwart-recovery:8080 \
+              -e STALWART_USER=recovery \
+              -e STALWART_PASSWORD="$recovery_password" \
+              ghcr.io/stalwartlabs/cli:latest delete BlockedIp --stdin >/dev/null
             echo "Removed the reverse-proxy gateway from BlockedIp."
           else
             echo "The reverse-proxy gateway was not present in BlockedIp."
