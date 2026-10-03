@@ -1,0 +1,68 @@
+name: Temporary mail WebUI rollback
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure SSH
+        env:
+          DEPLOY_SSH_KEY_BASE64: ${{ secrets.DEPLOY_SSH_KEY_BASE64 }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          install -m 700 -d ~/.ssh
+          printf '%s' "$DEPLOY_SSH_KEY_BASE64" | base64 --decode > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Restore previous working WebUI routing
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          set -euo pipefail
+          ssh_opts=(
+            -i "$HOME/.ssh/id_ed25519"
+            -o IdentitiesOnly=yes
+            -o PreferredAuthentications=publickey
+            -o PasswordAuthentication=no
+            -o KbdInteractiveAuthentication=no
+            -o BatchMode=yes
+            -o ConnectTimeout=30
+            -o ConnectionAttempts=5
+            -o ServerAliveInterval=10
+            -o ServerAliveCountMax=3
+          )
+          ssh "${ssh_opts[@]}" "ubuntu@$DEPLOY_HOST" 'sudo bash -s' <<'REMOTE'
+          set -euo pipefail
+          conf=/opt/1panel/www/sites/mail.darker.one/proxy/root.conf
+          cp "$conf" "$conf.rollback-$(date +%Y%m%d-%H%M%S)"
+          python3 - "$conf" <<'PY'
+          from pathlib import Path
+          import re, sys
+
+          path = Path(sys.argv[1])
+          source = path.read_text()
+          start = '# Custom Chinese Stalwart WebUI assets'
+          end = '# End custom Chinese Stalwart WebUI assets'
+          source = re.sub(
+              re.escape(start) + r'.*?' + re.escape(end) + r'\n?',
+              '',
+              source,
+              count=1,
+              flags=re.S,
+          )
+          path.write_text(source)
+          PY
+          openresty=$(docker ps --filter name=openresty --format '{{.Names}}' | head -n1)
+          test -n "$openresty"
+          docker exec "$openresty" nginx -t
+          docker exec "$openresty" nginx -s reload
+          curl --fail --silent --show-error --max-time 15 https://mail.darker.one/admin/ >/dev/null
+          echo 'Mail WebUI access restored.'
+          REMOTE
