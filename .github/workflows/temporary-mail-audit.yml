@@ -129,6 +129,12 @@ jobs:
           trap cleanup EXIT
 
           start_audit
+          audit_ip=$(docker inspect "$audit" --format '{{range $name, $net := .NetworkSettings.Networks}}{{$net.IPAddress}}{{end}}')
+          test -n "$audit_ip"
+          curl --fail --silent --show-error --location -u "recovery:$recovery_password" \
+            "http://$audit_ip:8080/api/schema" > "$work/schema.json"
+          python3 -m json.tool "$work/schema.json" >/dev/null
+
           cli query Domain --fields id,name,isEnabled --json > "$work/domains.ndjson"
           domain_id=$(python3 - "$work/domains.ndjson" <<'PY'
           import json, sys
