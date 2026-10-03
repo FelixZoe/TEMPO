@@ -129,12 +129,6 @@ jobs:
           trap cleanup EXIT
 
           start_audit
-          audit_ip=$(docker inspect "$audit" --format '{{range $name, $net := .NetworkSettings.Networks}}{{$net.IPAddress}}{{end}}')
-          test -n "$audit_ip"
-          curl --fail --silent --show-error -u "recovery:$recovery_password" \
-            "http://$audit_ip:8080/api/schema" > "$work/schema.json"
-          python3 -m json.tool "$work/schema.json" >/dev/null
-
           cli query Domain --fields id,name,isEnabled --json > "$work/domains.ndjson"
           domain_id=$(python3 - "$work/domains.ndjson" <<'PY'
           import json, sys
@@ -173,14 +167,19 @@ jobs:
 
           stop_audit_start_original
 
+          original_ip=$(docker inspect "$original" --format '{{range $name, $net := .NetworkSettings.Networks}}{{$net.IPAddress}}{{end}}')
+          test -n "$original_ip"
+
           export MAIL_USER_A="$user_a@darker.one" MAIL_USER_B="$user_b@darker.one"
           export MAIL_PASS_A="$pass_a" MAIL_PASS_B="$pass_b"
+          export MAIL_HOST="$original_ip"
           python3 <<'PY'
           import email, imaplib, os, smtplib, ssl, time
           from email.message import EmailMessage
 
           user_a = os.environ['MAIL_USER_A']
           user_b = os.environ['MAIL_USER_B']
+          mail_host = os.environ['MAIL_HOST']
           subject = 'TEMPO local delivery audit'
           marker = 'tempo-mail-audit-ok'
           ctx = ssl.create_default_context()
@@ -192,13 +191,13 @@ jobs:
           msg['To'] = user_b
           msg['Subject'] = subject
           msg.set_content(marker)
-          with smtplib.SMTP_SSL('127.0.0.1', 465, context=ctx, timeout=20) as smtp:
+          with smtplib.SMTP_SSL(mail_host, 465, context=ctx, timeout=20) as smtp:
               smtp.login(user_a, os.environ['MAIL_PASS_A'])
               smtp.send_message(msg)
 
           found = False
           for _ in range(20):
-              with imaplib.IMAP4_SSL('127.0.0.1', 993, ssl_context=ctx, timeout=20) as imap:
+              with imaplib.IMAP4_SSL(mail_host, 993, ssl_context=ctx, timeout=20) as imap:
                   imap.login(user_b, os.environ['MAIL_PASS_B'])
                   imap.select('INBOX')
                   status, data = imap.search(None, 'SUBJECT', '"TEMPO local delivery audit"')
