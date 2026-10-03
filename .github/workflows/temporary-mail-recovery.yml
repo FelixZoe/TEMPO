@@ -1,0 +1,122 @@
+name: Temporary mail recovery
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure SSH
+        env:
+          DEPLOY_SSH_KEY_BASE64: ${{ secrets.DEPLOY_SSH_KEY_BASE64 }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          install -m 700 -d ~/.ssh
+          printf '%s' "$DEPLOY_SSH_KEY_BASE64" | base64 --decode > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Diagnose and recover mail WebUI
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          set -euo pipefail
+          ssh_opts=(
+            -i "$HOME/.ssh/id_ed25519"
+            -o IdentitiesOnly=yes
+            -o PreferredAuthentications=publickey
+            -o PasswordAuthentication=no
+            -o KbdInteractiveAuthentication=no
+            -o BatchMode=yes
+            -o ConnectTimeout=30
+            -o ConnectionAttempts=5
+            -o ServerAliveInterval=10
+            -o ServerAliveCountMax=3
+          )
+          ssh "${ssh_opts[@]}" "ubuntu@$DEPLOY_HOST" 'sudo bash -s' <<'REMOTE'
+          set -uo pipefail
+
+          mail_container=$(docker ps -a --filter name=1Panel-stalwart-mail --format '{{.Names}}' | head -n1)
+          openresty=$(docker ps --filter name=openresty --format '{{.Names}}' | head -n1)
+          conf=/opt/1panel/www/sites/mail.darker.one/proxy/root.conf
+
+          echo '=== containers ==='
+          docker ps -a --filter name=stalwart --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+          echo '=== openresty ==='
+          printf 'container=%s\n' "$openresty"
+          echo '=== proxy config ==='
+          sed -n '1,240p' "$conf" 2>/dev/null || true
+          echo '=== host backend before ==='
+          curl -sS -D - --max-time 10 http://127.0.0.1:18080/admin/ -o /tmp/host-admin.html || true
+          head -c 500 /tmp/host-admin.html 2>/dev/null || true
+          echo
+
+          if [ -z "$mail_container" ]; then
+            echo 'Stalwart container not found.' >&2
+            exit 1
+          fi
+          if [ "$(docker inspect -f '{{.State.Running}}' "$mail_container" 2>/dev/null)" != true ]; then
+            docker start "$mail_container"
+          fi
+
+          echo '=== stalwart logs before restart ==='
+          docker logs --tail 180 "$mail_container" 2>&1 || true
+          backend_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$mail_container")
+          printf 'backend_ip=%s\n' "$backend_ip"
+          echo '=== container backend before ==='
+          curl -sS -D - --max-time 10 "http://$backend_ip:8080/admin/" -o /tmp/container-admin.html || true
+          head -c 500 /tmp/container-admin.html 2>/dev/null || true
+          echo
+
+          host_code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 http://127.0.0.1:18080/admin/ || true)
+          container_code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 "http://$backend_ip:8080/admin/" || true)
+          if [ "$host_code" != 200 ] || [ "$container_code" != 200 ]; then
+            echo "Restarting Stalwart because backend codes are host=$host_code container=$container_code"
+            docker restart "$mail_container"
+            for i in $(seq 1 30); do
+              backend_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$mail_container")
+              host_code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 3 http://127.0.0.1:18080/admin/ || true)
+              container_code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 3 "http://$backend_ip:8080/admin/" || true)
+              [ "$host_code" = 200 ] && [ "$container_code" = 200 ] && break
+              sleep 2
+            done
+          fi
+
+          echo "backend after: host=$host_code container=$container_code"
+          if [ "$host_code" != 200 ]; then
+            echo '=== stalwart logs after restart ==='
+            docker logs --tail 240 "$mail_container" 2>&1 || true
+            exit 1
+          fi
+
+          # Remove only the temporary v2 full-page routing. Keep the original proxy.
+          cp "$conf" "$conf.recovery-$(date +%Y%m%d-%H%M%S)"
+          python3 - "$conf" <<'PY'
+          from pathlib import Path
+          import re, sys
+
+          path = Path(sys.argv[1])
+          source = path.read_text()
+          start = '# Custom Chinese Stalwart WebUI assets'
+          end = '# End custom Chinese Stalwart WebUI assets'
+          source = re.sub(re.escape(start) + r'.*?' + re.escape(end) + r'\n?', '', source, flags=re.S)
+          path.write_text(source)
+          PY
+
+          docker exec "$openresty" nginx -t
+          docker exec "$openresty" nginx -s reload
+          sleep 1
+
+          echo '=== openresty errors ==='
+          docker exec "$openresty" sh -c 'tail -n 120 /var/log/nginx/error.log 2>/dev/null || true'
+          public_code=$(curl -sS -o /tmp/public-admin.html -w '%{http_code}' --max-time 15 https://mail.darker.one/admin/ || true)
+          echo "public_code=$public_code"
+          head -c 500 /tmp/public-admin.html 2>/dev/null || true
+          echo
+          [ "$public_code" = 200 ]
+          REMOTE
