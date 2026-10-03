@@ -82,14 +82,23 @@ jobs:
           }
 
           ready=false
+          last_error=''
           for attempt in $(seq 1 15); do
-            if cli query BlockedIp --limit 1 --fields id --json >/dev/null 2>&1; then
+            if last_error=$(cli describe 2>&1); then
               ready=true
               break
             fi
             sleep 2
           done
-          test "$ready" = true
+          if [ "$ready" != true ]; then
+            echo "Recovery container status:"
+            docker inspect "$recovery" --format 'running={{.State.Running}} status={{.State.Status}} exit={{.State.ExitCode}} error={{.State.Error}}'
+            echo "Recovery container logs:"
+            docker logs --tail 40 "$recovery" 2>&1 | sed -E 's/(recovery:)[^[:space:]]+/\1<redacted>/g'
+            echo "CLI connection error:"
+            printf '%s\n' "$last_error" | tail -20
+            exit 1
+          fi
 
           blocked=$(cli query BlockedIp --where "address=$gateway" --fields id,address --json 2>/dev/null || true)
           blocked_ids=$(printf '%s\n' "$blocked" | python3 -c 'import json,sys; [print(item["id"]) for line in sys.stdin if line.strip() for item in [json.loads(line)] if isinstance(item,dict) and item.get("id")]')
