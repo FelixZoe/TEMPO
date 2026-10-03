@@ -1,0 +1,112 @@
+name: Temporary mail recovery
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure SSH
+        env:
+          DEPLOY_SSH_KEY_BASE64: ${{ secrets.DEPLOY_SSH_KEY_BASE64 }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          install -m 700 -d ~/.ssh
+          printf '%s' "$DEPLOY_SSH_KEY_BASE64" | base64 --decode > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Recover mail and publish Chinese WebUI assets
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          set -euo pipefail
+          ssh_opts=(
+            -i "$HOME/.ssh/id_ed25519"
+            -o IdentitiesOnly=yes
+            -o PreferredAuthentications=publickey
+            -o PasswordAuthentication=no
+            -o KbdInteractiveAuthentication=no
+            -o BatchMode=yes
+            -o ConnectTimeout=30
+            -o ConnectionAttempts=5
+            -o ServerAliveInterval=10
+            -o ServerAliveCountMax=3
+          )
+          ssh "${ssh_opts[@]}" "ubuntu@$DEPLOY_HOST" 'sudo bash -s' <<'REMOTE'
+          set -euo pipefail
+          site=/opt/1panel/www/sites/mail.darker.one
+          archive="$site/index/stalwart-webui-zh-v1.zip"
+          bundle="$site/index/stalwart-webui-zh-v1"
+          conf="$site/proxy/root.conf"
+
+          test -f "$archive"
+          mkdir -p "$bundle"
+          python3 -m zipfile -e "$archive" "$bundle"
+          test -f "$bundle/assets/index-D7itIaoV.js"
+
+          python3 - "$conf" <<'PY'
+          from pathlib import Path
+          import sys
+
+          path = Path(sys.argv[1])
+          source = path.read_text()
+          marker = "# Custom Chinese Stalwart WebUI assets"
+          block = '''# Custom Chinese Stalwart WebUI assets
+          location ^~ /admin/assets/ {
+              alias /www/sites/mail.darker.one/index/stalwart-webui-zh-v1/assets/;
+              add_header Cache-Control "public, max-age=3600";
+          }
+          location ^~ /account/assets/ {
+              alias /www/sites/mail.darker.one/index/stalwart-webui-zh-v1/assets/;
+              add_header Cache-Control "public, max-age=3600";
+          }
+          location = /admin/favicon.ico {
+              alias /www/sites/mail.darker.one/index/stalwart-webui-zh-v1/favicon.ico;
+          }
+          location = /account/favicon.ico {
+              alias /www/sites/mail.darker.one/index/stalwart-webui-zh-v1/favicon.ico;
+          }
+          '''
+          if marker not in source:
+              needle = "location ^~ / {"
+              if needle not in source:
+                  raise SystemExit("mail reverse-proxy location not found")
+              source = source.replace(needle, block + needle, 1)
+              path.write_text(source)
+          PY
+
+          stalwart=$(docker ps -a --filter name=stalwart --format '{{.Names}}' | head -n1)
+          test -n "$stalwart"
+          docker restart "$stalwart"
+
+          openresty=$(docker ps --filter name=openresty --format '{{.Names}}' | head -n1)
+          test -n "$openresty"
+          docker exec "$openresty" nginx -t
+          docker exec "$openresty" nginx -s reload
+
+          for attempt in $(seq 1 20); do
+            if curl --fail --silent --show-error --max-time 5 \
+              http://127.0.0.1:18080/admin/ >/dev/null; then
+              break
+            fi
+            if [ "$attempt" -eq 20 ]; then
+              docker logs --tail 80 "$stalwart"
+              exit 1
+            fi
+            sleep 2
+          done
+
+          curl --fail --silent --show-error --max-time 10 \
+            https://mail.darker.one/admin/assets/index-D7itIaoV.js \
+            | head -c 32
+          echo
+          curl --fail --silent --show-error --max-time 10 \
+            https://mail.darker.one/admin/ >/dev/null
+          docker ps --filter name=stalwart --format 'stalwart={{.Status}}'
+          REMOTE
