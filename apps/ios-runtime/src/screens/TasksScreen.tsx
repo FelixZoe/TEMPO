@@ -70,8 +70,8 @@ export function TasksScreen({ route, theme, tasks, quote, command, consumeComman
       <View style={styles.flex} {...pan.panHandlers}>
         <NativeChromeGap />
         <View style={styles.heading}>
-          <Text style={[styles.eyebrow, { color: theme.secondary }]}>{route === 'today' ? monthLabel(selectedDate) : '快速记录，稍后整理'}</Text>
-          <Text style={[styles.title, { color: theme.text }]}>{route === 'today' ? dayTitle(selectedDate) : '收集箱'}</Text>
+          <Text style={[styles.title, { color: theme.text }]}>{route === 'today' ? greeting() : '收集箱'}</Text>
+          <Text style={[styles.eyebrow, { color: theme.secondary }]}>{route === 'today' ? fullDate(selectedDate) : '快速记录，稍后整理'}</Text>
           {route === 'inbox' && quote ? <Text numberOfLines={2} style={[styles.quote, { color: theme.secondary }]}>“{quote}”</Text> : null}
         </View>
         {searching ? (
@@ -81,7 +81,7 @@ export function TasksScreen({ route, theme, tasks, quote, command, consumeComman
           </View>
         ) : null}
         {route === 'today' ? <CalendarStrip theme={theme} selected={selectedDate} onSelect={setSelectedDate} progress={calendar} /> : null}
-        <View style={[styles.listPanel, { backgroundColor: theme.surface }]}>
+        <View style={[styles.listPanel, route === 'inbox' ? styles.inboxListPanel : { backgroundColor: theme.surface }]}>
           <FlatList
             data={shown}
             keyExtractor={(item) => item.id}
@@ -89,7 +89,7 @@ export function TasksScreen({ route, theme, tasks, quote, command, consumeComman
             scrollEventThrottle={16}
             ListHeaderComponent={shown.length ? <Text style={[styles.groupTitle, { color: theme.secondary }]}>{route === 'today' ? dayTitle(selectedDate) : '待整理'}</Text> : null}
             ListEmptyComponent={<EmptyState theme={theme} route={route} />}
-            renderItem={({ item }) => <TaskRow theme={theme} task={item} onToggle={() => perform('task.toggle', { id: item.id })} onDelete={() => remove(item)} onReschedule={(date) => perform('task.update', { id: item.id, scheduledAt: date })} />}
+            renderItem={({ item }) => <TaskRow theme={theme} task={item} card={route === 'inbox'} onToggle={() => perform('task.toggle', { id: item.id })} onDelete={() => remove(item)} onReschedule={(date) => perform('task.update', { id: item.id, scheduledAt: date })} />}
             contentContainerStyle={shown.length ? styles.listContent : styles.emptyContent}
           />
         </View>
@@ -130,7 +130,7 @@ function DateCell({ date, selected, theme, onPress }: { date: Date; selected: bo
   return <Pressable onPress={onPress} style={styles.dateCell}><Text style={[styles.weekday, { color: theme.tertiary }]}>{'一二三四五六日'[(date.getDay() + 6) % 7]}</Text><View style={[styles.dateDot, selected && { backgroundColor: theme.accent }]}><Text style={[styles.dateNumber, { color: selected ? '#fff' : theme.text }]}>{date.getDate()}</Text></View></Pressable>;
 }
 
-function TaskRow({ task, theme, onToggle, onDelete, onReschedule }: { task: TempoTask; theme: TempoTheme; onToggle: () => void; onDelete: () => void; onReschedule: (date?: string) => void }) {
+function TaskRow({ task, theme, card, onToggle, onDelete, onReschedule }: { task: TempoTask; theme: TempoTheme; card: boolean; onToggle: () => void; onDelete: () => void; onReschedule: (date?: string) => void }) {
   const x = useRef(new Animated.Value(0)).current;
   const pan = useMemo(() => PanResponder.create({
     onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > 10 && Math.abs(gesture.dx) > Math.abs(gesture.dy),
@@ -138,12 +138,12 @@ function TaskRow({ task, theme, onToggle, onDelete, onReschedule }: { task: Temp
     onPanResponderRelease: (_, gesture) => Animated.spring(x, { toValue: gesture.dx < -64 ? -154 : 0, useNativeDriver: true, stiffness: 240, damping: 25 }).start(),
   }), [x]);
   return (
-    <View style={styles.swipeWrap}>
+    <View style={[styles.swipeWrap, card && styles.cardWrap]}>
       <View style={styles.actions}>
         <Pressable onPress={() => onReschedule(addDays(new Date(), 1).toISOString())} style={[styles.action, { backgroundColor: theme.accent }]}><Text style={styles.actionText}>明天</Text></Pressable>
         <Pressable onPress={onDelete} style={[styles.action, { backgroundColor: theme.danger }]}><Text style={styles.actionText}>删除</Text></Pressable>
       </View>
-      <Animated.View {...pan.panHandlers} style={[styles.taskRow, { backgroundColor: theme.surface, transform: [{ translateX: x }] }]}>
+      <Animated.View {...pan.panHandlers} style={[styles.taskRow, card && styles.cardRow, { backgroundColor: theme.surface, transform: [{ translateX: x }] }]}>
         <Pressable onPress={onToggle} style={[styles.checkbox, { borderColor: task.status === 'completed' ? theme.accent : theme.tertiary, backgroundColor: task.status === 'completed' ? theme.accent : 'transparent' }]}>{task.status === 'completed' ? <Text style={styles.check}>✓</Text> : null}</Pressable>
         <View style={styles.taskText}><Text numberOfLines={2} style={[styles.taskTitle, { color: task.status === 'completed' ? theme.tertiary : theme.text, textDecorationLine: task.status === 'completed' ? 'line-through' : 'none' }]}>{task.title}</Text>{task.notes ? <Text numberOfLines={1} style={[styles.taskNotes, { color: theme.secondary }]}>{task.notes}</Text> : null}</View>
         {task.startAt ? <Text style={[styles.taskDate, { color: theme.accent }]}>{sameDay(task.startAt, new Date()) ? '今天' : shortDate(task.startAt)}</Text> : null}
@@ -156,17 +156,18 @@ function EmptyState({ theme, route }: { theme: TempoTheme; route: string }) { re
 function sameDay(value: string | Date | null | undefined, compare: Date) { if (!value) return false; const date = typeof value === 'string' ? new Date(value) : value; return date.getFullYear() === compare.getFullYear() && date.getMonth() === compare.getMonth() && date.getDate() === compare.getDate(); }
 function addDays(date: Date, count: number) { const result = new Date(date); result.setDate(result.getDate() + count); return result; }
 function dayTitle(date: Date) { const today = new Date(); if (sameDay(date, today)) return '今天'; if (sameDay(date, addDays(today, -1))) return '昨天'; if (sameDay(date, addDays(today, 1))) return '明天'; return `${date.getMonth() + 1}月${date.getDate()}日`; }
-function monthLabel(date: Date) { return `${date.getMonth() + 1}月`; }
+function greeting() { const hour = new Date().getHours(); return hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好'; }
+function fullDate(date: Date) { const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']; return `${date.getMonth() + 1}月${date.getDate()}日  ${weekdays[date.getDay()]}`; }
 function shortDate(value: string) { const date = new Date(value); return `${date.getMonth() + 1}/${date.getDate()}`; }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 }, heading: { paddingHorizontal: 24, paddingTop: 6, paddingBottom: 8 }, eyebrow: { fontSize: 13, fontWeight: '600', marginBottom: 1 }, title: { fontSize: 33, fontWeight: '800', letterSpacing: -.8 }, quote: { fontSize: 14, lineHeight: 20, marginTop: 9, maxWidth: '86%' },
-  search: { marginHorizontal: 18, height: 48, borderRadius: 20, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 12 }, searchInput: { flex: 1, fontSize: 16 },
-  calendar: { overflow: 'hidden', paddingHorizontal: 12 }, weekRow: { height: 72, flexDirection: 'row' }, dateCell: { flex: 1, alignItems: 'center', justifyContent: 'center' }, weekday: { fontSize: 12, marginBottom: 3 }, dateDot: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' }, dateNumber: { fontSize: 17, fontWeight: '700' },
-  listPanel: { flex: 1, marginHorizontal: 14, borderTopLeftRadius: radius.large, borderTopRightRadius: radius.large, overflow: 'hidden' }, listContent: { paddingTop: 8, paddingBottom: 130 }, emptyContent: { flexGrow: 1 }, groupTitle: { fontSize: 14, fontWeight: '700', paddingHorizontal: 18, paddingVertical: 10 },
-  swipeWrap: { minHeight: 70, overflow: 'hidden' }, actions: { ...StyleSheet.absoluteFill, flexDirection: 'row', justifyContent: 'flex-end' }, action: { width: 77, justifyContent: 'center', alignItems: 'center' }, actionText: { color: '#fff', fontWeight: '700' },
-  taskRow: { minHeight: 70, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 17, paddingVertical: 11 }, checkbox: { width: 27, height: 27, borderWidth: 2, borderRadius: 9, alignItems: 'center', justifyContent: 'center', marginRight: 13 }, check: { color: '#fff', fontWeight: '900' }, taskText: { flex: 1 }, taskTitle: { fontSize: 17, fontWeight: '600', lineHeight: 22 }, taskNotes: { fontSize: 13, marginTop: 2 }, taskDate: { fontSize: 13, fontWeight: '600', marginLeft: 10 },
-  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 72 }, emptyIcon: { fontSize: 54, fontWeight: '200' }, emptyTitle: { fontSize: 20, fontWeight: '700', marginTop: 12 }, emptyBody: { fontSize: 15, marginTop: 6 },
-  fab: { position: 'absolute', right: 26, bottom: 28, width: 62, height: 62, borderRadius: 31, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: .14, shadowRadius: 14, shadowOffset: { width: 0, height: 7 } }, plus: { color: '#fff', fontSize: 34, lineHeight: 38, fontWeight: '300' }, undo: { position: 'absolute', left: 24, bottom: 34, borderRadius: 22, paddingHorizontal: 17, height: 44, justifyContent: 'center' },
-  sheetBody: { flex: 1, paddingTop: 16 }, sheetTitle: { fontSize: 30, fontWeight: '800', paddingHorizontal: 22, marginBottom: 20 }, editor: { marginHorizontal: 18, minHeight: 62, borderRadius: radius.medium, paddingHorizontal: 18, fontSize: 18, marginBottom: 18 },
+  flex: { flex: 1 }, heading: { paddingHorizontal: 20, paddingTop: 6, paddingBottom: 12 }, eyebrow: { fontSize: 15, fontWeight: '400', marginTop: 7 }, title: { fontSize: 32, fontWeight: '700', letterSpacing: -.8 }, quote: { fontSize: 13, lineHeight: 19, marginTop: 10, maxWidth: '88%', fontStyle: 'italic' },
+  search: { marginHorizontal: 20, height: 44, borderRadius: 14, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 12 }, searchInput: { flex: 1, fontSize: 16 },
+  calendar: { overflow: 'hidden', paddingHorizontal: 16 }, weekRow: { height: 68, flexDirection: 'row' }, dateCell: { flex: 1, alignItems: 'center', justifyContent: 'center' }, weekday: { fontSize: 11, marginBottom: 4 }, dateDot: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' }, dateNumber: { fontSize: 16, fontWeight: '600' },
+  listPanel: { flex: 1, marginHorizontal: 20, borderRadius: radius.large, overflow: 'hidden' }, inboxListPanel: { marginHorizontal: 15, borderRadius: 0, overflow: 'visible' }, listContent: { paddingTop: 8, paddingBottom: 120 }, emptyContent: { flexGrow: 1 }, groupTitle: { fontSize: 13, fontWeight: '600', paddingHorizontal: 6, paddingVertical: 10 },
+  swipeWrap: { minHeight: 66, overflow: 'hidden' }, cardWrap: { marginHorizontal: 5, marginVertical: 5, borderRadius: 18 }, actions: { ...StyleSheet.absoluteFill, flexDirection: 'row', justifyContent: 'flex-end' }, action: { width: 74, justifyContent: 'center', alignItems: 'center' }, actionText: { color: '#fff', fontWeight: '600' },
+  taskRow: { minHeight: 66, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 12 }, cardRow: { borderRadius: 18 }, checkbox: { width: 24, height: 24, borderWidth: 1.6, borderRadius: 6, alignItems: 'center', justifyContent: 'center', marginRight: 13 }, check: { color: '#fff', fontWeight: '800' }, taskText: { flex: 1 }, taskTitle: { fontSize: 17, fontWeight: '500', lineHeight: 22 }, taskNotes: { fontSize: 13, lineHeight: 18, marginTop: 3 }, taskDate: { fontSize: 12, fontWeight: '500', marginLeft: 10 },
+  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 64 }, emptyIcon: { fontSize: 48, fontWeight: '200' }, emptyTitle: { fontSize: 19, fontWeight: '600', marginTop: 12 }, emptyBody: { fontSize: 15, marginTop: 6 },
+  fab: { position: 'absolute', right: 20, bottom: 18, width: 54, height: 54, borderRadius: 27, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: .12, shadowRadius: 18, shadowOffset: { width: 0, height: 8 } }, plus: { color: '#fff', fontSize: 29, lineHeight: 33, fontWeight: '300' }, undo: { position: 'absolute', left: 20, bottom: 23, borderRadius: 20, paddingHorizontal: 16, height: 42, justifyContent: 'center' },
+  sheetBody: { flex: 1, paddingTop: 18 }, sheetTitle: { fontSize: 28, fontWeight: '700', paddingHorizontal: 22, marginBottom: 20 }, editor: { marginHorizontal: 20, minHeight: 58, borderRadius: radius.medium, paddingHorizontal: 16, fontSize: 17, marginBottom: 18 },
 });

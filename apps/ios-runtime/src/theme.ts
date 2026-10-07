@@ -6,21 +6,22 @@ export function makeTheme(scheme: ColorSchemeName | 'light' | 'dark') {
   const dark = scheme === 'dark';
   return {
     dark,
-    background: dark ? '#0C0E10' : '#F7F8FA',
-    surface: dark ? '#171A1E' : '#FFFFFF',
-    surfaceMuted: dark ? '#20242A' : '#EFF2F6',
-    text: dark ? '#F5F6F7' : '#15171A',
-    secondary: dark ? '#AEB4BD' : '#656C76',
-    tertiary: dark ? '#737B86' : '#9CA3AD',
-    separator: dark ? '#2A2F36' : '#E4E7EB',
-    accent: dark ? '#79A8FF' : '#356FD6',
-    accentSoft: dark ? '#172A49' : '#E8F0FE',
-    success: dark ? '#6CCB91' : '#228B55',
-    danger: dark ? '#FF8585' : '#C94343',
-    warning: dark ? '#E9BB69' : '#A46911',
-    shadow: dark ? '#000000' : '#8C97A8',
+    background: dark ? '#121214' : '#FAFAFA',
+    surface: dark ? '#1E1E22' : '#FFFFFF',
+    surfaceElevated: dark ? '#2A2A2E' : '#FFFFFF',
+    surfaceMuted: dark ? '#2A2A2E' : '#F2F2F7',
+    text: dark ? '#F0F0F5' : '#1C1C1E',
+    secondary: dark ? '#98989D' : '#8E8E93',
+    tertiary: dark ? '#6C6C72' : '#C7C7CC',
+    separator: dark ? '#3A3A3E' : '#E5E5EA',
+    accent: '#007AFF',
+    accentSoft: dark ? '#17314B' : '#E8F0FE',
+    success: '#34C759',
+    danger: '#FF3B30',
+    warning: '#FF9500',
+    shadow: '#000000',
   };
 }
 
-export const radius = { small: 12, medium: 18, large: 26, pill: 999 };
-export const spacing = { xs: 6, sm: 10, md: 16, lg: 22, xl: 30 };
+export const radius = { small: 10, medium: 16, large: 24, pill: 999 };
+export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 };
