@@ -5,11 +5,11 @@ import {
 
 import { NativeChromeGap, PrimaryButton, Screen, Sheet } from '../components/Primitives';
 import { radius, type TempoTheme } from '../theme';
-import type { TempoTask } from '../types';
+import type { TempoCommand, TempoTask } from '../types';
 
 type Props = {
   route: 'inbox' | 'today'; theme: TempoTheme; tasks: TempoTask[]; quote?: string;
-  command?: string; consumeCommand: () => void;
+  command?: TempoCommand; consumeCommand: () => void;
   perform: <T>(action: string, payload?: Record<string, unknown>) => Promise<T>;
 };
 
@@ -22,17 +22,16 @@ export function TasksScreen({ route, theme, tasks, quote, command, consumeComman
   const [showCompleted, setShowCompleted] = useState(true);
   const [undo, setUndo] = useState<TempoTask>();
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const searchRef = useRef<TextInput>(null);
   const calendar = useRef(new Animated.Value(0)).current;
   const expanded = useRef(false);
   const listAtTop = useRef(true);
 
   useEffect(() => {
-    if (command === 'search') searchRef.current?.focus();
-    if (command === 'newTask') openComposer();
-    if (command === 'showCompleted') setShowCompleted(true);
-    if (command === 'hideCompleted') setShowCompleted(false);
-    if (command === 'returnToday') setSelectedDate(new Date());
+    if (command?.type === 'search') setQuery(command.query ?? '');
+    if (command?.type === 'newTask') openComposer();
+    if (command?.type === 'showCompleted') setShowCompleted(true);
+    if (command?.type === 'hideCompleted') setShowCompleted(false);
+    if (command?.type === 'returnToday') setSelectedDate(new Date());
     if (command) consumeCommand();
   }, [command, consumeCommand]);
 
@@ -112,20 +111,6 @@ export function TasksScreen({ route, theme, tasks, quote, command, consumeComman
             {route === 'today' ? fullDate(selectedDate) : openCount ? `${openCount} 项待整理` : '随手记下，稍后安排'}
             {completedCount ? ` · ${completedCount} 项已完成` : ''}
           </Text>
-        </View>
-
-        <View style={[styles.search, { backgroundColor: theme.surfaceMuted }]}>
-          <TextInput
-            ref={searchRef}
-            value={query}
-            onChangeText={setQuery}
-            placeholder={route === 'inbox' ? '搜索收集箱' : '搜索这一天'}
-            placeholderTextColor={theme.secondary}
-            returnKeyType="search"
-            clearButtonMode="while-editing"
-            style={[styles.searchInput, { color: theme.text }]}
-          />
-          {query ? <Pressable onPress={() => setQuery('')} hitSlop={10}><Text style={[styles.clear, { color: theme.secondary }]}>×</Text></Pressable> : null}
         </View>
 
         {route === 'today' ? <CalendarStrip theme={theme} selected={selectedDate} onSelect={setSelectedDate} progress={calendar} /> : null}
@@ -266,9 +251,6 @@ const styles = StyleSheet.create({
   heading: { paddingHorizontal: 20, paddingTop: 6, paddingBottom: 14 },
   title: { fontSize: 34, fontWeight: '800', letterSpacing: -1.15 },
   subtitle: { fontSize: 14, lineHeight: 20, marginTop: 6 },
-  search: { marginHorizontal: 20, height: 44, borderRadius: 14, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center' },
-  searchInput: { flex: 1, fontSize: 16, paddingVertical: 0 },
-  clear: { fontSize: 24, fontWeight: '300', paddingLeft: 10 },
   calendar: { overflow: 'hidden', paddingHorizontal: 16 },
   weekRow: { height: 66, flexDirection: 'row' },
   dateCell: { flex: 1, alignItems: 'center', justifyContent: 'center' },

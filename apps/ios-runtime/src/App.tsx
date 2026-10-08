@@ -29,7 +29,7 @@ export default function App(props: RuntimeProps) {
 function RouteView({ tempo }: { tempo: ReturnType<typeof useTempo> }) {
   const { snapshot, route, theme, command, consumeCommand, perform } = tempo;
   if (!snapshot) return null;
-  if (route === 'inbox' || route === 'today') return <TasksScreen route={route} theme={theme} tasks={snapshot.tasks} quote={snapshot.ambient?.quote?.text} command={command?.type} consumeCommand={consumeCommand} perform={perform} />;
+  if (route === 'inbox' || route === 'today') return <TasksScreen route={route} theme={theme} tasks={snapshot.tasks} quote={snapshot.ambient?.quote?.text} command={command} consumeCommand={consumeCommand} perform={perform} />;
   if (route === 'focus') return <FocusScreen theme={theme} pomodoro={snapshot.pomodoro} remaining={snapshot.displayedRemainingSeconds} command={command} consumeCommand={consumeCommand} perform={perform} />;
   if (route === 'rss') return <RSSScreen theme={theme} articles={snapshot.rss?.articles ?? []} subscriptions={snapshot.rss?.subscriptions ?? []} folders={snapshot.rss?.folders ?? []} phase={snapshot.rss?.phase ?? 'idle'} command={command} consumeCommand={consumeCommand} perform={perform} />;
   return <SettingsScreen theme={theme} snapshot={snapshot} perform={perform} />;

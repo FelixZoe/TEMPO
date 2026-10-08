@@ -321,10 +321,12 @@ final class TempoNativeRegistry {
     }
   }
 
-  func sendCommand(_ type: String) {
+  func sendCommand(_ type: String, payload: [String: Any] = [:]) {
+    var command: [String: Any] = ["type": type]
+    payload.forEach { command[$0.key] = $0.value }
     BrownfieldMessaging.sendMessage([
       "type": "tempo.command",
-      "command": ["type": type],
+      "command": command,
     ])
   }
 
