@@ -18,7 +18,7 @@ export function Section({ children, theme, title }: PropsWithChildren<{ theme: T
   return (
     <View style={styles.sectionWrap}>
       {title ? <Text style={[styles.sectionLabel, { color: theme.secondary }]}>{title}</Text> : null}
-      <View style={[styles.section, { backgroundColor: theme.surface }]}>{children}</View>
+      <View style={[styles.section, { borderColor: theme.separator }]}>{children}</View>
     </View>
   );
 }
@@ -97,8 +97,8 @@ const styles = StyleSheet.create({
   scrollContent: { paddingBottom: 40 },
   chromeGap: { height: 62 },
   sectionWrap: { marginHorizontal: 20, marginBottom: 24 },
-  sectionLabel: { fontSize: 13, fontWeight: '500', marginBottom: 8, marginLeft: 4 },
-  section: { borderRadius: 20, overflow: 'hidden' },
+  sectionLabel: { fontSize: 13, fontWeight: '600', marginBottom: 8 },
+  section: { borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth },
   divider: { height: StyleSheet.hairlineWidth, marginLeft: 18 },
   row: { minHeight: 58, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 11 },
   rowText: { flex: 1 },

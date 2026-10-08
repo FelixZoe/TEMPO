@@ -4,7 +4,7 @@
 
 - SwiftUI 保留 App 生命周期、系统导航、搜索、选项按钮、液态玻璃、权限、Keychain、App Group、小组件和 Live Activity。
 - React Native + TypeScript 承载收集箱、今天、番茄钟、RSS 和设置五个一级页面的业务内容。
-- `expo-updates` 只发布与当前原生 runtime 兼容的 JavaScript、样式和静态资源。
+- `expo-updates` 只发布与当前原生 runtime 兼容的 JavaScript、样式和静态资源；客户端会在启动和回到前台时静默检查、下载并自动应用，无需用户点按钮。
 - Swift 数据层是唯一事实来源；TypeScript 通过 `TempoNativeBridge` 读取快照、订阅变化并提交动作。
 - 原有 Swift 数据文件继续直接使用；迁移不会清空任务、专注记录、RSS 订阅或同步配置。
 
@@ -36,4 +36,4 @@ npm run build:brownfield:ios
 
 ## 发布约束
 
-原生依赖、权限、Bundle ID、entitlement、小组件、Live Activity 或 Swift 桥接协议发生变化时，必须构建新的 IPA 并提升 runtime version，不能只发 OTA。
+`runtime-version.txt` 是原生兼容边界，不再跟随 App 版本自动变化。纯 TypeScript、样式和静态资源更新保持该值不变，直接 OTA。只有原生依赖、权限、Bundle ID、entitlement、小组件、Live Activity、Swift 桥接协议或其他原生 ABI 发生变化时，才提升该文件中的版本并构建新 IPA。

@@ -10,7 +10,16 @@ function resolveAppVersion() {
   return match[1];
 }
 
+function resolveRuntimeVersion() {
+  const value = fs.readFileSync(path.join(__dirname, 'runtime-version.txt'), 'utf8').trim();
+  if (!/^\d+\.\d+\.\d+$/.test(value)) {
+    throw new Error(`Invalid iOS runtime version: ${value}`);
+  }
+  return value;
+}
+
 const appVersion = resolveAppVersion();
+const runtimeVersion = resolveRuntimeVersion();
 const projectId = '3f6ada73-f58c-47e5-b146-935f18f8ba4c';
 
 module.exports = {
@@ -49,7 +58,7 @@ module.exports = {
         'expo-channel-name': 'production',
       },
     },
-    runtimeVersion: appVersion,
+    runtimeVersion,
     extra: {
       eas: {
         projectId,
