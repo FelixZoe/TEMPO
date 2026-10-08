@@ -95,7 +95,7 @@ private struct TempoRuntimeChrome: View {
         if #available(iOS 26.0, *) {
           Color.clear
             .glassEffect(
-              .regular.tint(TempoPalette.ink.opacity(0.10)).interactive(),
+              .regular.tint(TempoPalette.accent.opacity(0.24)).interactive(),
               in: .capsule
             )
         } else {
@@ -114,7 +114,7 @@ private struct TempoRuntimeChrome: View {
             .font(.system(size: 13, weight: .semibold))
             .foregroundStyle(
               timerVisualDirection == direction
-                ? TempoPalette.ink
+                ? TempoPalette.accent
                 : TempoPalette.quiet
             )
             .frame(width: timerThumbWidth, height: 40)

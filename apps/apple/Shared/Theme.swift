@@ -1,33 +1,22 @@
 import SwiftUI
 
 enum TempoPalette {
-  #if os(iOS)
-  static let background = Color(uiColor: .systemBackground)
-  static let secondaryBackground = Color(uiColor: .secondarySystemBackground)
-  static let surface = Color(uiColor: .secondarySystemBackground)
-  static let elevatedSurface = Color(uiColor: .tertiarySystemBackground)
-  static let ink = Color(uiColor: .label)
-  static let quiet = Color(uiColor: .secondaryLabel)
-  static let faint = Color(uiColor: .tertiaryLabel)
-  static let separator = Color(uiColor: .separator)
-  #else
-  static let background = Color(nsColor: .windowBackgroundColor)
-  static let secondaryBackground = Color(nsColor: .underPageBackgroundColor)
-  static let surface = Color(nsColor: .controlBackgroundColor)
-  static let elevatedSurface = Color(nsColor: .unemphasizedSelectedContentBackgroundColor)
-  static let ink = Color(nsColor: .labelColor)
-  static let quiet = Color(nsColor: .secondaryLabelColor)
-  static let faint = Color(nsColor: .tertiaryLabelColor)
-  static let separator = Color(nsColor: .separatorColor)
-  #endif
+  static let background = Color.adaptive(lightHex: 0xF7F9FC, darkHex: 0x000000)
+  static let secondaryBackground = Color.adaptive(lightHex: 0xEEF3F8, darkHex: 0x07090D)
+  static let surface = Color.adaptive(lightHex: 0xFFFFFF, darkHex: 0x0C0F14)
+  static let elevatedSurface = Color.adaptive(lightHex: 0xFFFFFF, darkHex: 0x151A21)
+  static let ink = Color.adaptive(lightHex: 0x05070A, darkHex: 0xF5F7FA)
+  static let quiet = Color.adaptive(lightHex: 0x606A76, darkHex: 0xA7AFBA)
+  static let faint = Color.adaptive(lightHex: 0x98A1AC, darkHex: 0x68727F)
+  static let separator = Color.adaptive(lightHex: 0xDCE2E9, darkHex: 0x2A303A)
   static let accent = Color.adaptive(
-    lightHex: 0x3268E8,
-    darkHex: 0x7EA7FF
+    lightHex: 0x1D7FF2,
+    darkHex: 0x1D7FF2
   )
   static let onAccent = Color.white
   static let selected = Color.adaptive(
-    lightHex: 0xE9EFFD,
-    darkHex: 0x26324B
+    lightHex: 0xE8F2FF,
+    darkHex: 0x0B315D
   )
   static let success = Color.adaptive(
     lightHex: 0x2E7D64,
@@ -60,8 +49,8 @@ enum TempoPalette {
 }
 
 enum TempoType {
-  static let screenTitle = Font.largeTitle.weight(.bold)
-  static let sectionTitle = Font.title3.weight(.semibold)
+  static let screenTitle = Font.system(.largeTitle, design: .default).weight(.heavy)
+  static let sectionTitle = Font.system(.title3, design: .default).weight(.bold)
   static let rowTitle = Font.body.weight(.semibold)
   static let rowTitleCompleted = Font.body
   static let body = Font.body

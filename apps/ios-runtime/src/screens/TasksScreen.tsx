@@ -264,7 +264,7 @@ function shortDate(value: string) { const date = new Date(value); return `${date
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   heading: { paddingHorizontal: 20, paddingTop: 6, paddingBottom: 14 },
-  title: { fontSize: 32, fontWeight: '700', letterSpacing: -.8 },
+  title: { fontSize: 34, fontWeight: '800', letterSpacing: -1.15 },
   subtitle: { fontSize: 14, lineHeight: 20, marginTop: 6 },
   search: { marginHorizontal: 20, height: 44, borderRadius: 14, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center' },
   searchInput: { flex: 1, fontSize: 16, paddingVertical: 0 },
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   plus: { color: '#fff', fontSize: 29, lineHeight: 33, fontWeight: '300' },
   undo: { position: 'absolute', left: 20, bottom: 23, borderRadius: 20, paddingHorizontal: 16, height: 42, justifyContent: 'center' },
   sheetBody: { flex: 1, paddingTop: 18 },
-  sheetTitle: { fontSize: 28, fontWeight: '700', paddingHorizontal: 20, marginBottom: 20 },
+  sheetTitle: { fontSize: 30, fontWeight: '800', letterSpacing: -.8, paddingHorizontal: 20, marginBottom: 20 },
   titleInput: { marginHorizontal: 20, height: 58, borderRadius: 16, paddingHorizontal: 16, fontSize: 17 },
   notesInput: { marginHorizontal: 20, minHeight: 112, borderRadius: 16, padding: 16, fontSize: 15, lineHeight: 21, marginTop: 12 },
   destination: { fontSize: 13, lineHeight: 18, marginHorizontal: 22, marginTop: 12, marginBottom: 20 },
