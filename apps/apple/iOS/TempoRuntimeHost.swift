@@ -32,25 +32,70 @@ struct TempoRuntimeScreen: View {
 }
 
 private struct TempoRuntimeChrome: View {
+  @EnvironmentObject private var store: AppStore
   let route: AppTab
 
   var body: some View {
-    HStack(spacing: 10) {
-      if route == .inbox || route == .rss {
-        chromeButton("magnifyingglass", command: "search")
-      } else if route == .pomodoro {
-        chromeButton("chart.xyaxis.line", command: "statistics")
+    ZStack {
+      HStack(spacing: 10) {
+        if route == .inbox || route == .rss {
+          chromeButton("magnifyingglass", command: "search")
+        } else if route == .pomodoro {
+          chromeButton("chart.xyaxis.line", command: "statistics")
+        }
+
+        Spacer()
+
+        if route != .settings {
+          optionsMenu
+        }
       }
 
-      Spacer()
-
-      if route != .settings {
-        optionsMenu
+      if route == .pomodoro {
+        timerDirectionControl
       }
     }
     .padding(.horizontal, 18)
     .padding(.top, 8)
     .allowsHitTesting(true)
+  }
+
+  private var timerDirectionControl: some View {
+    HStack(spacing: 2) {
+      ForEach(PomodoroTimerDirection.allCases) { direction in
+        Button {
+          guard store.pomodoro.timerDirection != direction else { return }
+          store.setPomodoroTimerDirection(direction)
+          UISelectionFeedbackGenerator().selectionChanged()
+        } label: {
+          Text(direction.title)
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundStyle(
+              store.pomodoro.timerDirection == direction
+                ? TempoPalette.ink
+                : TempoPalette.quiet
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background {
+              if store.pomodoro.timerDirection == direction {
+                Capsule()
+                  .fill(TempoPalette.surface.opacity(0.72))
+                  .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
+              }
+            }
+            .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(
+          store.pomodoro.timerDirection == direction ? .isSelected : []
+        )
+      }
+    }
+    .padding(4)
+    .frame(width: 186, height: 48)
+    .tempoFloatingCapsule()
+    .accessibilityElement(children: .contain)
+    .accessibilityLabel("计时方式")
   }
 
   private func chromeButton(_ symbol: String, command: String) -> some View {
