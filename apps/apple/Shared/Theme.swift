@@ -134,17 +134,4 @@ extension View {
     self.background(.ultraThinMaterial, in: Circle())
     #endif
   }
-
-  @ViewBuilder
-  func tempoFloatingCapsule() -> some View {
-    #if os(iOS)
-    if #available(iOS 26.0, *) {
-      self.glassEffect(.regular.interactive(), in: .capsule)
-    } else {
-      self.background(.ultraThinMaterial, in: Capsule())
-    }
-    #else
-    self.background(.ultraThinMaterial, in: Capsule())
-    #endif
-  }
 }

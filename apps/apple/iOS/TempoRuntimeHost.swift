@@ -81,46 +81,82 @@ private struct TempoRuntimeChrome: View {
   }
 
   private var timerDirectionControl: some View {
-    ZStack(alignment: .leading) {
-      Capsule()
-        .fill(TempoPalette.surface.opacity(0.72))
-        .frame(width: timerSegmentWidth, height: 40)
-        .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
-        .offset(x: timerSelectionOffset + timerDragOffset)
-        .allowsHitTesting(false)
+    Group {
+      if #available(iOS 26.0, *) {
+        GlassEffectContainer(spacing: 4) {
+          ZStack(alignment: .leading) {
+            Color.clear
+              .frame(width: 186, height: 48)
+              .glassEffect(.regular.interactive(), in: .capsule)
 
-      HStack(spacing: 2) {
-        ForEach(PomodoroTimerDirection.allCases) { direction in
-          Button {
-            selectTimerDirection(direction)
-          } label: {
-            Text(direction.title)
-              .font(.system(size: 13, weight: .semibold))
-              .foregroundStyle(
-                store.pomodoro.timerDirection == direction
-                  ? TempoPalette.ink
-                  : TempoPalette.quiet
-              )
+            Color.clear
               .frame(width: timerSegmentWidth, height: 40)
-              .contentShape(Capsule())
+              .glassEffect(
+                .regular.tint(TempoPalette.ink.opacity(0.10)).interactive(),
+                in: .capsule
+              )
+              .offset(x: 4 + timerSelectionOffset + timerDragOffset)
+              .allowsHitTesting(false)
+
+            timerDirectionLabels
           }
-          .buttonStyle(.plain)
-          .accessibilityAddTraits(
-            store.pomodoro.timerDirection == direction ? .isSelected : []
-          )
+        }
+      } else {
+        ZStack(alignment: .leading) {
+          Capsule()
+            .fill(.ultraThinMaterial)
+            .frame(width: 186, height: 48)
+
+          Capsule()
+            .fill(TempoPalette.surface.opacity(0.82))
+            .frame(width: timerSegmentWidth, height: 40)
+            .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
+            .offset(x: 4 + timerSelectionOffset + timerDragOffset)
+            .allowsHitTesting(false)
+
+          timerDirectionLabels
         }
       }
     }
-    .padding(4)
     .frame(width: 186, height: 48)
-    .tempoFloatingCapsule()
     .simultaneousGesture(timerDirectionDragGesture)
     .accessibilityElement(children: .contain)
     .accessibilityLabel("计时方式")
   }
 
+  private var timerDirectionLabels: some View {
+    HStack(spacing: 2) {
+      ForEach(PomodoroTimerDirection.allCases) { direction in
+        Button {
+          selectTimerDirection(direction)
+        } label: {
+          Text(direction.title)
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundStyle(
+              timerVisualDirection == direction
+                ? TempoPalette.ink
+                : TempoPalette.quiet
+            )
+            .frame(width: timerSegmentWidth, height: 40)
+            .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(
+          store.pomodoro.timerDirection == direction ? .isSelected : []
+        )
+      }
+    }
+    .padding(4)
+  }
+
   private var timerSelectionOffset: CGFloat {
     store.pomodoro.timerDirection == .countdown ? 0 : timerSegmentTravel
+  }
+
+  private var timerVisualDirection: PomodoroTimerDirection {
+    timerSelectionOffset + timerDragOffset >= timerSegmentTravel / 2
+      ? .countUp
+      : .countdown
   }
 
   private var timerDirectionDragGesture: some Gesture {
