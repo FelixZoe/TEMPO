@@ -13,6 +13,7 @@ final class TempoRuntimeAppDelegate: NSObject, UIApplicationDelegate {
 }
 
 struct TempoRuntimeScreen: View {
+  @State private var settingsVisible = false
   let route: AppTab
 
   var body: some View {
@@ -25,15 +26,34 @@ struct TempoRuntimeScreen: View {
         ]
       )
       .ignoresSafeArea(edges: .bottom)
+      .opacity(route == .settings ? (settingsVisible ? 1 : 0) : 1)
+      .offset(y: route == .settings && !settingsVisible ? 10 : 0)
 
       TempoRuntimeChrome(route: route)
+    }
+    .onAppear {
+      guard route == .settings else { return }
+      settingsVisible = false
+      DispatchQueue.main.async {
+        withAnimation(.easeOut(duration: 0.28)) {
+          settingsVisible = true
+        }
+      }
+    }
+    .onDisappear {
+      guard route == .settings else { return }
+      settingsVisible = false
     }
   }
 }
 
 private struct TempoRuntimeChrome: View {
   @EnvironmentObject private var store: AppStore
+  @State private var timerDragOffset: CGFloat = 0
   let route: AppTab
+
+  private let timerSegmentWidth: CGFloat = 88
+  private let timerSegmentTravel: CGFloat = 90
 
   var body: some View {
     ZStack {
@@ -61,41 +81,88 @@ private struct TempoRuntimeChrome: View {
   }
 
   private var timerDirectionControl: some View {
-    HStack(spacing: 2) {
-      ForEach(PomodoroTimerDirection.allCases) { direction in
-        Button {
-          guard store.pomodoro.timerDirection != direction else { return }
-          store.setPomodoroTimerDirection(direction)
-          UISelectionFeedbackGenerator().selectionChanged()
-        } label: {
-          Text(direction.title)
-            .font(.system(size: 13, weight: .semibold))
-            .foregroundStyle(
-              store.pomodoro.timerDirection == direction
-                ? TempoPalette.ink
-                : TempoPalette.quiet
-            )
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background {
-              if store.pomodoro.timerDirection == direction {
-                Capsule()
-                  .fill(TempoPalette.surface.opacity(0.72))
-                  .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
-              }
-            }
-            .contentShape(Capsule())
+    ZStack(alignment: .leading) {
+      Capsule()
+        .fill(TempoPalette.surface.opacity(0.72))
+        .frame(width: timerSegmentWidth, height: 40)
+        .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
+        .offset(x: timerSelectionOffset + timerDragOffset)
+        .allowsHitTesting(false)
+
+      HStack(spacing: 2) {
+        ForEach(PomodoroTimerDirection.allCases) { direction in
+          Button {
+            selectTimerDirection(direction)
+          } label: {
+            Text(direction.title)
+              .font(.system(size: 13, weight: .semibold))
+              .foregroundStyle(
+                store.pomodoro.timerDirection == direction
+                  ? TempoPalette.ink
+                  : TempoPalette.quiet
+              )
+              .frame(width: timerSegmentWidth, height: 40)
+              .contentShape(Capsule())
+          }
+          .buttonStyle(.plain)
+          .accessibilityAddTraits(
+            store.pomodoro.timerDirection == direction ? .isSelected : []
+          )
         }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(
-          store.pomodoro.timerDirection == direction ? .isSelected : []
-        )
       }
     }
     .padding(4)
     .frame(width: 186, height: 48)
     .tempoFloatingCapsule()
+    .simultaneousGesture(timerDirectionDragGesture)
     .accessibilityElement(children: .contain)
     .accessibilityLabel("计时方式")
+  }
+
+  private var timerSelectionOffset: CGFloat {
+    store.pomodoro.timerDirection == .countdown ? 0 : timerSegmentTravel
+  }
+
+  private var timerDirectionDragGesture: some Gesture {
+    DragGesture(minimumDistance: 6, coordinateSpace: .local)
+      .onChanged { value in
+        let translation = value.translation.width
+        if store.pomodoro.timerDirection == .countdown {
+          timerDragOffset = min(timerSegmentTravel, max(0, translation))
+        } else {
+          timerDragOffset = max(-timerSegmentTravel, min(0, translation))
+        }
+      }
+      .onEnded { value in
+        let projected = abs(value.predictedEndTranslation.width) > abs(value.translation.width)
+          ? value.predictedEndTranslation.width
+          : value.translation.width
+        let target: PomodoroTimerDirection
+        if store.pomodoro.timerDirection == .countdown {
+          target = projected > timerSegmentTravel * 0.34 ? .countUp : .countdown
+        } else {
+          target = projected < -timerSegmentTravel * 0.34 ? .countdown : .countUp
+        }
+        let changed = store.pomodoro.timerDirection != target
+        withAnimation(.interactiveSpring(response: 0.28, dampingFraction: 0.82, blendDuration: 0.12)) {
+          timerDragOffset = 0
+          if changed {
+            store.setPomodoroTimerDirection(target)
+          }
+        }
+        if changed {
+          UISelectionFeedbackGenerator().selectionChanged()
+        }
+      }
+  }
+
+  private func selectTimerDirection(_ direction: PomodoroTimerDirection) {
+    guard store.pomodoro.timerDirection != direction else { return }
+    withAnimation(.interactiveSpring(response: 0.28, dampingFraction: 0.82, blendDuration: 0.12)) {
+      timerDragOffset = 0
+      store.setPomodoroTimerDirection(direction)
+    }
+    UISelectionFeedbackGenerator().selectionChanged()
   }
 
   private func chromeButton(_ symbol: String, command: String) -> some View {

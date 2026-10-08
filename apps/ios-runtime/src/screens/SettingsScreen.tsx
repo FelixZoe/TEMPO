@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Animated, Easing, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Divider, NativeChromeGap, Pill, PrimaryButton, Row, Screen, Section, ToggleRow } from '../components/Primitives';
 import { radius, type TempoTheme } from '../theme';
@@ -7,27 +7,40 @@ import type { TempoSnapshot } from '../types';
 
 type Page = 'home' | 'sync' | 'ai' | 'focus' | 'calendar' | 'update' | 'modules';
 export function SettingsScreen({ theme, snapshot, perform }: { theme: TempoTheme; snapshot: TempoSnapshot; perform: <T>(action: string, payload?: Record<string, unknown>) => Promise<T> }) {
-  const [page, setPage] = useState<Page>('home'); const taps = useRef<number[]>([]); const [message, setMessage] = useState('');
+  const [page, setPage] = useState<Page>('home'); const [transition, setTransition] = useState<'initial' | 'forward' | 'back'>('initial'); const taps = useRef<number[]>([]); const [message, setMessage] = useState('');
   function developerTap() { const now = Date.now(); taps.current = [...taps.current.filter((value) => now - value < 1200), now]; if (taps.current.length >= 4) { taps.current = []; void perform('developer.open'); } }
-  if (page !== 'home') return <DetailPage page={page} theme={theme} snapshot={snapshot} perform={perform} onBack={() => setPage('home')} message={message} setMessage={setMessage} />;
-  return <Screen theme={theme}>
+  function openPage(next: Page) { setMessage(''); setTransition('forward'); setPage(next); }
+  function closePage() { setMessage(''); setTransition('back'); setPage('home'); }
+  if (page !== 'home') return <MotionFrame key={`detail-${page}`} fromX={22}><DetailPage page={page} theme={theme} snapshot={snapshot} perform={perform} onBack={closePage} message={message} setMessage={setMessage} /></MotionFrame>;
+  return <MotionFrame key={`home-${transition}`} active={transition !== 'initial'} fromX={transition === 'back' ? -18 : 0}><Screen theme={theme}>
     <NativeChromeGap />
     <ScrollView contentContainerStyle={styles.content}>
       <Pressable onPress={developerTap} onLongPress={() => perform('developer.open')}><Text style={[styles.title, { color: theme.text }]}>设置</Text></Pressable>
       <Text style={[styles.caption, { color: theme.secondary }]}>账户、同步与应用偏好</Text>
       <Section theme={theme} title="服务">
-        <SettingRow theme={theme} icon="↻" tint={theme.accent} title="自托管同步" detail={snapshot.sync?.configured ? syncLabel(snapshot.sync.phase, snapshot.sync.pendingChangeCount) : '未配置'} onPress={() => setPage('sync')} /><Divider theme={theme} />
-        <SettingRow theme={theme} icon="✦" tint={theme.text} title="AI 助手" detail={snapshot.ai?.configured ? snapshot.ai.model : '未配置'} onPress={() => setPage('ai')} /><Divider theme={theme} />
-        <SettingRow theme={theme} icon="◉" tint={theme.accent} title="番茄钟" detail={`${snapshot.pomodoro?.focusMinutes ?? 25} 分钟 · 目标 ${snapshot.pomodoro?.dailyFocusGoal ?? 4}`} onPress={() => setPage('focus')} />
+        <SettingRow theme={theme} icon="↻" tint={theme.accent} title="自托管同步" detail={snapshot.sync?.configured ? syncLabel(snapshot.sync.phase, snapshot.sync.pendingChangeCount) : '未配置'} onPress={() => openPage('sync')} /><Divider theme={theme} />
+        <SettingRow theme={theme} icon="✦" tint={theme.text} title="AI 助手" detail={snapshot.ai?.configured ? snapshot.ai.model : '未配置'} onPress={() => openPage('ai')} /><Divider theme={theme} />
+        <SettingRow theme={theme} icon="◉" tint={theme.accent} title="番茄钟" detail={`${snapshot.pomodoro?.focusMinutes ?? 25} 分钟 · 目标 ${snapshot.pomodoro?.dailyFocusGoal ?? 4}`} onPress={() => openPage('focus')} />
       </Section>
       <Section theme={theme} title="应用">
-        <SettingRow theme={theme} icon="▦" tint={theme.secondary} title="日期与日历" detail="周起始、节日与任务标记" onPress={() => setPage('calendar')} /><Divider theme={theme} />
-        <SettingRow theme={theme} icon="≡" tint={theme.secondary} title="功能模块" detail="调整模块顺序" onPress={() => setPage('modules')} /><Divider theme={theme} />
-        <SettingRow theme={theme} icon="↓" tint={theme.success} title="软件更新" detail={`v${snapshot.app?.version ?? '—'} (${snapshot.app?.build ?? '—'})`} onPress={() => setPage('update')} />
+        <SettingRow theme={theme} icon="▦" tint={theme.secondary} title="日期与日历" detail="周起始、节日与任务标记" onPress={() => openPage('calendar')} /><Divider theme={theme} />
+        <SettingRow theme={theme} icon="≡" tint={theme.secondary} title="功能模块" detail="调整模块顺序" onPress={() => openPage('modules')} /><Divider theme={theme} />
+        <SettingRow theme={theme} icon="↓" tint={theme.success} title="软件更新" detail={`v${snapshot.app?.version ?? '—'} (${snapshot.app?.build ?? '—'})`} onPress={() => openPage('update')} />
       </Section>
       <Section theme={theme} title="关于 TEMPO"><Row theme={theme} title="本地优先个人工作台" detail="时间、信息、当下、效率，一切井然有序。" /></Section>
     </ScrollView>
-  </Screen>;
+  </Screen></MotionFrame>;
+}
+
+function MotionFrame({ children, active = true, fromX = 0, fromY = 0 }: { children: React.ReactNode; active?: boolean; fromX?: number; fromY?: number }) {
+  const progress = useRef(new Animated.Value(active ? 0 : 1)).current;
+  useEffect(() => {
+    if (!active) return undefined;
+    const animation = Animated.timing(progress, { toValue: 1, duration: 260, easing: Easing.out(Easing.cubic), useNativeDriver: true });
+    animation.start();
+    return () => animation.stop();
+  }, [active, progress]);
+  return <Animated.View style={[styles.motionFrame, { opacity: progress.interpolate({ inputRange: [0, 1], outputRange: [.82, 1] }), transform: [{ translateX: progress.interpolate({ inputRange: [0, 1], outputRange: [fromX, 0] }) }, { translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [fromY, 0] }) }] }]}>{children}</Animated.View>;
 }
 
 function DetailPage({ page, theme, snapshot, perform, onBack, message, setMessage }: { page: Page; theme: TempoTheme; snapshot: TempoSnapshot; perform: <T>(action: string, payload?: Record<string, unknown>) => Promise<T>; onBack: () => void; message: string; setMessage: (value: string) => void }) {
@@ -45,4 +58,4 @@ function ChoiceRow({ theme, title, current, choices, unit, action }: any) { retu
 function syncLabel(phase?: string, pending = 0) { if (pending) return `${pending} 项待同步`; if (phase === 'syncing') return '正在同步'; if (phase === 'error') return '同步异常'; return '已实时同步'; }
 function pageTitle(page: Page) { return ({ sync: '自托管同步', ai: 'AI 助手', focus: '番茄钟', calendar: '日期与日历', update: '软件更新', modules: '功能模块', home: '设置' } as const)[page]; }
 function moduleTitle(value: string) { return ({ inbox: '收集箱', today: '今天', focus: '番茄钟', rss: 'RSS', settings: '设置' } as Record<string, string>)[value] ?? value; }
-const styles = StyleSheet.create({ content: { paddingBottom: 60 }, title: { fontSize: 32, fontWeight: '700', letterSpacing: -.8, paddingHorizontal: 20, paddingTop: 8 }, caption: { paddingHorizontal: 20, fontSize: 14, marginTop: 7, marginBottom: 26 }, settingRow: { minHeight: 72, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }, iconBox: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginRight: 13 }, icon: { fontSize: 21, fontWeight: '600' }, settingText: { flex: 1 }, settingTitle: { fontSize: 16, fontWeight: '600' }, settingDetail: { fontSize: 12, marginTop: 4 }, chevron: { fontSize: 25, fontWeight: '300' }, detailHeader: { height: 50, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20 }, back: { fontSize: 36, fontWeight: '300' }, detailTitle: { fontSize: 18, fontWeight: '600' }, detailContent: { paddingTop: 14, paddingBottom: 60 }, field: { paddingHorizontal: 17, paddingVertical: 12 }, fieldLabel: { fontSize: 12, fontWeight: '500', marginBottom: 5 }, fieldInput: { fontSize: 16, padding: 0 }, buttonGap: { gap: 12 }, linkButton: { textAlign: 'center', fontSize: 15, fontWeight: '600', paddingVertical: 9 }, message: { textAlign: 'center', marginTop: 18, paddingHorizontal: 24 }, pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: 14 }, choice: { paddingVertical: 12 }, choiceTitle: { fontSize: 16, fontWeight: '600', paddingHorizontal: 17 }, moduleRow: { minHeight: 60, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 18 }, moduleTitle: { flex: 1, fontSize: 16, fontWeight: '500' }, moduleAction: { fontSize: 22, fontWeight: '600', paddingHorizontal: 12 }, });
+const styles = StyleSheet.create({ motionFrame: { flex: 1 }, content: { paddingBottom: 60 }, title: { fontSize: 32, fontWeight: '700', letterSpacing: -.8, paddingHorizontal: 20, paddingTop: 8 }, caption: { paddingHorizontal: 20, fontSize: 14, marginTop: 7, marginBottom: 26 }, settingRow: { minHeight: 72, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }, iconBox: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginRight: 13 }, icon: { fontSize: 21, fontWeight: '600' }, settingText: { flex: 1 }, settingTitle: { fontSize: 16, fontWeight: '600' }, settingDetail: { fontSize: 12, marginTop: 4 }, chevron: { fontSize: 25, fontWeight: '300' }, detailHeader: { height: 50, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20 }, back: { fontSize: 36, fontWeight: '300' }, detailTitle: { fontSize: 18, fontWeight: '600' }, detailContent: { paddingTop: 14, paddingBottom: 60 }, field: { paddingHorizontal: 17, paddingVertical: 12 }, fieldLabel: { fontSize: 12, fontWeight: '500', marginBottom: 5 }, fieldInput: { fontSize: 16, padding: 0 }, buttonGap: { gap: 12 }, linkButton: { textAlign: 'center', fontSize: 15, fontWeight: '600', paddingVertical: 9 }, message: { textAlign: 'center', marginTop: 18, paddingHorizontal: 24 }, pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: 14 }, choice: { paddingVertical: 12 }, choiceTitle: { fontSize: 16, fontWeight: '600', paddingHorizontal: 17 }, moduleRow: { minHeight: 60, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 18 }, moduleTitle: { flex: 1, fontSize: 16, fontWeight: '500' }, moduleAction: { fontSize: 22, fontWeight: '600', paddingHorizontal: 12 }, });
