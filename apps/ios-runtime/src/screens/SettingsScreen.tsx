@@ -1,18 +1,60 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Dimensions, Easing, KeyboardAvoidingView, PanResponder, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { Divider, Pill, PrimaryButton, Row, Screen, Section, ToggleRow } from '../components/Primitives';
 import { radius, type TempoTheme } from '../theme';
 import type { TempoSnapshot } from '../types';
 
-type Page = 'home' | 'sync' | 'ai' | 'focus' | 'calendar' | 'update' | 'modules';
+type Page = 'sync' | 'ai' | 'focus' | 'calendar' | 'update' | 'modules';
+type SettingsStackParamList = {
+  home: undefined;
+  detail: { page: Page };
+};
+
+const Stack = createNativeStackNavigator<SettingsStackParamList>();
+
 export function SettingsScreen({ theme, snapshot, perform }: { theme: TempoTheme; snapshot: TempoSnapshot; perform: <T>(action: string, payload?: Record<string, unknown>) => Promise<T> }) {
-  const [page, setPage] = useState<Page>('home'); const [transition, setTransition] = useState<'initial' | 'forward' | 'back'>('initial'); const taps = useRef<number[]>([]); const [message, setMessage] = useState('');
+  const [message, setMessage] = useState('');
+  const navigationThemeBase = theme.dark ? DarkTheme : DefaultTheme;
+  const navigationTheme = {
+    ...navigationThemeBase,
+    colors: {
+      ...navigationThemeBase.colors,
+      primary: theme.accent,
+      background: theme.background,
+      card: theme.background,
+      text: theme.text,
+      border: theme.separator,
+      notification: theme.accent,
+    },
+  };
+
+  return <NavigationContainer theme={navigationTheme}>
+    <Stack.Navigator screenOptions={{
+      contentStyle: { backgroundColor: theme.background },
+      headerStyle: { backgroundColor: theme.background },
+      headerTintColor: theme.accent,
+      headerTitleStyle: { color: theme.text, fontWeight: '700' },
+      headerShadowVisible: false,
+      headerBackTitle: '设置',
+      gestureEnabled: true,
+    }}>
+      <Stack.Screen name="home" options={{ headerShown: false }}>
+        {({ navigation }) => <SettingsHome theme={theme} snapshot={snapshot} perform={perform} openPage={(page) => { setMessage(''); navigation.navigate('detail', { page }); }} />}
+      </Stack.Screen>
+      <Stack.Screen name="detail" options={({ route }) => ({ title: pageTitle(route.params.page) })}>
+        {({ route }) => <DetailPage page={route.params.page} theme={theme} snapshot={snapshot} perform={perform} message={message} setMessage={setMessage} />}
+      </Stack.Screen>
+    </Stack.Navigator>
+  </NavigationContainer>;
+}
+
+function SettingsHome({ theme, snapshot, perform, openPage }: { theme: TempoTheme; snapshot: TempoSnapshot; perform: <T>(action: string, payload?: Record<string, unknown>) => Promise<T>; openPage: (page: Page) => void }) {
+  const taps = useRef<number[]>([]);
   function developerTap() { const now = Date.now(); taps.current = [...taps.current.filter((value) => now - value < 1200), now]; if (taps.current.length >= 4) { taps.current = []; void perform('developer.open'); } }
-  function openPage(next: Page) { setMessage(''); setTransition('forward'); setPage(next); }
-  function closePage() { setMessage(''); setTransition('back'); setPage('home'); }
-  if (page !== 'home') return <SwipeBackFrame onBack={closePage}><MotionFrame key={`detail-${page}`} fromX={22}><DetailPage page={page} theme={theme} snapshot={snapshot} perform={perform} onBack={closePage} message={message} setMessage={setMessage} /></MotionFrame></SwipeBackFrame>;
-  return <MotionFrame key={`home-${transition}`} active={transition !== 'initial'} fromX={transition === 'back' ? -18 : 0}><Screen theme={theme}>
+  return <Screen theme={theme}>
     <ScrollView contentContainerStyle={styles.content}>
       <Pressable onPress={developerTap} onLongPress={() => perform('developer.open')}><Text style={[styles.title, { color: theme.text }]}>设置</Text></Pressable>
       <Text style={[styles.caption, { color: theme.secondary }]}>账户、同步与应用偏好</Text>
@@ -28,41 +70,11 @@ export function SettingsScreen({ theme, snapshot, perform }: { theme: TempoTheme
       </Section>
       <Section theme={theme} title="关于 TEMPO"><Row theme={theme} title="本地优先个人工作台" detail="时间、信息、当下、效率，一切井然有序。" /></Section>
     </ScrollView>
-  </Screen></MotionFrame>;
+  </Screen>;
 }
 
-function MotionFrame({ children, active = true, fromX = 0, fromY = 0 }: { children: React.ReactNode; active?: boolean; fromX?: number; fromY?: number }) {
-  const progress = useRef(new Animated.Value(active ? 0 : 1)).current;
-  useEffect(() => {
-    if (!active) return undefined;
-    const animation = Animated.timing(progress, { toValue: 1, duration: 260, easing: Easing.out(Easing.cubic), useNativeDriver: true });
-    animation.start();
-    return () => animation.stop();
-  }, [active, progress]);
-  return <Animated.View style={[styles.motionFrame, { opacity: progress.interpolate({ inputRange: [0, 1], outputRange: [.82, 1] }), transform: [{ translateX: progress.interpolate({ inputRange: [0, 1], outputRange: [fromX, 0] }) }, { translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [fromY, 0] }) }] }]}>{children}</Animated.View>;
-}
-
-function SwipeBackFrame({ children, onBack }: { children: React.ReactNode; onBack: () => void }) {
-  const translateX = useRef(new Animated.Value(0)).current;
-  const screenWidth = Dimensions.get('window').width;
-  const pan = useMemo(() => PanResponder.create({
-    onMoveShouldSetPanResponder: (event, gesture) => event.nativeEvent.pageX - gesture.dx < 28 && gesture.dx > 7 && Math.abs(gesture.dx) > Math.abs(gesture.dy),
-    onPanResponderMove: (_, gesture) => translateX.setValue(Math.max(0, gesture.dx)),
-    onPanResponderRelease: (_, gesture) => {
-      const shouldClose = gesture.dx > screenWidth * .28 || gesture.vx > .72;
-      if (shouldClose) {
-        Animated.timing(translateX, { toValue: screenWidth, duration: 190, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start(({ finished }) => { if (finished) onBack(); });
-      } else {
-        Animated.spring(translateX, { toValue: 0, stiffness: 260, damping: 28, mass: .82, useNativeDriver: true }).start();
-      }
-    },
-    onPanResponderTerminate: () => Animated.spring(translateX, { toValue: 0, stiffness: 260, damping: 28, mass: .82, useNativeDriver: true }).start(),
-  }), [onBack, screenWidth, translateX]);
-  return <Animated.View {...pan.panHandlers} style={[styles.motionFrame, { transform: [{ translateX }], opacity: translateX.interpolate({ inputRange: [0, screenWidth], outputRange: [1, .82], extrapolate: 'clamp' }) }]}>{children}</Animated.View>;
-}
-
-function DetailPage({ page, theme, snapshot, perform, onBack, message, setMessage }: { page: Page; theme: TempoTheme; snapshot: TempoSnapshot; perform: <T>(action: string, payload?: Record<string, unknown>) => Promise<T>; onBack: () => void; message: string; setMessage: (value: string) => void }) {
-  return <Screen theme={theme}><View style={styles.detailHeader}><Pressable onPress={onBack} hitSlop={12}><Text style={[styles.back, { color: theme.accent }]}>‹</Text></Pressable><Text style={[styles.detailTitle, { color: theme.text }]}>{pageTitle(page)}</Text><View style={{ width: 28 }} /></View><KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.detailContent}>{page === 'sync' ? <SyncSettings theme={theme} value={snapshot.sync} perform={perform} setMessage={setMessage} /> : page === 'ai' ? <AISettings theme={theme} value={snapshot.ai} perform={perform} setMessage={setMessage} /> : page === 'focus' ? <FocusSettings theme={theme} value={snapshot.pomodoro} perform={perform} /> : page === 'calendar' ? <CalendarSettings theme={theme} value={snapshot.preferences} perform={perform} /> : page === 'modules' ? <ModuleSettings theme={theme} value={snapshot.preferences?.moduleOrder} perform={perform} /> : <UpdateSettings theme={theme} value={snapshot.app} perform={perform} setMessage={setMessage} />}{message ? <Text style={[styles.message, { color: theme.secondary }]}>{message}</Text> : null}</ScrollView></KeyboardAvoidingView></Screen>;
+function DetailPage({ page, theme, snapshot, perform, message, setMessage }: { page: Page; theme: TempoTheme; snapshot: TempoSnapshot; perform: <T>(action: string, payload?: Record<string, unknown>) => Promise<T>; message: string; setMessage: (value: string) => void }) {
+  return <Screen theme={theme}><KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.detailContent}>{page === 'sync' ? <SyncSettings theme={theme} value={snapshot.sync} perform={perform} setMessage={setMessage} /> : page === 'ai' ? <AISettings theme={theme} value={snapshot.ai} perform={perform} setMessage={setMessage} /> : page === 'focus' ? <FocusSettings theme={theme} value={snapshot.pomodoro} perform={perform} /> : page === 'calendar' ? <CalendarSettings theme={theme} value={snapshot.preferences} perform={perform} /> : page === 'modules' ? <ModuleSettings theme={theme} value={snapshot.preferences?.moduleOrder} perform={perform} /> : <UpdateSettings theme={theme} value={snapshot.app} perform={perform} setMessage={setMessage} />}{message ? <Text style={[styles.message, { color: theme.secondary }]}>{message}</Text> : null}</ScrollView></KeyboardAvoidingView></Screen>;
 }
 function SyncSettings({ theme, value, perform, setMessage }: any) { const [serverURL, setServerURL] = useState(value?.serverURL ?? ''); const [deviceName, setDeviceName] = useState(value?.deviceName ?? 'iPhone'); const [token, setToken] = useState(''); const [autoSync, setAutoSync] = useState(value?.autoSync ?? true); async function save(test = false) { setMessage(test ? '正在测试连接…' : '正在保存…'); try { const payload = { serverURL, deviceName, token, autoSync }; await perform(test ? 'sync.test' : 'sync.save', payload); setMessage(test ? '连接成功' : '已保存，将自动实时同步'); } catch { setMessage('连接失败，请检查地址与验证密钥'); } } return <><Section theme={theme} title="服务器"><Field theme={theme} label="服务器地址" value={serverURL} onChange={setServerURL} placeholder="https://sync.example.com" /><Divider theme={theme} /><Field theme={theme} label="设备名称" value={deviceName} onChange={setDeviceName} /><Divider theme={theme} /><Field theme={theme} label="64 位验证密钥" value={token} onChange={setToken} placeholder={value?.hasToken ? '已保存，留空保持不变' : '粘贴服务器生成的密钥'} secure /></Section><Section theme={theme}><ToggleRow theme={theme} title="自动实时同步" detail="数据变化后立即上传，网络恢复后自动补传" value={autoSync} onValueChange={setAutoSync} /><Divider theme={theme} /><Row theme={theme} title="当前状态" detail={`${syncLabel(value?.phase, value?.pendingChangeCount ?? 0)} · revision ${value?.revision ?? 0}`} /></Section><View style={styles.buttonGap}><PrimaryButton theme={theme} label="保存配置" onPress={() => save(false)} /><Pressable onPress={() => save(true)}><Text style={[styles.linkButton, { color: theme.accent }]}>测试连接</Text></Pressable><Pressable onPress={() => perform('sync.now')}><Text style={[styles.linkButton, { color: theme.accent }]}>立即同步</Text></Pressable></View></>; }
 function AISettings({ theme, value, perform, setMessage }: any) { const [mode, setMode] = useState(value?.mode ?? 'openAI'); const [baseURL, setBaseURL] = useState(value?.baseURL ?? 'https://api.openai.com/v1'); const [model, setModel] = useState(value?.model ?? 'gpt-5-mini'); const [apiKey, setAPIKey] = useState(''); const [summaryPrompt, setPrompt] = useState(value?.summaryPrompt ?? ''); const presets: Record<string, { url: string; model: string }> = { openAI: { url: 'https://api.openai.com/v1', model: 'gpt-5-mini' }, deepSeek: { url: 'https://api.deepseek.com/v1', model: 'deepseek-chat' }, compatible: { url: baseURL, model } }; async function save(test = false) { const payload = { mode, baseURL, model, apiKey, summaryPrompt }; setMessage('正在保存…'); try { await perform('ai.save', payload); if (test) await perform('ai.test'); setMessage(test ? '模型连接正常' : 'AI 配置已保存'); } catch { setMessage('模型连接失败，请检查 API 地址、模型和密钥'); } } return <><Section theme={theme} title="服务商"><View style={styles.pills}>{['openAI', 'deepSeek', 'compatible'].map((item) => <Pill key={item} theme={theme} label={item === 'openAI' ? 'OpenAI' : item === 'deepSeek' ? 'DeepSeek' : '兼容接口'} selected={mode === item} onPress={() => { setMode(item); const preset = presets[item]; if (preset) { setBaseURL(preset.url); setModel(preset.model); } }} />)}</View></Section><Section theme={theme} title="模型"><Field theme={theme} label="API 地址" value={baseURL} onChange={setBaseURL} /><Divider theme={theme} /><Field theme={theme} label="模型" value={model} onChange={setModel} /><Divider theme={theme} /><Field theme={theme} label="API 密钥" value={apiKey} onChange={setAPIKey} secure placeholder={value?.hasAPIKey ? '已安全保存，留空保持不变' : 'sk-…'} /><Divider theme={theme} /><Field theme={theme} label="RSS 摘要提示词（可选）" value={summaryPrompt} onChange={setPrompt} placeholder="留空使用 TEMPO 内置提示词" multiline /></Section><View style={styles.buttonGap}><PrimaryButton theme={theme} label="保存" onPress={() => save(false)} /><Pressable onPress={() => save(true)}><Text style={[styles.linkButton, { color: theme.accent }]}>保存并测试</Text></Pressable></View></>; }
@@ -74,6 +86,6 @@ function SettingRow({ theme, icon, tint, title, detail, onPress }: { theme: Temp
 function Field({ theme, label, value, onChange, placeholder, secure, multiline }: any) { return <View style={styles.field}><Text style={[styles.fieldLabel, { color: theme.secondary }]}>{label}</Text><TextInput value={value} onChangeText={onChange} placeholder={placeholder} placeholderTextColor={theme.tertiary} secureTextEntry={secure} multiline={multiline} autoCapitalize="none" style={[styles.fieldInput, multiline && { minHeight: 70 }, { color: theme.text }]} /></View>; }
 function ChoiceRow({ theme, title, current, choices, unit, action }: any) { return <View style={styles.choice}><Text style={[styles.choiceTitle, { color: theme.text }]}>{title}</Text><View style={styles.pills}>{choices.map((value: number) => <Pill key={value} theme={theme} label={`${value}${unit}`} selected={current === value} onPress={() => action(value)} />)}</View></View>; }
 function syncLabel(phase?: string, pending = 0) { if (pending) return `${pending} 项待同步`; if (phase === 'syncing') return '正在同步'; if (phase === 'error') return '同步异常'; return '已实时同步'; }
-function pageTitle(page: Page) { return ({ sync: '自托管同步', ai: 'AI 助手', focus: '番茄钟', calendar: '日期与日历', update: '软件更新', modules: '功能模块', home: '设置' } as const)[page]; }
+function pageTitle(page: Page) { return ({ sync: '自托管同步', ai: 'AI 助手', focus: '番茄钟', calendar: '日期与日历', update: '软件更新', modules: '功能模块' } as const)[page]; }
 function moduleTitle(value: string) { return ({ inbox: '收集箱', today: '今天', focus: '番茄钟', rss: 'RSS', settings: '设置' } as Record<string, string>)[value] ?? value; }
-const styles = StyleSheet.create({ motionFrame: { flex: 1 }, content: { paddingTop: 8, paddingBottom: 60 }, title: { fontSize: 34, fontWeight: '800', letterSpacing: -1.15, paddingHorizontal: 20 }, caption: { paddingHorizontal: 20, fontSize: 14, marginTop: 7, marginBottom: 22 }, settingRow: { minHeight: 66, flexDirection: 'row', alignItems: 'center' }, iconBox: { width: 30, height: 36, alignItems: 'flex-start', justifyContent: 'center', marginRight: 10 }, icon: { fontSize: 20, fontWeight: '600' }, settingText: { flex: 1 }, settingTitle: { fontSize: 16, fontWeight: '600' }, settingDetail: { fontSize: 12, marginTop: 4 }, chevron: { fontSize: 25, fontWeight: '300' }, detailHeader: { height: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20 }, back: { fontSize: 36, fontWeight: '300' }, detailTitle: { fontSize: 18, fontWeight: '700', letterSpacing: -.25 }, detailContent: { paddingTop: 10, paddingBottom: 60 }, field: { paddingHorizontal: 0, paddingVertical: 12 }, fieldLabel: { fontSize: 12, fontWeight: '500', marginBottom: 5 }, fieldInput: { fontSize: 16, padding: 0 }, buttonGap: { gap: 12 }, linkButton: { textAlign: 'center', fontSize: 15, fontWeight: '600', paddingVertical: 9 }, message: { textAlign: 'center', marginTop: 18, paddingHorizontal: 24 }, pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingVertical: 14 }, choice: { paddingVertical: 12 }, choiceTitle: { fontSize: 16, fontWeight: '600' }, moduleRow: { minHeight: 60, flexDirection: 'row', alignItems: 'center' }, moduleTitle: { flex: 1, fontSize: 16, fontWeight: '500' }, moduleAction: { fontSize: 22, fontWeight: '600', paddingHorizontal: 12 }, });
+const styles = StyleSheet.create({ content: { paddingTop: 8, paddingBottom: 60 }, title: { fontSize: 34, fontWeight: '800', letterSpacing: -1.15, paddingHorizontal: 20 }, caption: { paddingHorizontal: 20, fontSize: 14, marginTop: 7, marginBottom: 22 }, settingRow: { minHeight: 66, flexDirection: 'row', alignItems: 'center' }, iconBox: { width: 30, height: 36, alignItems: 'flex-start', justifyContent: 'center', marginRight: 10 }, icon: { fontSize: 20, fontWeight: '600' }, settingText: { flex: 1 }, settingTitle: { fontSize: 16, fontWeight: '600' }, settingDetail: { fontSize: 12, marginTop: 4 }, chevron: { fontSize: 25, fontWeight: '300' }, detailContent: { paddingTop: 10, paddingBottom: 60 }, field: { paddingHorizontal: 0, paddingVertical: 12 }, fieldLabel: { fontSize: 12, fontWeight: '500', marginBottom: 5 }, fieldInput: { fontSize: 16, padding: 0 }, buttonGap: { gap: 12 }, linkButton: { textAlign: 'center', fontSize: 15, fontWeight: '600', paddingVertical: 9 }, message: { textAlign: 'center', marginTop: 18, paddingHorizontal: 24 }, pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingVertical: 14 }, choice: { paddingVertical: 12 }, choiceTitle: { fontSize: 16, fontWeight: '600' }, moduleRow: { minHeight: 60, flexDirection: 'row', alignItems: 'center' }, moduleTitle: { flex: 1, fontSize: 16, fontWeight: '500' }, moduleAction: { fontSize: 22, fontWeight: '600', paddingHorizontal: 12 }, });
