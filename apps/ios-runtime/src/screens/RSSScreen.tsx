@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 
-import { ActionRow, ActionSheet, NativeChromeGap, PrimaryButton, Screen, Sheet } from '../components/Primitives';
+import { NativeChromeGap, PrimaryButton, Screen, Sheet } from '../components/Primitives';
 import { radius, type TempoTheme } from '../theme';
 import type { RSSArticle, RSSFolder, RSSSubscription, TempoCommand } from '../types';
 
@@ -10,10 +10,12 @@ export function RSSScreen({ theme, articles, subscriptions, folders, phase, comm
   theme: TempoTheme; articles: RSSArticle[]; subscriptions: RSSSubscription[]; folders: RSSFolder[]; phase: string;
   command?: TempoCommand; consumeCommand: () => void; perform: <T>(action: string, payload?: Record<string, unknown>) => Promise<T>;
 }) {
-  const [query, setQuery] = useState(''); const searchRef = useRef<TextInput>(null); const [feed, setFeed] = useState<string>(); const [article, setArticle] = useState<RSSArticle>(); const [adding, setAdding] = useState(false); const [optionsVisible, setOptionsVisible] = useState(false); const [url, setURL] = useState('');
+  const [query, setQuery] = useState(''); const searchRef = useRef<TextInput>(null); const [feed, setFeed] = useState<string>(); const [article, setArticle] = useState<RSSArticle>(); const [adding, setAdding] = useState(false); const [url, setURL] = useState('');
   useEffect(() => {
     if (command?.type === 'search') requestAnimationFrame(() => searchRef.current?.focus());
-    if (command?.type === 'options') setOptionsVisible(true);
+    if (command?.type === 'addFeed') setAdding(true);
+    if (command?.type === 'refreshFeeds') void perform('rss.refresh');
+    if (command?.type === 'markAllRead') void perform('rss.markAllRead', feed ? { feedID: feed } : undefined);
     if (command) consumeCommand();
   }, [command, consumeCommand]);
   const shown = useMemo(() => articles.filter((item) => !feed || item.feedID === feed).filter((item) => `${item.title} ${item.feedTitle} ${item.summary}`.toLowerCase().includes(query.trim().toLowerCase())).sort((a, b) => (b.publishedAt ?? b.fetchedAt).localeCompare(a.publishedAt ?? a.fetchedAt)), [articles, feed, query]);
@@ -25,12 +27,6 @@ export function RSSScreen({ theme, articles, subscriptions, folders, phase, comm
     <FlatList data={shown} keyExtractor={(item) => item.id} refreshControl={<RefreshControl refreshing={phase === 'refreshing'} onRefresh={() => perform('rss.refresh')} tintColor={theme.accent} />} contentContainerStyle={shown.length ? styles.articles : styles.empty} ListEmptyComponent={<Text style={[styles.emptyText, { color: theme.secondary }]}>暂时没有文章，下拉刷新或添加订阅。</Text>} renderItem={({ item }) => <ArticleRow theme={theme} article={item} onPress={async () => { const full = await perform<RSSArticle>('rss.article', { id: item.id }); setArticle(full); }} />} />
     <Sheet visible={!!article} onClose={() => setArticle(undefined)} theme={theme}>{article ? <Reader theme={theme} article={article} perform={perform} /> : null}</Sheet>
     <Sheet visible={adding} onClose={() => setAdding(false)} theme={theme}><View style={styles.addBody}><Text style={[styles.sheetTitle, { color: theme.text }]}>添加 RSS 订阅</Text><TextInput autoCapitalize="none" keyboardType="url" value={url} onChangeText={setURL} placeholder="https://example.com/feed.xml" placeholderTextColor={theme.tertiary} style={[styles.urlInput, { color: theme.text, backgroundColor: theme.surface }]} /><PrimaryButton theme={theme} label="添加订阅" disabled={!url.trim()} onPress={async () => { await perform('rss.add', { url: url.trim() }); setURL(''); setAdding(false); }} /></View></Sheet>
-    <ActionSheet visible={optionsVisible} onClose={() => setOptionsVisible(false)} theme={theme} title="阅读选项">
-      <ActionRow theme={theme} title="添加订阅" detail="通过 RSS 地址添加新的内容来源" onPress={() => { setOptionsVisible(false); setAdding(true); }} />
-      <ActionRow theme={theme} title="刷新全部" detail="立即检查所有订阅的新文章" onPress={() => { setOptionsVisible(false); void perform('rss.refresh'); }} />
-      <ActionRow theme={theme} title={feed ? "将此来源全部标为已读" : "全部标为已读"} detail={feed ? "只处理当前选中的订阅" : "清空当前未读计数"} onPress={() => { setOptionsVisible(false); void perform('rss.markAllRead', feed ? { feedID: feed } : undefined); }} />
-      {query ? <ActionRow theme={theme} title="清除搜索" onPress={() => { setQuery(''); setOptionsVisible(false); }} /> : null}
-    </ActionSheet>
   </Screen>;
 }
 function ArticleRow({ theme, article, onPress }: { theme: TempoTheme; article: RSSArticle; onPress: () => void }) { return <Pressable onPress={onPress} style={({ pressed }) => [styles.article, { backgroundColor: theme.surface, opacity: pressed ? .64 : 1 }]}><View style={styles.articleMeta}><View style={styles.feedLine}>{!article.isRead ? <View style={[styles.unreadDot, { backgroundColor: theme.accent }]} /> : null}<Text style={[styles.feed, { color: theme.secondary }]}>{article.feedTitle}</Text></View><Text style={[styles.date, { color: theme.tertiary }]}>{relativeDate(article.publishedAt ?? article.fetchedAt)}</Text></View><Text numberOfLines={2} style={[styles.articleTitle, { color: theme.text, fontWeight: article.isRead ? '500' : '700' }]}>{article.title}</Text><Text numberOfLines={2} style={[styles.summary, { color: theme.secondary }]}>{stripHTML(article.summary)}</Text></Pressable>; }

@@ -127,4 +127,16 @@ export type UpdateState = {
   downloadURL?: string;
 };
 
-export type TempoCommand = { type: 'search' | 'options' | 'statistics' };
+export type TempoCommand = { type:
+  | 'search'
+  | 'statistics'
+  | 'newTask'
+  | 'showCompleted'
+  | 'hideCompleted'
+  | 'returnToday'
+  | 'resetTimer'
+  | 'stopTimer'
+  | 'addFeed'
+  | 'refreshFeeds'
+  | 'markAllRead'
+};

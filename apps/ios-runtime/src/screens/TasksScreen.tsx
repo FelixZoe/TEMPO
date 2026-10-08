@@ -3,7 +3,7 @@ import {
   Animated, FlatList, Keyboard, PanResponder, Pressable, StyleSheet, Text, TextInput, View,
 } from 'react-native';
 
-import { ActionRow, ActionSheet, NativeChromeGap, PrimaryButton, Screen, Sheet } from '../components/Primitives';
+import { NativeChromeGap, PrimaryButton, Screen, Sheet } from '../components/Primitives';
 import { radius, type TempoTheme } from '../theme';
 import type { TempoTask } from '../types';
 
@@ -15,7 +15,6 @@ type Props = {
 
 export function TasksScreen({ route, theme, tasks, quote, command, consumeCommand, perform }: Props) {
   const [composerVisible, setComposerVisible] = useState(false);
-  const [optionsVisible, setOptionsVisible] = useState(false);
   const [editing, setEditing] = useState<TempoTask>();
   const [draftTitle, setDraftTitle] = useState('');
   const [draftNotes, setDraftNotes] = useState('');
@@ -30,7 +29,10 @@ export function TasksScreen({ route, theme, tasks, quote, command, consumeComman
 
   useEffect(() => {
     if (command === 'search') searchRef.current?.focus();
-    if (command === 'options') setOptionsVisible(true);
+    if (command === 'newTask') openComposer();
+    if (command === 'showCompleted') setShowCompleted(true);
+    if (command === 'hideCompleted') setShowCompleted(false);
+    if (command === 'returnToday') setSelectedDate(new Date());
     if (command) consumeCommand();
   }, [command, consumeCommand]);
 
@@ -98,11 +100,6 @@ export function TasksScreen({ route, theme, tasks, quote, command, consumeComman
   async function remove(task: TempoTask) {
     await perform('task.delete', { id: task.id });
     setUndo(task);
-  }
-
-  function runOption(action: () => void) {
-    setOptionsVisible(false);
-    setTimeout(action, 160);
   }
 
   return (
@@ -174,13 +171,6 @@ export function TasksScreen({ route, theme, tasks, quote, command, consumeComman
           </Pressable>
         ) : null}
       </View>
-
-      <ActionSheet visible={optionsVisible} onClose={() => setOptionsVisible(false)} theme={theme} title={route === 'inbox' ? '收集箱选项' : '今天选项'}>
-        <ActionRow theme={theme} title="新建任务" detail={route === 'today' ? `安排到${dayTitle(selectedDate)}` : '先记录，稍后安排'} onPress={() => runOption(() => openComposer())} />
-        <ActionRow theme={theme} title={showCompleted ? '隐藏已完成任务' : '显示已完成任务'} detail={completedCount ? `${completedCount} 项已完成` : '当前没有已完成任务'} onPress={() => runOption(() => setShowCompleted((value) => !value))} />
-        {query ? <ActionRow theme={theme} title="清除搜索" detail={`当前关键词：${query}`} onPress={() => runOption(() => setQuery(''))} /> : null}
-        {route === 'today' && !sameDay(selectedDate, new Date()) ? <ActionRow theme={theme} title="回到今天" onPress={() => runOption(() => setSelectedDate(new Date()))} /> : null}
-      </ActionSheet>
 
       <Sheet visible={composerVisible} onClose={closeComposer} theme={theme}>
         <View style={styles.sheetBody}>

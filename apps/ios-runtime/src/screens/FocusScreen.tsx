@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { ActionRow, ActionSheet, NativeChromeGap, Pill, Screen, Sheet } from '../components/Primitives';
+import { NativeChromeGap, Pill, Screen, Sheet } from '../components/Primitives';
 import type { TempoTheme } from '../theme';
 import type { PomodoroState, TempoCommand } from '../types';
 
@@ -10,10 +10,10 @@ export function FocusScreen({ theme, pomodoro, remaining, command, consumeComman
   perform: <T>(action: string, payload?: Record<string, unknown>) => Promise<T>;
 }) {
   const [statistics, setStatistics] = useState(false);
-  const [optionsVisible, setOptionsVisible] = useState(false);
   useEffect(() => {
     if (command?.type === 'statistics') setStatistics(true);
-    if (command?.type === 'options') setOptionsVisible(true);
+    if (command?.type === 'resetTimer') void perform('pomodoro.reset');
+    if (command?.type === 'stopTimer') void perform('pomodoro.stop');
     if (command) consumeCommand();
   }, [command, consumeCommand]);
   const state = pomodoro ?? { mode: 'focus', status: 'idle', remainingSeconds: remaining, completedFocusSessions: 0, focusMinutes: 25, shortBreakMinutes: 5, longBreakMinutes: 15, longBreakEvery: 4, dailyFocusGoal: 4, timerDirection: 'countdown', focusHistory: [] } as PomodoroState;
@@ -46,11 +46,6 @@ export function FocusScreen({ theme, pomodoro, remaining, command, consumeComman
           <Text style={[styles.heatTitle, { color: theme.text }]}>今日目标</Text><View style={styles.pills}>{[2, 4, 6, 8].map((count) => <Pill key={count} theme={theme} label={`${count} 个`} selected={state.dailyFocusGoal === count} onPress={() => perform('pomodoro.settings', { dailyFocusGoal: count })} />)}</View>
         </ScrollView>
       </Sheet>
-      <ActionSheet visible={optionsVisible} onClose={() => setOptionsVisible(false)} theme={theme} title="番茄钟选项">
-        <ActionRow theme={theme} title="专注统计" detail="查看记录、目标和时长设置" onPress={() => { setOptionsVisible(false); setStatistics(true); }} />
-        <ActionRow theme={theme} title="重新计时" detail="回到当前模式的初始时长" onPress={() => { setOptionsVisible(false); void perform('pomodoro.reset'); }} />
-        {state.status !== 'idle' ? <ActionRow theme={theme} title="结束本次计时" detail="停止并回到待开始状态" destructive onPress={() => { setOptionsVisible(false); void perform('pomodoro.stop'); }} /> : null}
-      </ActionSheet>
     </Screen>
   );
 }
