@@ -91,6 +91,33 @@ export function Sheet({ visible, onClose, children, theme }: PropsWithChildren<{
   );
 }
 
+export function ActionSheet({ visible, onClose, children, theme, title }: PropsWithChildren<{ visible: boolean; onClose: () => void; theme: TempoTheme; title: string }>) {
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <View style={styles.actionOverlay}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+        <View style={[styles.actionCard, { backgroundColor: theme.surfaceElevated }]}>
+          <View style={[styles.grabber, { backgroundColor: theme.tertiary }]} />
+          <Text style={[styles.actionTitle, { color: theme.text }]}>{title}</Text>
+          {children}
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+export function ActionRow({ theme, title, detail, onPress, destructive }: { theme: TempoTheme; title: string; detail?: string; onPress: () => void; destructive?: boolean }) {
+  return (
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.actionRow, pressed && styles.pressed]}>
+      <View style={styles.rowText}>
+        <Text style={[styles.actionRowTitle, { color: destructive ? theme.danger : theme.text }]}>{title}</Text>
+        {detail ? <Text style={[styles.rowDetail, { color: theme.secondary }]}>{detail}</Text> : null}
+      </View>
+      <Text style={[styles.actionChevron, { color: theme.tertiary }]}>›</Text>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   screenContent: { flex: 1 },
@@ -111,5 +138,11 @@ const styles = StyleSheet.create({
   primaryText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   sheet: { flex: 1 },
   grabber: { width: 38, height: 5, borderRadius: 3, alignSelf: 'center', opacity: .45, marginTop: 8, marginBottom: 8 },
+  actionOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,.24)' },
+  actionCard: { borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 20, paddingTop: 2, paddingBottom: 30 },
+  actionTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -.3, paddingVertical: 14 },
+  actionRow: { minHeight: 62, flexDirection: 'row', alignItems: 'center', borderRadius: 16, paddingHorizontal: 16, marginBottom: 8 },
+  actionRowTitle: { fontSize: 16, fontWeight: '600' },
+  actionChevron: { fontSize: 25, fontWeight: '300' },
   pressed: { opacity: .62 },
 });
